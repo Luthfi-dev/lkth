@@ -11,7 +11,6 @@ import { PlusCircle, Share2, LogOut, Users, Gift, LayoutGrid, Trash2, Settings2,
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import Image from 'next/image';
 import { getWinners, getEvents, deleteWinner, createEvent, updateEvent, deleteEvent, clearWinnersByEvent, getSystemSettings, updateSystemSettings } from '@/app/actions/db-actions';
 import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
@@ -140,6 +139,26 @@ export default function AdminDashboard() {
     setSelectedEventId(created.id);
     toast({ title: "Berhasil", description: "Event baru telah dibuat." });
     fetchData(currentUser);
+    setNewEvent({
+      title: '',
+      message: 'Selamat Hari Raya $nama! Semoga berkah selalu.',
+      nominals: '1000, 2000, 5000, 10000, 20000, 50000, 100000',
+      allow_multiple_plays: false,
+      interaction_type: 'angpao'
+    });
+  };
+
+  const handleDeleteEvent = async () => {
+    if (!selectedEventId) return;
+    await deleteEvent(selectedEventId);
+    toast({ title: "Dihapus", description: "Event telah dihapus permanen." });
+    const remaining = events.filter(e => e.id !== selectedEventId);
+    if (remaining.length > 0) {
+      setSelectedEventId(remaining[0].id);
+    } else {
+      setSelectedEventId('');
+    }
+    fetchData(currentUser);
   };
 
   const handleAddBank = async () => {
@@ -185,9 +204,11 @@ export default function AdminDashboard() {
           <Gift className="text-accent w-6 h-6" />
           <span className="font-black text-xl text-accent">Admin Dashboard</span>
         </div>
-        <Button variant="ghost" className="font-bold text-muted-foreground" onClick={handleLogout}>
-          <LogOut className="w-4 h-4 mr-2" /> Keluar
-        </Button>
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" className="font-bold text-muted-foreground" onClick={handleLogout}>
+            <LogOut className="w-4 h-4 mr-2" /> Keluar
+          </Button>
+        </div>
       </nav>
 
       <main className="flex-1 p-6 max-w-7xl mx-auto w-full space-y-8">
@@ -202,9 +223,29 @@ export default function AdminDashboard() {
           </div>
         ) : (
           <>
-            <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
+            <div className="flex items-center gap-4 overflow-x-auto pb-4 no-scrollbar">
+              <button 
+                onClick={() => setIsDialogOpen(true)} 
+                className="flex-shrink-0 w-48 h-24 border-2 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center justify-center gap-2 hover:bg-white hover:border-accent transition-all group"
+              >
+                <Plus className="w-6 h-6 text-slate-300 group-hover:text-accent" />
+                <span className="text-xs font-black text-slate-400 group-hover:text-accent">TAMBAH EVENT</span>
+              </button>
+              
               {events.map((e) => (
-                <button key={e.id} onClick={() => setSelectedEventId(e.id)} className={cn("flex-shrink-0 w-64 p-5 rounded-[2rem] text-left transition-all border-2", selectedEventId === e.id ? "bg-white border-accent shadow-xl" : "bg-white border-transparent")}>
+                <button 
+                  key={e.id} 
+                  onClick={() => {
+                    setSelectedEventId(e.id);
+                    setEditTitle(e.title);
+                    setEditMessage(e.message);
+                    setEditNominals(e.nominals.map((n: any) => n.value).join(', '));
+                  }} 
+                  className={cn(
+                    "flex-shrink-0 w-64 h-24 p-5 rounded-[2rem] text-left transition-all border-2", 
+                    selectedEventId === e.id ? "bg-white border-accent shadow-xl" : "bg-white border-transparent"
+                  )}
+                >
                   <h3 className="font-black text-sm truncate">{e.title}</h3>
                   <Badge variant="secondary" className="mt-2 text-[8px] uppercase">{e.interaction_type}</Badge>
                 </button>
@@ -217,27 +258,47 @@ export default function AdminDashboard() {
                   <CardHeader><CardTitle className="text-lg font-black flex items-center gap-2"><Settings2 className="w-5 h-5" /> Pengaturan Event</CardTitle></CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase">Judul Event</Label>
-                      <Input value={editTitle} onChange={e => setEditTitle(e.target.value)} className="rounded-xl" />
+                      <Label className="text-[10px] font-black uppercase text-slate-400">Judul Event</Label>
+                      <Input value={editTitle} onChange={e => setEditTitle(e.target.value)} className="rounded-xl h-11" />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase">Pesan Ucapan</Label>
+                      <Label className="text-[10px] font-black uppercase text-slate-400">Pesan Ucapan</Label>
                       <Textarea value={editMessage} onChange={e => setEditMessage(e.target.value)} className="rounded-xl min-h-[80px]" />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase">Nominal (Pemisah Koma)</Label>
-                      <Textarea value={editNominals} onChange={e => setEditNominals(e.target.value)} className="rounded-xl" />
+                      <Label className="text-[10px] font-black uppercase text-slate-400">Nominal (Pemisah Koma)</Label>
+                      <Textarea value={editNominals} onChange={e => setEditNominals(e.target.value)} className="rounded-xl h-20" />
                     </div>
                     <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
                       <span className="text-xs font-black uppercase">Main Berkali-kali</span>
                       <Switch checked={currentEvent?.allow_multiple_plays} onCheckedChange={async (v) => { await updateEvent(selectedEventId, { allow_multiple_plays: v }); fetchData(currentUser); }} />
                     </div>
-                    <Button onClick={handleSaveEventDetails} className="w-full h-12 rounded-xl bg-accent font-black gap-2">
-                      <Save className="w-4 h-4" /> SIMPAN PERUBAHAN
-                    </Button>
-                    <Button onClick={() => copyLink(selectedEventId)} variant="outline" className="w-full h-12 rounded-xl border-accent text-accent font-black gap-2">
-                      <LinkIcon className="w-4 h-4" /> BAGIKAN TAUTAN
-                    </Button>
+                    <div className="grid grid-cols-1 gap-2">
+                      <Button onClick={handleSaveEventDetails} className="w-full h-12 rounded-xl bg-accent font-black gap-2">
+                        <Save className="w-4 h-4" /> SIMPAN PERUBAHAN
+                      </Button>
+                      <Button onClick={() => copyLink(selectedEventId)} variant="outline" className="w-full h-12 rounded-xl border-accent text-accent font-black gap-2">
+                        <LinkIcon className="w-4 h-4" /> BAGIKAN TAUTAN
+                      </Button>
+                      
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" className="w-full h-12 rounded-xl text-red-500 font-black gap-2 hover:bg-red-50">
+                            <Trash2 className="w-4 h-4" /> HAPUS EVENT
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="rounded-[2.5rem]">
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Hapus Event Ini?</AlertDialogTitle>
+                            <AlertDialogDescription>Semua data pemenang akan tetap ada, namun link permainan tidak akan bisa diakses lagi.</AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>BATAL</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleDeleteEvent} className="bg-red-600 hover:bg-red-700">HAPUS PERMANEN</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -265,23 +326,38 @@ export default function AdminDashboard() {
 
               <div className="lg:col-span-8">
                 <Card className="rounded-[2.5rem] border-none shadow-sm h-full">
-                  <CardHeader className="flex flex-row items-center justify-between">
+                  <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <CardTitle className="text-lg font-black flex items-center gap-2"><Users className="w-5 h-5" /> Monitoring Pemenang</CardTitle>
-                    <Badge className="bg-emerald-100 text-emerald-600 border-none font-bold">Total: Rp {totalThr.toLocaleString('id-ID')}</Badge>
+                    <div className="flex flex-wrap gap-2">
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Input 
+                          placeholder="Cari pemenang..." 
+                          value={searchTerm} 
+                          onChange={e => setSearchTerm(e.target.value)} 
+                          className="pl-9 h-10 w-48 rounded-xl bg-slate-50 border-none"
+                        />
+                      </div>
+                      <Badge className="bg-emerald-100 text-emerald-600 border-none font-bold px-4 h-10">Rp {totalThr.toLocaleString('id-ID')}</Badge>
+                    </div>
                   </CardHeader>
-                  <CardContent className="p-0">
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
+                  <CardContent className="p-0 overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="pl-6 text-[10px] font-black uppercase">Pemenang</TableHead>
+                          <TableHead className="text-[10px] font-black uppercase">Nominal</TableHead>
+                          <TableHead className="text-[10px] font-black uppercase">Alamat IP</TableHead>
+                          <TableHead className="text-right pr-6 text-[10px] font-black uppercase">Aksi</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filteredWinners.length === 0 ? (
                           <TableRow>
-                            <TableHead className="pl-6 text-[10px] font-black uppercase">Pemenang</TableHead>
-                            <TableHead className="text-[10px] font-black uppercase">Nominal</TableHead>
-                            <TableHead className="text-[10px] font-black uppercase">Alamat IP</TableHead>
-                            <TableHead className="text-right pr-6 text-[10px] font-black uppercase">Aksi</TableHead>
+                            <TableCell colSpan={4} className="text-center py-20 text-slate-400 font-bold">Belum ada pemenang di event ini.</TableCell>
                           </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {filteredWinners.map((w, i) => (
+                        ) : (
+                          filteredWinners.map((w, i) => (
                             <TableRow key={i}>
                               <TableCell className="pl-6">
                                 <div className="font-black text-sm">{w.name}</div>
@@ -293,10 +369,10 @@ export default function AdminDashboard() {
                                 <Button size="icon" variant="ghost" onClick={() => handleDeleteWinner(w.id)} className="text-red-400"><Trash2 className="w-4 h-4" /></Button>
                               </TableCell>
                             </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
+                          ))
+                        )}
+                      </TableBody>
+                    </Table>
                   </CardContent>
                 </Card>
               </div>
@@ -306,19 +382,23 @@ export default function AdminDashboard() {
       </main>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="rounded-[2.5rem] p-10 max-w-lg">
+        <DialogContent className="rounded-[2.5rem] p-10 max-w-lg border-none shadow-2xl">
           <DialogHeader><DialogTitle className="text-2xl font-black">Buat Event Baru</DialogTitle></DialogHeader>
           <div className="space-y-6 py-6">
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase">Judul Event</Label>
+              <Label className="text-[10px] font-black uppercase text-slate-400">Judul Event</Label>
               <Input placeholder="Contoh: THR Keluarga Besar" value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})} className="rounded-xl h-12" />
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase">Nominal THR (Pemisah Koma)</Label>
-              <Textarea placeholder="1000, 5000, 10000..." value={newEvent.nominals} onChange={e => setNewEvent({...newEvent, nominals: e.target.value})} className="rounded-xl" />
+              <Label className="text-[10px] font-black uppercase text-slate-400">Pesan Ucapan</Label>
+              <Textarea value={newEvent.message} onChange={e => setNewEvent({...newEvent, message: e.target.value})} className="rounded-xl h-24" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase text-slate-400">Nominal THR (Pemisah Koma)</Label>
+              <Textarea placeholder="1000, 5000, 10000..." value={newEvent.nominals} onChange={e => setNewEvent({...newEvent, nominals: e.target.value})} className="rounded-xl h-24" />
             </div>
           </div>
-          <DialogFooter><Button onClick={handleCreateEvent} className="w-full h-14 bg-accent font-black rounded-xl text-lg">BUAT SEKARANG</Button></DialogFooter>
+          <DialogFooter><Button onClick={handleCreateEvent} className="w-full h-14 bg-accent font-black rounded-xl text-lg shadow-lg">BUAT SEKARANG</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 

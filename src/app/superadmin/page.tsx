@@ -218,7 +218,7 @@ export default function SuperAdminDashboard() {
         </div>
       </nav>
 
-      <main className="flex-1 p-4 sm:p-8 max-w-7xl mx-auto w-full space-y-6 sm:space-y-8">
+      <main className="flex-1 p-4 sm:p-8 max-w-7xl mx-auto w-full space-y-6 sm:space-y-8 overflow-hidden">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           <SystemStat icon={<Users className="w-5 h-5" />} label="Users" value={users.length} bg="bg-blue-50" color="text-blue-600" />
           <SystemStat icon={<Database className="w-5 h-5" />} label="Events" value={events.length} bg="bg-green-50" color="text-green-600" />
@@ -227,7 +227,7 @@ export default function SuperAdminDashboard() {
         </div>
 
         <Tabs defaultValue="users" className="w-full">
-          <TabsList className="bg-white border rounded-2xl h-14 p-1 mb-8 overflow-x-auto no-scrollbar flex justify-start sm:justify-center items-center gap-1">
+          <TabsList className="bg-white border rounded-2xl h-14 p-1 mb-8 overflow-x-auto no-scrollbar flex justify-start sm:justify-center items-center gap-1 w-full max-w-full">
             <TabsTrigger value="users" className="rounded-xl px-4 sm:px-8 font-bold h-full whitespace-nowrap">User System</TabsTrigger>
             <TabsTrigger value="landing" className="rounded-xl px-4 sm:px-8 font-bold h-full whitespace-nowrap">Home Editor</TabsTrigger>
             <TabsTrigger value="settings" className="rounded-xl px-4 sm:px-8 font-bold h-full whitespace-nowrap">Config Global</TabsTrigger>
@@ -239,7 +239,7 @@ export default function SuperAdminDashboard() {
               <CardContent className="p-0 overflow-x-auto">
                 <Table>
                   <TableHeader><TableRow><TableHead className="pl-6 font-black text-[10px] uppercase">Nama</TableHead><TableHead className="font-black text-[10px] uppercase">Email</TableHead><TableHead className="font-black text-[10px] uppercase">Role</TableHead></TableRow></TableHeader>
-                  <TableBody>{users.map((u, i) => (<TableRow key={i}><TableCell className="font-bold pl-6">{u.name}</TableCell><TableCell className="text-slate-500">{u.email}</TableCell><TableCell><Badge className={u.role === 'superadmin' ? 'bg-red-50 text-red-600 border-none' : 'bg-blue-50 text-blue-600 border-none'}>{u.role}</Badge></TableCell></TableRow>))}</TableBody>
+                  <TableBody>{users.map((u, i) => (<TableRow key={i}><TableCell className="font-bold pl-6 text-sm truncate max-w-[120px]">{u.name}</TableCell><TableCell className="text-slate-500 text-sm truncate max-w-[150px]">{u.email}</TableCell><TableCell><Badge className={u.role === 'superadmin' ? 'bg-red-50 text-red-600 border-none' : 'bg-blue-50 text-blue-600 border-none'}>{u.role}</Badge></TableCell></TableRow>))}</TableBody>
                 </Table>
               </CardContent>
             </Card>
@@ -395,9 +395,9 @@ export default function SuperAdminDashboard() {
 
 function SystemStat({ icon, label, value, color, bg }: { icon: any, label: string, value: any, color: string, bg: string }) {
   return (
-    <Card className="rounded-[1.5rem] sm:rounded-[2rem] border-none shadow-sm bg-white p-4 sm:p-6 flex items-center gap-3 sm:gap-4">
-      <div className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl ${bg} ${color}`}>{icon}</div>
-      <div className="min-w-0">
+    <Card className="rounded-[1.5rem] sm:rounded-[2rem] border-none shadow-sm bg-white p-4 sm:p-6 flex items-center gap-3 sm:gap-4 overflow-hidden">
+      <div className={`p-3 sm:p-4 rounded-xl sm:rounded-2xl shrink-0 ${bg} ${color}`}>{icon}</div>
+      <div className="min-w-0 flex-1">
         <p className="text-[8px] sm:text-[10px] text-slate-400 uppercase font-black tracking-widest truncate">{label}</p>
         <p className="text-xl sm:text-2xl font-black text-slate-900 truncate">{value}</p>
       </div>

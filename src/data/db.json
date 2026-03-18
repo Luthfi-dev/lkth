@@ -97,6 +97,38 @@
       "BSI",
       "Lainnya"
     ],
-    "footerText": "maudigi.com"
+    "footerText": "maudigi.com",
+    "homepage": {
+      "hero": {
+        "title": "Bagikan Kebahagiaan Lewat Roda Keberuntungan",
+        "description": "Platform interaktif untuk berbagi THR kepada keluarga, teman, atau komunitas dengan cara yang seru dan transparan.",
+        "imageUrl": "https://picsum.photos/seed/lucky-thr/1200/800"
+      },
+      "features": [
+        {
+          "id": "f1",
+          "title": "Cepat & Mudah",
+          "description": "Hanya butuh 2 menit untuk membuat event dan menyebarkan link ke grup WA.",
+          "icon": "Zap"
+        },
+        {
+          "id": "f2",
+          "title": "Anti-Cheat Berbasis IP",
+          "description": "Sistem pengunci IP memastikan setiap orang hanya bisa memutar sekali meskipun ganti browser.",
+          "icon": "Shield"
+        },
+        {
+          "id": "f3",
+          "title": "Custom Nominal",
+          "description": "Atur sendiri nominal THR yang tersedia, mulai dari receh sampai jutaan!",
+          "icon": "Gift"
+        }
+      ],
+      "footer": {
+        "copyright": "© 2026 LuckyTHR. Rayakan hari raya dengan sukacita.",
+        "linkText": "maudigi.com",
+        "linkUrl": "https://maudigi.com"
+      }
+    }
   }
 }
