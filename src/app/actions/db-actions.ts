@@ -20,6 +20,10 @@ export async function loginUser(email: string, pass: string) {
   return { success: true, user: userWithoutPassword };
 }
 
+export async function getAllUsers() {
+  return await getData('users');
+}
+
 export async function getEvents(adminId?: string, role?: string) {
   const events = await getData('events');
   // Jika role superadmin, kembalikan semua
