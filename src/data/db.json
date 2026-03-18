@@ -7,6 +7,22 @@
       "password": "123456",
       "role": "superadmin",
       "timestamp": "2024-03-18T00:00:00.000Z"
+    },
+    {
+      "name": "Baru",
+      "email": "dilfarisna@gmail.com",
+      "password": "123456",
+      "role": "admin",
+      "id": "8h2mh2a8w",
+      "timestamp": "2026-03-18T13:59:24.976Z"
+    },
+    {
+      "name": "Fifi",
+      "email": "fiilut5@gmail.com",
+      "password": "123456",
+      "role": "admin",
+      "id": "bordknu8m",
+      "timestamp": "2026-03-18T14:00:04.203Z"
     }
   ],
   "events": [

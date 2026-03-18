@@ -29,6 +29,7 @@ export default function AdminDashboard() {
   const [selectedEventId, setSelectedEventId] = useState<string>('');
   const [newNominal, setNewNominal] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [currentUser, setCurrentUser] = useState<any>(null);
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newEvent, setNewEvent] = useState({
@@ -39,11 +40,22 @@ export default function AdminDashboard() {
     interaction_type: 'angpao'
   });
 
-  const fetchData = async () => {
+  useEffect(() => {
+    const savedUser = localStorage.getItem('lucky_thr_admin');
+    if (!savedUser) {
+      router.push('/login');
+      return;
+    }
+    const user = JSON.parse(savedUser);
+    setCurrentUser(user);
+    fetchData(user);
+  }, []);
+
+  const fetchData = async (user: any) => {
     try {
       const [winnersData, eventsData] = await Promise.all([
-        getWinners(),
-        getEvents()
+        getWinners(user.id, user.role),
+        getEvents(user.id, user.role)
       ]);
       setWinners(winnersData);
       setEvents(eventsData);
@@ -57,22 +69,23 @@ export default function AdminDashboard() {
     }
   };
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  const handleLogout = () => {
+    localStorage.removeItem('lucky_thr_admin');
+    router.push('/login');
+  };
 
   const currentEvent = events.find(e => e.id === selectedEventId);
 
   const handleDeleteWinner = async (id: string) => {
     await deleteWinner(id);
     toast({ title: "Dihapus", description: "Peserta sekarang bisa ikut lagi." });
-    fetchData();
+    fetchData(currentUser);
   };
 
   const handleClearWinners = async () => {
     await clearWinnersByEvent(selectedEventId);
     toast({ title: "Data Dibersihkan", description: "Seluruh data pemenang untuk event ini telah dihapus." });
-    fetchData();
+    fetchData(currentUser);
   };
 
   const exportToExcel = () => {
@@ -121,25 +134,26 @@ export default function AdminDashboard() {
 
     const created = await createEvent({
       ...newEvent,
+      admin_id: currentUser.id,
       nominals: nominalArray,
       is_active: true
     });
     setIsDialogOpen(false);
     setSelectedEventId(created.id);
     toast({ title: "Berhasil", description: "Event baru telah dibuat." });
-    fetchData();
+    fetchData(currentUser);
   };
 
   const updateEventType = async (type: string) => {
     await updateEvent(selectedEventId, { interaction_type: type });
     toast({ title: "Tampilan Diubah", description: `Model interaksi diganti ke ${type === 'wheel' ? 'Roda' : 'Angpao'}.` });
-    fetchData();
+    fetchData(currentUser);
   };
 
   const toggleMultiPlay = async (eventId: string, currentVal: boolean) => {
     await updateEvent(eventId, { allow_multiple_plays: !currentVal });
     toast({ title: "Updated", description: "Pengaturan akses telah diubah." });
-    fetchData();
+    fetchData(currentUser);
   };
 
   const addNominal = async () => {
@@ -149,14 +163,14 @@ export default function AdminDashboard() {
     await updateEvent(selectedEventId, { nominals: updatedNominals });
     setNewNominal('');
     toast({ title: "Nominal Ditambahkan", description: `Rp ${val.toLocaleString('id-ID')} masuk ke sistem.` });
-    fetchData();
+    fetchData(currentUser);
   };
 
   const removeNominal = async (index: number) => {
     const updatedNominals = currentEvent.nominals.filter((_: any, i: number) => i !== index);
     await updateEvent(selectedEventId, { nominals: updatedNominals });
     toast({ title: "Nominal Dihapus", description: "Pilihan tersebut dihapus dari sistem." });
-    fetchData();
+    fetchData(currentUser);
   };
 
   const toggleBlockNominal = async (index: number) => {
@@ -172,7 +186,7 @@ export default function AdminDashboard() {
       title: "Update Berhasil", 
       description: "Status blokir nominal telah diperbarui."
     });
-    fetchData();
+    fetchData(currentUser);
   };
 
   const copyLink = (id: string) => {
@@ -187,7 +201,7 @@ export default function AdminDashboard() {
 
   const totalThr = filteredWinners.reduce((acc, curr) => acc + curr.amount, 0);
 
-  if (isLoading) return <div className="min-h-screen flex items-center justify-center bg-slate-50"><RefreshCw className="w-10 h-10 animate-spin text-accent" /></div>;
+  if (isLoading || !currentUser) return <div className="min-h-screen flex items-center justify-center bg-slate-50"><RefreshCw className="w-10 h-10 animate-spin text-accent" /></div>;
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -198,9 +212,15 @@ export default function AdminDashboard() {
           </div>
           <span className="font-black text-xl tracking-tight">LuckyTHR <span className="text-accent">Admin</span></span>
         </div>
-        <Button variant="ghost" className="text-muted-foreground" onClick={() => router.push('/login')}>
-          <LogOut className="w-4 h-4 mr-2" /> Keluar
-        </Button>
+        <div className="flex items-center gap-4">
+          <div className="text-right hidden sm:block">
+            <p className="text-xs font-bold text-slate-900 leading-none">{currentUser.name}</p>
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{currentUser.role}</p>
+          </div>
+          <Button variant="ghost" className="text-muted-foreground" onClick={handleLogout}>
+            <LogOut className="w-4 h-4 mr-2" /> Keluar
+          </Button>
+        </div>
       </nav>
 
       <main className="flex-1 p-4 sm:p-8 max-w-7xl mx-auto w-full space-y-8">
@@ -212,7 +232,7 @@ export default function AdminDashboard() {
               </div>
               <h2 className="text-3xl font-black text-slate-800">Belum Ada Event</h2>
               <p className="text-muted-foreground mt-4 leading-relaxed">
-                Halo Admin! Kamu belum membuat event bagi-bagi THR. <br />
+                Halo {currentUser.name}! Kamu belum membuat event bagi-bagi THR. <br />
                 Klik tombol di bawah untuk membuat event pertamamu sekarang.
               </p>
               

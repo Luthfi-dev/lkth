@@ -1,7 +1,7 @@
 
 'use server';
 
-import { getData, saveData, deleteData, updateData, clearCollection } from '@/lib/storage';
+import { getData, saveData, deleteData, updateData } from '@/lib/storage';
 
 export async function registerUser(formData: any) {
   const users = await getData('users');
@@ -15,11 +15,17 @@ export async function loginUser(email: string, pass: string) {
   const users = await getData('users');
   const user = users.find((u: any) => u.email === email && u.password === pass);
   if (!user) throw new Error('Email atau password salah');
-  return { success: true, user };
+  
+  // Return user without password for safety
+  const { password, ...userWithoutPassword } = user;
+  return { success: true, user: userWithoutPassword };
 }
 
-export async function getEvents() {
-  return await getData('events');
+export async function getEvents(adminId?: string, role?: string) {
+  const events = await getData('events');
+  if (role === 'superadmin') return events;
+  if (!adminId) return [];
+  return events.filter((e: any) => e.admin_id === adminId);
 }
 
 export async function createEvent(eventData: any) {
@@ -31,8 +37,19 @@ export async function updateEvent(id: string, data: any) {
   return { success: true };
 }
 
-export async function getWinners() {
-  return await getData('winners');
+export async function getWinners(adminId?: string, role?: string) {
+  const winners = await getData('winners');
+  const events = await getData('events');
+  
+  if (role === 'superadmin') return winners;
+  if (!adminId) return [];
+
+  // Filter winners based on events owned by this admin
+  const userEventIds = events
+    .filter((e: any) => e.admin_id === adminId)
+    .map((e: any) => e.id);
+    
+  return winners.filter((w: any) => userEventIds.includes(w.event_id));
 }
 
 export async function addWinner(winnerData: any) {

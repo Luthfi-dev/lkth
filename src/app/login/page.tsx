@@ -1,6 +1,7 @@
+
 "use client"
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,11 +19,20 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
+  // Clear session on mount
+  useEffect(() => {
+    localStorage.removeItem('lucky_thr_admin');
+  }, []);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
       const result = await loginUser(email, password);
+      
+      // Store session
+      localStorage.setItem('lucky_thr_admin', JSON.stringify(result.user));
+      
       toast({
         title: "Login Berhasil",
         description: `Selamat datang kembali, ${result.user.name}!`,
