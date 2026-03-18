@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -13,7 +12,7 @@ import { ResultCard } from '@/components/ResultCard';
 import { Camera, AlertCircle, Loader2, Gift } from 'lucide-react';
 import { addWinner, getEvents } from '@/app/actions/db-actions';
 
-const BANK_OPTIONS = ['Dana', 'OVO', 'GoPay', 'ShopeePay', 'BCA', 'Mandiri', 'BNI', 'BRI'];
+const BANK_OPTIONS = ['Dana', 'OVO', 'GoPay', 'ShopeePay', 'BCA', 'Mandiri', 'BNI', 'BRI', 'Lainnya'];
 
 export default function PlayEvent() {
   const { eventId } = useParams();
@@ -36,17 +35,21 @@ export default function PlayEvent() {
 
   useEffect(() => {
     const loadEvent = async () => {
-      const events = await getEvents();
-      const currentEvent = events.find((e: any) => e.id === eventId);
-      if (currentEvent) {
-        setEventData(currentEvent);
-        
-        if (!currentEvent.allow_multiple_plays) {
-          const played = localStorage.getItem(`played_${eventId}`);
-          if (played) {
-            setHasPlayed(true);
+      try {
+        const events = await getEvents();
+        const currentEvent = events.find((e: any) => e.id === eventId);
+        if (currentEvent) {
+          setEventData(currentEvent);
+          
+          if (!currentEvent.allow_multiple_plays) {
+            const played = localStorage.getItem(`played_${eventId}`);
+            if (played) {
+              setHasPlayed(true);
+            }
           }
         }
+      } catch (err) {
+        console.error("Error loading event", err);
       }
     };
     loadEvent();
@@ -63,6 +66,7 @@ export default function PlayEvent() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.name || !formData.wallet || !formData.walletNumber) return;
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
@@ -74,7 +78,7 @@ export default function PlayEvent() {
     const winnerData = {
       event_id: eventId,
       name: formData.name,
-      photo_url: formData.photo,
+      photo_url: formData.photo || '',
       amount: amount,
       wallet_info: `${formData.wallet} - ${formData.walletNumber}`
     };
@@ -129,11 +133,12 @@ export default function PlayEvent() {
                   value={formData.name}
                   onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
                   className="rounded-xl h-12 border-2 focus:border-accent"
+                  autoComplete="off"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label>Foto Wajah (Wajib Selfie)</Label>
+                <Label>Foto Wajah (Opsional)</Label>
                 <div className="flex items-center gap-4">
                   <div className="relative w-24 h-24 rounded-2xl bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden group hover:border-accent transition-colors">
                     {formData.photo ? (
@@ -147,12 +152,11 @@ export default function PlayEvent() {
                       capture="user" 
                       className="absolute inset-0 opacity-0 cursor-pointer"
                       onChange={handlePhotoUpload}
-                      required
                     />
                   </div>
                   <div className="flex-1 text-xs text-muted-foreground leading-tight">
                     <p className="font-bold text-foreground mb-1">Klik kotak untuk foto</p>
-                    <p>Ambil selfie terbaikmu! Foto ini akan dipajang di kartu pemenang THR-mu.</p>
+                    <p>Ambil selfie terbaikmu! Jika dikosongkan, kartu pemenang akan menggunakan gambar default.</p>
                   </div>
                 </div>
               </div>
@@ -186,7 +190,7 @@ export default function PlayEvent() {
               <Button 
                 type="submit" 
                 className="w-full h-14 rounded-2xl bg-accent text-lg font-bold hover:bg-accent/90 shadow-lg shadow-accent/20"
-                disabled={isLoading}
+                disabled={isLoading || !formData.name || !formData.wallet || !formData.walletNumber}
               >
                 {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Mulai Putar Roda! 🎡'}
               </Button>
