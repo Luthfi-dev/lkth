@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useEffect, useState, useRef } from 'react';
@@ -31,7 +32,6 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
     if (!cardRef.current) return null;
     setIsExporting(true);
     try {
-      // Mengurangi font check untuk menghindari SecurityError cors
       const blob = await toBlob(cardRef.current, { 
         cacheBust: true,
         skipFonts: false,
@@ -75,7 +75,7 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
       try {
         const shareData: any = {
           title: 'LuckyTHR Jackpot!',
-          text: formattedMessage,
+          text: formattedMessage, // Hanya ucapan saja sesuai permintaan
         };
 
         if (blob) {
@@ -95,14 +95,13 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
     } else {
       const waUrl = `https://wa.me/?text=${encodeURIComponent(formattedMessage)}`;
       window.open(waUrl, '_blank');
-      toast({ title: "Membuka WhatsApp", description: "Browser tidak mendukung share native, beralih ke WhatsApp." });
     }
   };
 
   return (
     <div className="space-y-6">
       <div className="overflow-hidden p-2">
-        {/* Card dibuat lebih pendek */}
+        {/* Card dibuat lebih pendek & visual terfokus */}
         <div ref={cardRef} className="bg-white rounded-[2.5rem] overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.15)] max-w-sm mx-auto">
           <Card className="border-none rounded-[2.5rem] bg-white group">
             <div className="relative h-36 w-full bg-gradient-to-br from-accent via-orange-600 to-yellow-400 overflow-hidden">
@@ -150,7 +149,7 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
 
               <div className="pt-3 border-t border-dashed">
                 <p className="text-[7px] text-muted-foreground font-black uppercase tracking-[0.2em] flex items-center justify-center gap-1">
-                  Lucky Experience at <span className="text-accent">{domain || 'LuckyTHR'}</span>
+                  Experience at <span className="text-accent">{domain || 'LuckyTHR'}</span>
                 </p>
                 <div className="flex items-center justify-center gap-1 text-[8px] text-slate-400 font-bold mt-1">
                   <span>by</span>
@@ -165,7 +164,7 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
       </div>
 
       <div className="flex flex-col gap-3 px-4">
-        {/* Tombol Simpan Gambar di Atas */}
+        {/* Tombol Simpan Gambar di Atas sesuai permintaan */}
         <Button 
           onClick={handleDownload}
           disabled={isExporting}
