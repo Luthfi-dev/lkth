@@ -134,7 +134,7 @@
         }
       ],
       "allow_multiple_plays": true,
-      "interaction_type": "angpao",
+      "interaction_type": "wheel",
       "admin_id": "8h2mh2a8w",
       "is_active": true,
       "id": "vimfnceq7",

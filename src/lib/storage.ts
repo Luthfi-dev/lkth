@@ -2,12 +2,18 @@ import fs from 'fs';
 import path from 'path';
 
 const DB_PATH = path.join(process.cwd(), 'src/data/db.json');
+const UPLOADS_DIR = path.join(process.cwd(), 'public/uploads');
 
 function ensureDbExists() {
   const dir = path.dirname(DB_PATH);
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
   }
+  
+  if (!fs.existsSync(UPLOADS_DIR)) {
+    fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+  }
+
   if (!fs.existsSync(DB_PATH)) {
     fs.writeFileSync(DB_PATH, JSON.stringify({
       users: [
@@ -15,26 +21,23 @@ function ensureDbExists() {
           id: "sa-1",
           name: "Super Admin",
           email: "superadmin@gmail.com",
-          password: "654321_ytkl_atlas",
+          password: "123456_ytkl_atlas",
           role: "superadmin",
           timestamp: new Date().toISOString()
         }
       ],
-      events: [{
-        id: 'event-123',
-        admin_id: 'sa-1',
-        title: 'THR Keluarga Besar Haji Sulaiman',
-        message: 'Selamat Hari Raya $nama! Semoga berkah dan bahagia selalu.',
-        nominals: [10000, 20000, 50000, 100000, 5000, 2000],
-        is_active: true,
-        allow_multiple_plays: false
-      }],
-      winners: []
+      events: [],
+      winners: [],
+      settings: {
+        siteTitle: "Lucky THR",
+        banks: ['Dana', 'OVO', 'GoPay', 'ShopeePay', 'BCA', 'Mandiri', 'BNI', 'BRI', 'Lainnya'],
+        footerText: "maudigi.com"
+      }
     }, null, 2));
   }
 }
 
-export async function getData(collection: 'users' | 'events' | 'winners') {
+export async function getData(collection: 'users' | 'events' | 'winners' | 'settings') {
   ensureDbExists();
   const fileData = fs.readFileSync(DB_PATH, 'utf-8');
   const db = JSON.parse(fileData);
@@ -65,13 +68,33 @@ export async function deleteData(collection: 'users' | 'events' | 'winners', id:
   fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
 }
 
-export async function updateData(collection: 'users' | 'events' | 'winners', id: string, newData: any) {
+export async function updateData(collection: 'users' | 'events' | 'winners' | 'settings', id: string | null, newData: any) {
   ensureDbExists();
   const fileData = fs.readFileSync(DB_PATH, 'utf-8');
   const db = JSON.parse(fileData);
-  const index = db[collection].findIndex((item: any) => item.id === id);
-  if (index !== -1) {
-    db[collection][index] = { ...db[collection][index], ...newData };
-    fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
+  
+  if (collection === 'settings') {
+    db.settings = { ...db.settings, ...newData };
+  } else {
+    const index = db[collection].findIndex((item: any) => item.id === id);
+    if (index !== -1) {
+      db[collection][index] = { ...db[collection][index], ...newData };
+    }
   }
+  
+  fs.writeFileSync(DB_PATH, JSON.stringify(db, null, 2));
+}
+
+export async function saveFile(base64Data: string) {
+  ensureDbExists();
+  if (!base64Data || !base64Data.includes('base64,')) return '';
+  
+  const base64Content = base64Data.split(';base64,').pop();
+  if (!base64Content) return '';
+
+  const fileName = `img_${Date.now()}_${Math.random().toString(36).substr(2, 5)}.png`;
+  const filePath = path.join(UPLOADS_DIR, fileName);
+  
+  fs.writeFileSync(filePath, base64Content, { encoding: 'base64' });
+  return `/uploads/${fileName}`;
 }
