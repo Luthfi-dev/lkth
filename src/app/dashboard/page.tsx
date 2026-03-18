@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 import { PlusCircle, Copy, LogOut, Users, Gift, Share2, Search, Database } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
@@ -19,7 +20,7 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [winners, setWinners] = useState<any[]>([]);
   const [eventCount, setEventCount] = useState(0);
-  const [dbStatus, setDbStatus] = useState(process.env.NEXT_PUBLIC_DB_STATUS);
+  const [dbStatus, setDbStatus] = useState(process.env.NEXT_PUBLIC_DB_STATUS || 'offline');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -110,8 +111,8 @@ export default function AdminDashboard() {
             <CardContent className="space-y-4">
               <div className="p-4 bg-primary/5 rounded-xl border border-primary/20 text-sm">
                 <p className="font-semibold text-primary mb-2">Migrasi Data</p>
-                <p className="text-xs text-muted-foreground mb-3">Gunakan file <code>data.sql</code> untuk memindahkan data lokal ini ke database online nantinya.</p>
-                <Button variant="outline" size="sm" className="w-full text-xs">Unduh Data (Coming Soon)</Button>
+                <p className="text-xs text-muted-foreground mb-3">Gunakan file <code>data.sql</code> di root folder untuk memindahkan data lokal ini ke database online nantinya.</p>
+                <Button variant="outline" size="sm" className="w-full text-xs">Unduh Skema SQL</Button>
               </div>
               <div className="space-y-2">
                  <Label className="text-xs">Nominal Tersedia</Label>
