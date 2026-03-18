@@ -10,14 +10,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { SpinWheel } from '@/components/SpinWheel';
 import { AngpaoGrid } from '@/components/AngpaoGrid';
 import { ResultCard } from '@/components/ResultCard';
-import { Camera, AlertCircle, Loader2, Gift, MousePointer2, RefreshCw } from 'lucide-react';
+import { Camera, AlertCircle, Loader2, Gift, MousePointer2, RefreshCw, Heart } from 'lucide-react';
 import { addWinner, getEvents } from '@/app/actions/db-actions';
+import Link from 'next/link';
 
 const BANK_OPTIONS = ['Dana', 'OVO', 'GoPay', 'ShopeePay', 'BCA', 'Mandiri', 'BNI', 'BRI', 'Lainnya'];
 
 export default function PlayEvent() {
   const { eventId } = useParams();
   const [eventData, setEventData] = useState<any>(null);
+  const [error, setError] = useState(false);
   const [step, setStep] = useState<'form' | 'spinning' | 'result'>('form');
   const [isLoading, setIsLoading] = useState(false);
   const [hasPlayed, setHasPlayed] = useState(false);
@@ -36,7 +38,6 @@ export default function PlayEvent() {
     timestamp: ''
   });
 
-  // Memuat identitas yang tersimpan di browser
   useEffect(() => {
     const savedName = localStorage.getItem('lucky_thr_name');
     const savedWallet = localStorage.getItem('lucky_thr_wallet');
@@ -57,6 +58,7 @@ export default function PlayEvent() {
       try {
         const events = await getEvents();
         const currentEvent = events.find((e: any) => e.id === eventId);
+        
         if (currentEvent) {
           const normalizedNominals = (currentEvent.nominals || []).map((item: any) => 
             typeof item === 'number' ? { value: item, blocked: false } : item
@@ -69,9 +71,12 @@ export default function PlayEvent() {
               setHasPlayed(true);
             }
           }
+        } else {
+          setError(true);
         }
       } catch (err) {
         console.error("Error loading event", err);
+        setError(true);
       }
     };
     loadEvent();
@@ -91,7 +96,6 @@ export default function PlayEvent() {
     if (!formData.name || !formData.wallet || !formData.walletNumber) return;
     if (formData.wallet === 'Lainnya' && !formData.customWalletName) return;
     
-    // Simpan identitas ke localStorage
     localStorage.setItem('lucky_thr_name', formData.name);
     localStorage.setItem('lucky_thr_wallet', formData.wallet);
     localStorage.setItem('lucky_thr_custom_wallet', formData.customWalletName);
@@ -139,21 +143,44 @@ export default function PlayEvent() {
     }
   };
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+        <Card className="max-w-md border-none shadow-2xl rounded-[2.5rem] overflow-hidden">
+          <div className="bg-destructive/10 p-12 flex justify-center">
+            <AlertCircle className="w-20 h-20 text-destructive" />
+          </div>
+          <CardContent className="p-10 text-center space-y-6">
+            <h2 className="text-3xl font-black">Event Tidak Ditemukan</h2>
+            <p className="text-muted-foreground leading-relaxed">
+              Ups! Sepertinya link yang kamu akses salah atau event sudah berakhir. Pastikan kembali link yang diberikan admin.
+            </p>
+            <Button asChild className="w-full rounded-2xl h-14 font-black">
+              <Link href="/">Kembali ke Beranda</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (!eventData) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-accent w-10 h-10" /></div>;
 
   if (hasPlayed) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <Card className="max-w-md border-none shadow-2xl rounded-3xl overflow-hidden">
-          <div className="bg-destructive p-6 flex justify-center">
-            <AlertCircle className="w-16 h-16 text-white" />
+        <Card className="max-w-md border-none shadow-2xl rounded-[2.5rem] overflow-hidden">
+          <div className="bg-orange-100 p-12 flex justify-center">
+            <AlertCircle className="w-20 h-20 text-orange-600" />
           </div>
-          <CardContent className="p-8 text-center space-y-4">
-            <h2 className="text-2xl font-black">Ups, Jatah Habis!</h2>
-            <p className="text-muted-foreground">
+          <CardContent className="p-10 text-center space-y-6">
+            <h2 className="text-3xl font-black">Ups, Jatah Habis!</h2>
+            <p className="text-muted-foreground leading-relaxed">
               Kamu sudah mengambil jatah THR di event ini. Berbagi itu indah, berikan kesempatan untuk yang lain ya!
             </p>
-            <Button onClick={() => window.location.href = '/'} variant="outline" className="w-full rounded-2xl h-12">Kembali ke Beranda</Button>
+            <Button asChild variant="outline" className="w-full rounded-2xl h-14 font-black border-2">
+              <Link href="/">Kembali ke Beranda</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -162,7 +189,6 @@ export default function PlayEvent() {
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 sm:p-8 flex flex-col items-center justify-center relative overflow-hidden">
-      {/* Confetti Particles */}
       {step === 'result' && confetti.map(c => (
         <div 
           key={c.id} 
@@ -182,16 +208,16 @@ export default function PlayEvent() {
       <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl"></div>
 
       {step === 'form' && (
-        <Card className="w-full max-w-md border-none shadow-2xl rounded-3xl overflow-hidden relative z-50">
-          <div className="bg-accent p-6 text-center text-white">
-             <Gift className="w-12 h-12 mx-auto mb-2" />
+        <Card className="w-full max-w-md border-none shadow-2xl rounded-[2.5rem] overflow-hidden relative z-50">
+          <div className="bg-accent p-8 text-center text-white">
+             <Gift className="w-14 h-14 mx-auto mb-3" />
              <h2 className="text-2xl font-black uppercase tracking-tighter leading-none">{eventData.title}</h2>
-             <p className="text-xs opacity-80 mt-2">Isi data diri untuk mulai memutar roda!</p>
+             <p className="text-xs opacity-80 mt-2 font-medium">Isi data diri untuk mulai memutar keberuntungan!</p>
           </div>
-          <CardContent className="p-6">
+          <CardContent className="p-8">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="fullname" className="text-slate-700">Nama Lengkap</Label>
+                <Label htmlFor="fullname" className="text-slate-700 font-bold">Nama Lengkap</Label>
                 <Input 
                   id="fullname" 
                   name="fullname"
@@ -199,13 +225,13 @@ export default function PlayEvent() {
                   required 
                   value={formData.name}
                   onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  className="rounded-xl h-12 border-2 focus:border-accent bg-white relative z-50"
+                  className="rounded-xl h-12 border-2 focus:border-accent bg-white"
                   autoComplete="name"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label className="text-slate-700">Foto Selfie (Opsional)</Label>
+                <Label className="text-slate-700 font-bold">Foto Selfie (Opsional)</Label>
                 <div className="flex items-center gap-4">
                   <div className="relative w-24 h-24 rounded-2xl bg-slate-100 border-2 border-dashed border-slate-300 flex items-center justify-center overflow-hidden group hover:border-accent transition-colors">
                     {formData.photo ? (
@@ -223,7 +249,7 @@ export default function PlayEvent() {
                   </div>
                   <div className="flex-1 text-[11px] text-muted-foreground leading-tight">
                     <p className="font-bold text-slate-800 mb-1">Ambil Foto Wajah</p>
-                    <p>Foto ini akan muncul di kartu pemenang. Boleh dikosongkan.</p>
+                    <p>Biar yang bagi THR tau siapa yang beruntung hari ini!</p>
                   </div>
                 </div>
               </div>
@@ -231,16 +257,16 @@ export default function PlayEvent() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="wallet-select" className="text-slate-700">Tujuan THR</Label>
+                    <Label htmlFor="wallet-select" className="text-slate-700 font-bold">Tujuan THR</Label>
                     <Select 
                       value={formData.wallet}
                       onValueChange={v => setFormData(prev => ({ ...prev, wallet: v }))} 
                       required
                     >
-                      <SelectTrigger id="wallet-select" className="h-12 rounded-xl border-2 bg-white relative z-50">
+                      <SelectTrigger id="wallet-select" className="h-12 rounded-xl border-2 bg-white">
                         <SelectValue placeholder="Pilih..." />
                       </SelectTrigger>
-                      <SelectContent className="z-[100]">
+                      <SelectContent>
                         {BANK_OPTIONS.map(opt => (
                           <SelectItem key={opt} value={opt}>{opt}</SelectItem>
                         ))}
@@ -248,7 +274,7 @@ export default function PlayEvent() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="account-number" className="text-slate-700">No. Rekening/HP</Label>
+                    <Label htmlFor="account-number" className="text-slate-700 font-bold">No. Rekening/HP</Label>
                     <Input 
                       id="account-number"
                       name="account-number"
@@ -256,7 +282,7 @@ export default function PlayEvent() {
                       required 
                       value={formData.walletNumber}
                       onChange={e => setFormData(prev => ({ ...prev, walletNumber: e.target.value }))}
-                      className="h-12 rounded-xl border-2 bg-white relative z-50"
+                      className="h-12 rounded-xl border-2 bg-white"
                       autoComplete="tel"
                     />
                   </div>
@@ -264,14 +290,14 @@ export default function PlayEvent() {
 
                 {formData.wallet === 'Lainnya' && (
                   <div className="space-y-2 animate-in slide-in-from-top-2">
-                    <Label htmlFor="custom-bank" className="text-slate-700">Nama Bank / E-Wallet</Label>
+                    <Label htmlFor="custom-bank" className="text-slate-700 font-bold">Nama Bank / E-Wallet</Label>
                     <Input 
                       id="custom-bank"
                       placeholder="Masukkan nama bank tujuan..." 
                       required 
                       value={formData.customWalletName}
                       onChange={e => setFormData(prev => ({ ...prev, customWalletName: e.target.value }))}
-                      className="h-12 rounded-xl border-2 bg-white relative z-50"
+                      className="h-12 rounded-xl border-2 bg-white"
                     />
                   </div>
                 )}
@@ -279,10 +305,10 @@ export default function PlayEvent() {
 
               <Button 
                 type="submit" 
-                className="w-full h-14 rounded-2xl bg-accent text-lg font-bold hover:bg-accent/90 shadow-lg shadow-accent/20 transition-all"
-                disabled={isLoading || !formData.name || !formData.wallet || !formData.walletNumber || (formData.wallet === 'Lainnya' && !formData.customWalletName)}
+                className="w-full h-16 rounded-2xl bg-accent text-lg font-black hover:bg-accent/90 shadow-lg shadow-accent/20 transition-all"
+                disabled={isLoading}
               >
-                {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : `Mulai Sekarang ${eventData.interaction_type === 'angpao' ? '🎁' : '🎡'}`}
+                {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : `GAS SEKARANG! ${eventData.interaction_type === 'angpao' ? '🎁' : '🎡'}`}
               </Button>
             </form>
           </CardContent>
@@ -321,12 +347,16 @@ export default function PlayEvent() {
             wallet={`${formData.wallet === 'Lainnya' ? formData.customWalletName : formData.wallet} - ${formData.walletNumber}`}
           />
           <div className="text-center mt-6">
-            <Button variant="link" onClick={() => window.location.reload()} className="text-accent font-bold">
+            <Button variant="link" onClick={() => window.location.reload()} className="text-accent font-black">
               Tutup & Keluar
             </Button>
           </div>
         </div>
       )}
+
+      <footer className="mt-12 text-center text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
+        <p>powered by <Link href="https://maudigi.com" target="_blank" className="text-accent hover:underline">maudigi.com</Link></p>
+      </footer>
     </div>
   );
 }

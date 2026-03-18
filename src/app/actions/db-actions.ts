@@ -1,4 +1,3 @@
-
 'use server';
 
 import { getData, saveData, deleteData, updateData } from '@/lib/storage';
@@ -23,9 +22,12 @@ export async function loginUser(email: string, pass: string) {
 
 export async function getEvents(adminId?: string, role?: string) {
   const events = await getData('events');
+  // Jika role superadmin, kembalikan semua
   if (role === 'superadmin') return events;
-  if (!adminId) return [];
-  return events.filter((e: any) => e.admin_id === adminId);
+  // Jika adminId diberikan (akses dari dashboard), filter berdasarkan admin
+  if (adminId) return events.filter((e: any) => e.admin_id === adminId);
+  // Jika tidak ada adminId (akses publik dari halaman Play), kembalikan semua agar bisa dicari berdasarkan ID di client
+  return events;
 }
 
 export async function createEvent(eventData: any) {

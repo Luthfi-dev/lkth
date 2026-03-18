@@ -99,6 +99,46 @@
       "is_active": true,
       "id": "5hcwfasmu",
       "timestamp": "2026-03-18T13:04:14.729Z"
+    },
+    {
+      "title": "Tes THR",
+      "message": "Selamat Hari Raya $nama! Semoga berkah selalu.",
+      "nominals": [
+        {
+          "value": 1000,
+          "blocked": false
+        },
+        {
+          "value": 2000,
+          "blocked": false
+        },
+        {
+          "value": 5000,
+          "blocked": false
+        },
+        {
+          "value": 10000,
+          "blocked": false
+        },
+        {
+          "value": 20000,
+          "blocked": false
+        },
+        {
+          "value": 50000,
+          "blocked": true
+        },
+        {
+          "value": 100000,
+          "blocked": true
+        }
+      ],
+      "allow_multiple_plays": true,
+      "interaction_type": "angpao",
+      "admin_id": "8h2mh2a8w",
+      "is_active": true,
+      "id": "vimfnceq7",
+      "timestamp": "2026-03-18T14:05:01.736Z"
     }
   ],
   "winners": [
