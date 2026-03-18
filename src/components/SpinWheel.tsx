@@ -36,14 +36,14 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
     setIsSpinning(true);
     
     const segmentAngle = 360 / items.length;
-    // Berputar minimal 15 kali putaran penuh (5400 derajat) agar terlihat sangat cepat
+    // Berputar minimal 15 kali putaran penuh (5400 derajat) agar terlihat sangat cepat di awal
     const extraSpins = 15 * 360; 
     
     // Hitung posisi berhenti agar tepat di panah atas (arah jam 12)
     // SVG dimulai dari 0 derajat (arah jam 3), panah ada di jam 12 (-90 derajat).
     const stopAt = 360 - (winnerIndex * segmentAngle + segmentAngle / 2);
     
-    // Kalkulasi rotasi kumulatif agar animasi tidak reset atau berputar balik
+    // Kalkulasi rotasi kumulatif agar animasi selalu berputar maju
     const currentRotationOffset = rotation % 360;
     let delta = stopAt - currentRotationOffset;
     if (delta <= 0) delta += 360;
@@ -52,6 +52,7 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
     setRotation(finalRotation);
 
     // Durasi animasi 8 detik dengan easing dramatis sesuai permintaan
+    // cubic-bezier(0.15, 0, 0.05, 1) memberikan efek melambat yang sangat halus di akhir
     setTimeout(() => {
       setIsSpinning(false);
       onFinish(winner.value);
@@ -113,7 +114,7 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
           <svg
             ref={wheelRef}
             viewBox="0 0 200 200"
-            className="w-full h-full transition-transform duration-[8000ms] ease-[cubic-bezier(0.1, 0, 0, 1)]"
+            className="w-full h-full transition-transform duration-[8000ms] ease-[cubic-bezier(0.15,0,0.05,1)]"
             style={{ transform: `rotate(${rotation}deg)` }}
           >
             {renderSegments()}
