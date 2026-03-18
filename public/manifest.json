@@ -1,12 +1,12 @@
 
 {
-  "name": "Lucky THR Multi-User",
+  "name": "Lucky THR - Bagikan Kebahagiaan",
   "short_name": "LuckyTHR",
-  "description": "Bagikan kebahagiaan THR digital dengan seru dan interaktif.",
+  "description": "Bagi-bagi THR digital dengan cara yang seru dan interaktif.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#F9F7F2",
-  "theme_color": "#E1570E",
+  "background_color": "#fefce8",
+  "theme_color": "#e1570e",
   "icons": [
     {
       "src": "https://picsum.photos/seed/lucky-thr/192/192",

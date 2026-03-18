@@ -1,7 +1,7 @@
 
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { SpinWheel } from '@/components/SpinWheel';
 import { AngpaoGrid } from '@/components/AngpaoGrid';
 import { ResultCard } from '@/components/ResultCard';
-import { Camera, AlertCircle, Loader2, Gift, MousePointer2, RefreshCw, Heart } from 'lucide-react';
+import { Camera, AlertCircle, Loader2, Gift, Heart } from 'lucide-react';
 import { addWinner, getEvents, getSystemSettings } from '@/app/actions/db-actions';
 import Link from 'next/link';
 
@@ -41,58 +41,50 @@ export default function PlayEvent() {
     timestamp: ''
   });
 
-  useEffect(() => {
-    // Load local storage data
-    const savedName = localStorage.getItem('lucky_thr_name');
-    const savedWallet = localStorage.getItem('lucky_thr_wallet');
-    const savedCustomWallet = localStorage.getItem('lucky_thr_custom_wallet');
-    const savedWalletNumber = localStorage.getItem('lucky_thr_wallet_number');
-    
-    if (savedName || savedWallet || savedWalletNumber) {
-      setFormData(prev => ({
-        ...prev,
-        name: savedName || '',
-        wallet: savedWallet || '',
-        customWalletName: savedCustomWallet || '',
-        walletNumber: savedWalletNumber || ''
-      }));
-    }
-
-    const loadData = async () => {
-      if (!eventId) return;
-      try {
-        const [events, sysSettings] = await Promise.all([
-          getEvents(),
-          getSystemSettings()
-        ]);
+  const loadData = useCallback(async () => {
+    if (!eventId) return;
+    try {
+      const [events, sysSettings] = await Promise.all([
+        getEvents(),
+        getSystemSettings()
+      ]);
+      
+      setSettings(sysSettings || { banks: ['Dana', 'OVO', 'GoPay', 'ShopeePay', 'BCA', 'Lainnya'], siteTitle: 'Lucky THR' });
+      const currentEvent = (events || []).find((e: any) => e.id === eventId);
+      
+      if (currentEvent) {
+        const normalizedNominals = (currentEvent.nominals || []).map((item: any) => 
+          typeof item === 'number' ? { value: item, blocked: false } : item
+        );
+        setEventData({ ...currentEvent, nominals: normalizedNominals });
         
-        setSettings(sysSettings);
-        const currentEvent = events.find((e: any) => e.id === eventId);
-        
-        if (currentEvent) {
-          const normalizedNominals = (currentEvent.nominals || []).map((item: any) => 
-            typeof item === 'number' ? { value: item, blocked: false } : item
-          );
-          setEventData({ ...currentEvent, nominals: normalizedNominals });
-          
-          if (!currentEvent.allow_multiple_plays) {
-            const played = localStorage.getItem(`played_${eventId}`);
-            if (played) setHasPlayed(true);
-          }
-          setIsDataLoaded(true);
-        } else {
-          setError(true);
-          setIsDataLoaded(true);
+        if (!currentEvent.allow_multiple_plays) {
+          const played = localStorage.getItem(`played_${eventId}`);
+          if (played) setHasPlayed(true);
         }
-      } catch (err) {
-        console.error("Error loading event:", err);
+      } else {
         setError(true);
-        setIsDataLoaded(true);
       }
-    };
-    
-    loadData();
+    } catch (err) {
+      console.error("Error loading event:", err);
+      setError(true);
+    } finally {
+      setIsDataLoaded(true);
+    }
   }, [eventId]);
+
+  useEffect(() => {
+    // Restore form from local storage
+    setFormData(prev => ({
+      ...prev,
+      name: localStorage.getItem('lucky_thr_name') || '',
+      wallet: localStorage.getItem('lucky_thr_wallet') || '',
+      customWalletName: localStorage.getItem('lucky_thr_custom_wallet') || '',
+      walletNumber: localStorage.getItem('lucky_thr_wallet_number') || ''
+    }));
+
+    loadData();
+  }, [loadData]);
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -119,17 +111,6 @@ export default function PlayEvent() {
     }, 800);
   };
 
-  const createConfetti = () => {
-    const newConfetti = Array.from({ length: 80 }).map((_, i) => ({
-      id: i,
-      left: Math.random() * 100,
-      color: ['#E6C24C', '#E1570E', '#F3A712', '#D33F49', '#77AF9C', '#3B82F6', '#10B981'][Math.floor(Math.random() * 7)],
-      delay: Math.random() * 3,
-      size: Math.random() * 12 + 4
-    }));
-    setConfetti(newConfetti);
-  };
-
   const onFinishInteraction = async (amount: number) => {
     const walletDisplay = formData.wallet === 'Lainnya' ? formData.customWalletName : formData.wallet;
     const winnerData = {
@@ -143,7 +124,17 @@ export default function PlayEvent() {
     try {
       await addWinner(winnerData);
       setResult({ amount, timestamp: new Date().toISOString() });
-      createConfetti();
+      
+      // Create confetti
+      const newConfetti = Array.from({ length: 80 }).map((_, i) => ({
+        id: i,
+        left: Math.random() * 100,
+        color: ['#E6C24C', '#E1570E', '#F3A712', '#D33F49', '#77AF9C', '#3B82F6', '#10B981'][Math.floor(Math.random() * 7)],
+        delay: Math.random() * 3,
+        size: Math.random() * 12 + 4
+      }));
+      setConfetti(newConfetti);
+      
       setStep('result');
       if (!eventData.allow_multiple_plays) {
         localStorage.setItem(`played_${eventId}`, 'true');
@@ -154,13 +145,13 @@ export default function PlayEvent() {
   };
 
   if (error) return (
-    <div className="min-h-screen flex items-center justify-center p-4 text-center">
-      <Card className="p-10 rounded-[2.5rem] shadow-2xl border-none">
+    <div className="min-h-screen flex items-center justify-center p-4 text-center bg-slate-50">
+      <Card className="p-10 rounded-[2.5rem] shadow-2xl border-none max-w-sm">
         <AlertCircle className="w-20 h-20 text-destructive mx-auto mb-4" />
-        <h2 className="text-2xl font-black">Event Tidak Ditemukan</h2>
-        <p className="text-muted-foreground mt-2">Pastikan link yang Anda gunakan benar.</p>
+        <h2 className="text-2xl font-black">Event Berakhir 🧧</h2>
+        <p className="text-muted-foreground mt-2">Maaf, event ini sudah tidak tersedia atau link salah.</p>
         <Link href="/">
-          <Button className="mt-6 rounded-xl bg-accent font-bold">Kembali ke Beranda</Button>
+          <Button className="mt-6 rounded-xl bg-accent font-bold px-8 h-12">Kembali ke Beranda</Button>
         </Link>
       </Card>
     </div>
@@ -168,19 +159,23 @@ export default function PlayEvent() {
 
   if (!isDataLoaded || !eventData || !settings) return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-4">
-      <Loader2 className="animate-spin text-accent w-12 h-12" />
-      <p className="font-black text-slate-400 uppercase tracking-widest text-xs">Menyiapkan Berkah...</p>
+      <div className="relative">
+         <Loader2 className="animate-spin text-accent w-16 h-16" />
+         <Gift className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-accent/50 w-6 h-6" />
+      </div>
+      <p className="font-black text-slate-400 uppercase tracking-widest text-xs animate-pulse">Menyiapkan Berkah...</p>
     </div>
   );
 
   if (hasPlayed) return (
-    <div className="min-h-screen flex items-center justify-center p-4 text-center">
-      <Card className="p-10 rounded-[2.5rem] shadow-2xl border-none">
+    <div className="min-h-screen flex items-center justify-center p-4 text-center bg-slate-50">
+      <Card className="p-10 rounded-[2.5rem] shadow-2xl border-none max-w-sm">
         <AlertCircle className="w-20 h-20 text-orange-600 mx-auto mb-4" />
         <h2 className="text-2xl font-black">Jatah Habis!</h2>
-        <p className="text-muted-foreground mt-2">Anda sudah bermain di event ini. Berbagi ke yang lain ya!</p>
-        <div className="mt-8 pt-6 border-t">
+        <p className="text-muted-foreground mt-2">Anda sudah bermain di event ini. Biar yang lain kebagian berkah ya!</p>
+        <div className="mt-8 pt-6 border-t flex flex-col items-center gap-1">
            <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">by maudigi.com</p>
+           <Heart className="w-3 h-3 text-accent fill-accent" />
         </div>
       </Card>
     </div>
