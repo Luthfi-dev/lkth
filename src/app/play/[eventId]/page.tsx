@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -15,12 +16,15 @@ import { addWinner, getEvents, getSystemSettings } from '@/app/actions/db-action
 import Link from 'next/link';
 
 export default function PlayEvent() {
-  const { eventId } = useParams();
+  const params = useParams();
+  const eventId = params?.eventId as string;
+  
   const [eventData, setEventData] = useState<any>(null);
   const [settings, setSettings] = useState<any>(null);
   const [error, setError] = useState(false);
   const [step, setStep] = useState<'form' | 'spinning' | 'result'>('form');
   const [isLoading, setIsLoading] = useState(false);
+  const [isDataLoaded, setIsDataLoaded] = useState(false);
   const [hasPlayed, setHasPlayed] = useState(false);
   const [confetti, setConfetti] = useState<any[]>([]);
   
@@ -38,6 +42,7 @@ export default function PlayEvent() {
   });
 
   useEffect(() => {
+    // Load local storage data
     const savedName = localStorage.getItem('lucky_thr_name');
     const savedWallet = localStorage.getItem('lucky_thr_wallet');
     const savedCustomWallet = localStorage.getItem('lucky_thr_custom_wallet');
@@ -54,6 +59,7 @@ export default function PlayEvent() {
     }
 
     const loadData = async () => {
+      if (!eventId) return;
       try {
         const [events, sysSettings] = await Promise.all([
           getEvents(),
@@ -73,14 +79,18 @@ export default function PlayEvent() {
             const played = localStorage.getItem(`played_${eventId}`);
             if (played) setHasPlayed(true);
           }
+          setIsDataLoaded(true);
         } else {
           setError(true);
+          setIsDataLoaded(true);
         }
       } catch (err) {
-        console.error("Error loading event", err);
+        console.error("Error loading event:", err);
         setError(true);
+        setIsDataLoaded(true);
       }
     };
+    
     loadData();
   }, [eventId]);
 
@@ -139,17 +149,48 @@ export default function PlayEvent() {
         localStorage.setItem(`played_${eventId}`, 'true');
       }
     } catch (err) {
-      console.error("Gagal menyimpan pemenang", err);
+      console.error("Gagal menyimpan pemenang:", err);
     }
   };
 
-  if (error) return <div className="min-h-screen flex items-center justify-center p-4 text-center"><Card className="p-10 rounded-[2.5rem]"><AlertCircle className="w-20 h-20 text-destructive mx-auto mb-4" /><h2 className="text-2xl font-black">Event Tidak Ditemukan</h2></Card></div>;
-  if (!eventData || !settings) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-accent w-10 h-10" /></div>;
-  if (hasPlayed) return <div className="min-h-screen flex items-center justify-center p-4 text-center"><Card className="p-10 rounded-[2.5rem]"><AlertCircle className="w-20 h-20 text-orange-600 mx-auto mb-4" /><h2 className="text-2xl font-black">Jatah Habis!</h2><p>Kamu sudah bermain di event ini.</p></Card></div>;
+  if (error) return (
+    <div className="min-h-screen flex items-center justify-center p-4 text-center">
+      <Card className="p-10 rounded-[2.5rem] shadow-2xl border-none">
+        <AlertCircle className="w-20 h-20 text-destructive mx-auto mb-4" />
+        <h2 className="text-2xl font-black">Event Tidak Ditemukan</h2>
+        <p className="text-muted-foreground mt-2">Pastikan link yang Anda gunakan benar.</p>
+        <Link href="/">
+          <Button className="mt-6 rounded-xl bg-accent font-bold">Kembali ke Beranda</Button>
+        </Link>
+      </Card>
+    </div>
+  );
+
+  if (!isDataLoaded || !eventData || !settings) return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-4">
+      <Loader2 className="animate-spin text-accent w-12 h-12" />
+      <p className="font-black text-slate-400 uppercase tracking-widest text-xs">Menyiapkan Berkah...</p>
+    </div>
+  );
+
+  if (hasPlayed) return (
+    <div className="min-h-screen flex items-center justify-center p-4 text-center">
+      <Card className="p-10 rounded-[2.5rem] shadow-2xl border-none">
+        <AlertCircle className="w-20 h-20 text-orange-600 mx-auto mb-4" />
+        <h2 className="text-2xl font-black">Jatah Habis!</h2>
+        <p className="text-muted-foreground mt-2">Anda sudah bermain di event ini. Berbagi ke yang lain ya!</p>
+        <div className="mt-8 pt-6 border-t">
+           <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">by maudigi.com</p>
+        </div>
+      </Card>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 sm:p-8 flex flex-col items-center justify-center relative overflow-hidden">
-      {step === 'result' && confetti.map(c => <div key={c.id} className="confetti-particle" style={{ left: `${c.left}%`, backgroundColor: c.color, animationDelay: `${c.delay}s`, width: `${c.size}px`, height: `${c.size}px`, borderRadius: '50%' }} />)}
+      {step === 'result' && confetti.map(c => (
+        <div key={c.id} className="confetti-particle" style={{ left: `${c.left}%`, backgroundColor: c.color, animationDelay: `${c.delay}s`, width: `${c.size}px`, height: `${c.size}px`, borderRadius: '50%' }} />
+      ))}
 
       {step === 'form' && (
         <Card className="w-full max-w-md border-none shadow-2xl rounded-[2.5rem] overflow-hidden relative z-50">
@@ -165,7 +206,7 @@ export default function PlayEvent() {
               </div>
               <div className="space-y-2">
                 <Label className="font-bold">Foto Selfie (Opsional)</Label>
-                <div className="relative w-24 h-24 rounded-2xl bg-slate-100 border-2 border-dashed flex items-center justify-center overflow-hidden">
+                <div className="relative w-24 h-24 rounded-2xl bg-slate-100 border-2 border-dashed flex items-center justify-center overflow-hidden hover:border-accent transition-colors">
                   {formData.photo ? <img src={formData.photo} alt="Selfie" className="w-full h-full object-cover" /> : <Camera className="w-8 h-8 text-slate-400" />}
                   <input type="file" accept="image/*" capture="user" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handlePhotoUpload} />
                 </div>
@@ -184,7 +225,7 @@ export default function PlayEvent() {
                 </div>
               </div>
               {formData.wallet === 'Lainnya' && <Input placeholder="Nama Bank/Wallet..." required value={formData.customWalletName} onChange={e => setFormData(prev => ({ ...prev, customWalletName: e.target.value }))} className="h-12 rounded-xl" />}
-              <Button type="submit" className="w-full h-16 rounded-2xl bg-accent text-lg font-black" disabled={isLoading}>{isLoading ? <Loader2 className="animate-spin" /> : 'GAS SEKARANG! 🚀'}</Button>
+              <Button type="submit" className="w-full h-16 rounded-2xl bg-accent text-lg font-black shadow-lg shadow-accent/20" disabled={isLoading}>{isLoading ? <Loader2 className="animate-spin" /> : 'GAS SEKARANG! 🚀'}</Button>
             </form>
           </CardContent>
         </Card>
@@ -192,7 +233,7 @@ export default function PlayEvent() {
 
       {step === 'spinning' && (
         <div className="text-center space-y-12 animate-in fade-in duration-500 max-w-2xl w-full">
-          <h2 className="text-4xl font-black text-accent uppercase leading-none">Bismillah Beruntung!</h2>
+          <h2 className="text-4xl font-black text-accent uppercase leading-none italic tracking-tighter">Bismillah Beruntung!</h2>
           {eventData.interaction_type === 'angpao' ? <AngpaoGrid items={eventData.nominals} onFinish={onFinishInteraction} /> : <SpinWheel items={eventData.nominals} onFinish={onFinishInteraction} />}
         </div>
       )}
