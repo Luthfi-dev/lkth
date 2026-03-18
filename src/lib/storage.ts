@@ -24,7 +24,7 @@ function ensureDbExists() {
           id: "sa-1",
           name: "Super Admin",
           email: "superadmin@gmail.com",
-          password: "$2a$10$7R6v7k.e8vWz5oV8yUf1U.I/9yO2h3uP9I8v7K6J5H4G3F2E1D0C", // Default: 123456
+          password: "123456", // Default: 123456 (Ganti dengan hash bcrypt jika perlu produksi)
           role: "superadmin",
           timestamp: new Date().toISOString()
         }
@@ -34,7 +34,24 @@ function ensureDbExists() {
       settings: {
         siteTitle: "Lucky THR",
         banks: ['Dana', 'OVO', 'GoPay', 'ShopeePay', 'BCA', 'Mandiri', 'BNI', 'BRI', 'Lainnya'],
-        footerText: "maudigi.com"
+        footerText: "maudigi.com",
+        homepage: {
+          hero: {
+            title: "Bagikan Kebahagiaan Lewat Roda Keberuntungan",
+            description: "Platform interaktif untuk berbagi THR kepada keluarga, teman, atau komunitas dengan cara yang seru dan transparan.",
+            imageUrl: "https://picsum.photos/seed/lucky-thr/1200/800"
+          },
+          features: [
+            { "id": "f1", "title": "Cepat & Mudah", "description": "Hanya butuh 2 menit untuk membuat event dan menyebarkan link ke grup WA.", "icon": "Zap" },
+            { "id": "f2", "title": "Anti-Cheat Berbasis IP", "description": "Sistem pengunci IP memastikan setiap orang hanya bisa memutar sekali meskipun ganti browser.", "icon": "Shield" },
+            { "id": "f3", "title": "Custom Nominal", "description": "Atur sendiri nominal THR yang tersedia, mulai dari receh sampai jutaan!", "icon": "Gift" }
+          ],
+          footer: {
+            copyright: "© 2024 LuckyTHR. Rayakan hari raya dengan sukacita.",
+            linkText: "maudigi.com",
+            linkUrl: "https://maudigi.com"
+          }
+        }
       }
     }, null, 2));
   }

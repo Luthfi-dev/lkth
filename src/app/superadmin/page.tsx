@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -5,15 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ShieldAlert, LogOut, Users, Database, Server, Settings, Heart, Save, Plus, Trash2, Key, RefreshCw, Globe, CreditCard } from 'lucide-react';
+import { ShieldAlert, LogOut, Users, Database, Server, Settings, Heart, Save, Plus, Trash2, Key, RefreshCw, Globe, CreditCard, Layout, Image as ImageIcon, Type, Link as LinkIcon, Trash } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { getEvents, getWinners, getAllUsers, getSystemSettings, updateSystemSettings } from '@/app/actions/db-actions';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import bcrypt from 'bcryptjs';
 
 export default function SuperAdminDashboard() {
@@ -65,12 +68,12 @@ export default function SuperAdminDashboard() {
   const handleUpdateSettings = async () => {
     await updateSystemSettings(settings);
     toast({ title: "Berhasil", description: "Pengaturan sistem diperbarui secara permanen." });
+    fetchAllData();
   };
 
   const handleAddBank = () => {
     if (!settings) return;
     setSettings({ ...settings, banks: [...(settings.banks || []), "Bank Baru"] });
-    toast({ title: "Ditambahkan", description: "Daftar bank diperbarui di antrian." });
   };
 
   const handleBankChange = (idx: number, val: string) => {
@@ -83,6 +86,72 @@ export default function SuperAdminDashboard() {
     if (settings.banks[idx] === 'Lainnya') return;
     const newBanks = (settings.banks || []).filter((_: any, i: number) => i !== idx);
     setSettings({ ...settings, banks: newBanks });
+  };
+
+  // Homepage Editor Functions
+  const handleUpdateHero = (field: string, value: string) => {
+    setSettings({
+      ...settings,
+      homepage: {
+        ...settings.homepage,
+        hero: { ...settings.homepage.hero, [field]: value }
+      }
+    });
+  };
+
+  const handleHeroImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        handleUpdateHero('imageUrl', reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleAddFeature = () => {
+    const newFeature = {
+      id: Math.random().toString(36).substr(2, 9),
+      title: "Fitur Baru",
+      description: "Deskripsi fitur baru anda...",
+      icon: "Zap"
+    };
+    setSettings({
+      ...settings,
+      homepage: {
+        ...settings.homepage,
+        features: [...(settings.homepage.features || []), newFeature]
+      }
+    });
+  };
+
+  const handleUpdateFeature = (id: string, field: string, value: string) => {
+    const updatedFeatures = settings.homepage.features.map((f: any) => 
+      f.id === id ? { ...f, [field]: value } : f
+    );
+    setSettings({
+      ...settings,
+      homepage: { ...settings.homepage, features: updatedFeatures }
+    });
+  };
+
+  const handleRemoveFeature = (id: string) => {
+    const updatedFeatures = settings.homepage.features.filter((f: any) => f.id !== id);
+    setSettings({
+      ...settings,
+      homepage: { ...settings.homepage, features: updatedFeatures }
+    });
+  };
+
+  const handleUpdateFooter = (field: string, value: string) => {
+    setSettings({
+      ...settings,
+      homepage: {
+        ...settings.homepage,
+        footer: { ...settings.homepage.footer, [field]: value }
+      }
+    });
   };
 
   const handleLogout = () => {
@@ -135,9 +204,10 @@ export default function SuperAdminDashboard() {
         </div>
 
         <Tabs defaultValue="users" className="w-full">
-          <TabsList className="bg-white border rounded-2xl h-14 p-1 mb-8">
+          <TabsList className="bg-white border rounded-2xl h-14 p-1 mb-8 overflow-x-auto no-scrollbar flex justify-start sm:justify-center gap-2">
             <TabsTrigger value="users" className="rounded-xl px-8 font-bold h-full">User Management</TabsTrigger>
-            <TabsTrigger value="settings" className="rounded-xl px-8 font-bold h-full">Global Settings</TabsTrigger>
+            <TabsTrigger value="landing" className="rounded-xl px-8 font-bold h-full">Homepage Editor</TabsTrigger>
+            <TabsTrigger value="settings" className="rounded-xl px-8 font-bold h-full">Global Config</TabsTrigger>
           </TabsList>
 
           <TabsContent value="users">
@@ -152,25 +222,121 @@ export default function SuperAdminDashboard() {
             </Card>
           </TabsContent>
 
+          <TabsContent value="landing" className="space-y-8">
+             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* Hero Section Editor */}
+                <Card className="rounded-[2.5rem] border-none shadow-sm bg-white overflow-hidden">
+                  <CardHeader className="bg-slate-50 border-b flex flex-row items-center gap-2">
+                    <Layout className="w-5 h-5 text-accent" />
+                    <CardTitle className="text-lg font-black">🚀 Hero Section</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-8 space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase">Judul Hero (Bisa \n untuk baris baru)</Label>
+                      <Textarea value={settings?.homepage?.hero?.title} onChange={e => handleUpdateHero('title', e.target.value)} className="rounded-xl font-bold text-lg" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase">Deskripsi Hero</Label>
+                      <Textarea value={settings?.homepage?.hero?.description} onChange={e => handleUpdateHero('description', e.target.value)} className="rounded-xl" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase">Gambar Hero (Unggah Baru)</Label>
+                      <div className="flex flex-col gap-4">
+                         <div className="relative w-full h-32 rounded-xl overflow-hidden border">
+                           <img src={settings?.homepage?.hero?.imageUrl} className="w-full h-full object-cover" alt="Hero Preview" />
+                         </div>
+                         <Input type="file" accept="image/*" onChange={handleHeroImageUpload} className="rounded-xl h-12" />
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Footer Section Editor */}
+                <Card className="rounded-[2.5rem] border-none shadow-sm bg-white overflow-hidden">
+                   <CardHeader className="bg-slate-50 border-b flex flex-row items-center gap-2">
+                    <Type className="w-5 h-5 text-accent" />
+                    <CardTitle className="text-lg font-black">📝 Footer Branding</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-8 space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase">Copyright Text</Label>
+                      <Input value={settings?.homepage?.footer?.copyright} onChange={e => handleUpdateFooter('copyright', e.target.value)} className="rounded-xl font-bold" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase">Branding Link Text (e.g. maudigi.com)</Label>
+                      <Input value={settings?.homepage?.footer?.linkText} onChange={e => handleUpdateFooter('linkText', e.target.value)} className="rounded-xl font-black text-accent" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase">Branding Link URL</Label>
+                      <Input value={settings?.homepage?.footer?.linkUrl} onChange={e => handleUpdateFooter('linkUrl', e.target.value)} className="rounded-xl" />
+                    </div>
+                    <Button onClick={handleUpdateSettings} className="w-full h-16 bg-accent rounded-2xl font-black text-lg text-white mt-4">SIMPAN TAMPILAN 💾</Button>
+                  </CardContent>
+                </Card>
+             </div>
+
+             {/* Features Management */}
+             <Card className="rounded-[2.5rem] border-none shadow-sm bg-white overflow-hidden">
+                <CardHeader className="bg-slate-50 border-b flex flex-row items-center justify-between px-8 py-5">
+                  <div className="flex items-center gap-2">
+                    <CreditCard className="w-5 h-5 text-accent" />
+                    <CardTitle className="text-lg font-black">✨ Keunggulan / Fitur Card</CardTitle>
+                  </div>
+                  <Button onClick={handleAddFeature} variant="outline" className="rounded-xl font-bold"><Plus className="w-4 h-4 mr-1" /> Tambah Kartu</Button>
+                </CardHeader>
+                <CardContent className="p-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {settings?.homepage?.features?.map((feat: any) => (
+                      <div key={feat.id} className="p-6 rounded-[2rem] bg-slate-50 border-2 border-slate-100 space-y-4 relative group">
+                        <Button size="icon" variant="ghost" onClick={() => handleRemoveFeature(feat.id)} className="absolute top-4 right-4 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"><Trash className="w-4 h-4" /></Button>
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-black uppercase">Ikon</Label>
+                          <Select value={feat.icon} onValueChange={(v) => handleUpdateFeature(feat.id, 'icon', v)}>
+                            <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
+                            <SelectContent className="rounded-xl">
+                              <SelectItem value="Zap">Zap (Petir)</SelectItem>
+                              <SelectItem value="Shield">Shield (Tameng)</SelectItem>
+                              <SelectItem value="Gift">Gift (Hadiah)</SelectItem>
+                              <SelectItem value="Sparkles">Sparkles (Bintang)</SelectItem>
+                              <SelectItem value="Heart">Heart (Hati)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-black uppercase">Judul Fitur</Label>
+                          <Input value={feat.title} onChange={e => handleUpdateFeature(feat.id, 'title', e.target.value)} className="rounded-xl font-bold" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[10px] font-black uppercase">Deskripsi Fitur</Label>
+                          <Textarea value={feat.description} onChange={e => handleUpdateFeature(feat.id, 'description', e.target.value)} className="rounded-xl text-xs" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <Button onClick={handleUpdateSettings} className="w-full h-14 bg-accent rounded-2xl font-black text-white mt-8">💾 SIMPAN SEMUA KARTU FITUR</Button>
+                </CardContent>
+             </Card>
+          </TabsContent>
+
           <TabsContent value="settings" className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <Card className="rounded-[2.5rem] border-none shadow-sm bg-white">
               <CardHeader className="bg-slate-50 border-b"><CardTitle className="text-lg font-black">🌐 Global Config</CardTitle></CardHeader>
               <CardContent className="p-8 space-y-6">
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase">App Title</Label>
+                  <Label className="text-[10px] font-black uppercase">App Title (Site Name)</Label>
                   <Input value={settings?.siteTitle} onChange={e => setSettings({...settings, siteTitle: e.target.value})} className="h-12 rounded-xl" />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase">Footer Text</Label>
+                  <Label className="text-[10px] font-black uppercase">Footer Dev Text</Label>
                   <Input value={settings?.footerText} onChange={e => setSettings({...settings, footerText: e.target.value})} className="h-12 rounded-xl" />
                 </div>
-                <Button onClick={handleUpdateSettings} className="w-full bg-accent h-16 rounded-2xl font-black text-lg text-white">SAVE ALL CHANGES 🚀</Button>
+                <Button onClick={handleUpdateSettings} className="w-full bg-accent h-16 rounded-2xl font-black text-lg text-white">SAVE GLOBAL CONFIG 🚀</Button>
               </CardContent>
             </Card>
 
             <Card className="rounded-[2.5rem] border-none shadow-sm bg-white">
               <CardHeader className="bg-slate-50 border-b flex flex-row items-center justify-between">
-                <CardTitle className="text-lg font-black">🏦 Bank & E-Wallet</CardTitle>
+                <CardTitle className="text-lg font-black">🏦 Master Bank & E-Wallet</CardTitle>
                 <Button size="sm" onClick={handleAddBank} variant="outline" className="rounded-xl font-bold h-9"><Plus className="w-4 h-4 mr-1" /> Add Bank</Button>
               </CardHeader>
               <CardContent className="p-8 space-y-4">
