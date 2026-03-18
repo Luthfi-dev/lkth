@@ -23,12 +23,30 @@
       "title": "THR Keluarga Besar Haji Sulaiman",
       "message": "Selamat Hari Raya $nama! Semoga berkah dan bahagia selalu.",
       "nominals": [
-        { "value": 10000, "blocked": false },
-        { "value": 20000, "blocked": false },
-        { "value": 50000, "blocked": false },
-        { "value": 100000, "blocked": false },
-        { "value": 5000, "blocked": false },
-        { "value": 2000, "blocked": false }
+        {
+          "value": 10000,
+          "blocked": false
+        },
+        {
+          "value": 20000,
+          "blocked": false
+        },
+        {
+          "value": 50000,
+          "blocked": false
+        },
+        {
+          "value": 100000,
+          "blocked": false
+        },
+        {
+          "value": 5000,
+          "blocked": false
+        },
+        {
+          "value": 2000,
+          "blocked": false
+        }
       ],
       "is_active": true
     },
@@ -36,13 +54,30 @@
       "title": "Tess",
       "message": "Selamat Hari Raya $nama! Semoga berkah selalu.",
       "nominals": [
-        { "value": 1000, "blocked": false },
-        { "value": 2000, "blocked": false },
-        { "value": 5000, "blocked": false },
-        { "value": 10000, "blocked": true },
-        { "value": 20000, "blocked": false },
-        { "value": 50000, "blocked": false },
-        { "value": 100000, "blocked": false }
+        {
+          "value": 1000,
+          "blocked": false
+        },
+        {
+          "value": 2000,
+          "blocked": false
+        },
+        {
+          "value": 5000,
+          "blocked": false
+        },
+        {
+          "value": 20000,
+          "blocked": true
+        },
+        {
+          "value": 50000,
+          "blocked": true
+        },
+        {
+          "value": 100000,
+          "blocked": true
+        }
       ],
       "allow_multiple_plays": true,
       "is_active": true,

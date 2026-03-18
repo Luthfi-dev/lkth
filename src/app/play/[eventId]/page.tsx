@@ -33,13 +33,28 @@ export default function PlayEvent() {
     timestamp: ''
   });
 
+  // Load saved identity from localStorage
+  useEffect(() => {
+    const savedName = localStorage.getItem('lucky_thr_name');
+    const savedWallet = localStorage.getItem('lucky_thr_wallet');
+    const savedWalletNumber = localStorage.getItem('lucky_thr_wallet_number');
+    
+    if (savedName || savedWallet || savedWalletNumber) {
+      setFormData(prev => ({
+        ...prev,
+        name: savedName || '',
+        wallet: savedWallet || '',
+        walletNumber: savedWalletNumber || ''
+      }));
+    }
+  }, []);
+
   useEffect(() => {
     const loadEvent = async () => {
       try {
         const events = await getEvents();
         const currentEvent = events.find((e: any) => e.id === eventId);
         if (currentEvent) {
-          // Normalisasi nominals (jika masih angka biasa, ubah ke object)
           const normalizedNominals = currentEvent.nominals.map((item: any) => 
             typeof item === 'number' ? { value: item, blocked: false } : item
           );
@@ -71,6 +86,12 @@ export default function PlayEvent() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.wallet || !formData.walletNumber) return;
+    
+    // Save identity to localStorage for future use
+    localStorage.setItem('lucky_thr_name', formData.name);
+    localStorage.setItem('lucky_thr_wallet', formData.wallet);
+    localStorage.setItem('lucky_thr_wallet_number', formData.walletNumber);
+
     setIsLoading(true);
     setTimeout(() => {
       setIsLoading(false);
@@ -122,7 +143,6 @@ export default function PlayEvent() {
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 sm:p-8 flex flex-col items-center justify-center relative overflow-hidden">
-      {/* Latar Belakang Dekoratif */}
       <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
       <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl"></div>
 
@@ -140,12 +160,12 @@ export default function PlayEvent() {
                 <Input 
                   id="fullname" 
                   name="fullname"
-                  placeholder="Contoh: Ahmad Subardjo" 
+                  placeholder="Masukkan nama anda..." 
                   required 
                   value={formData.name}
                   onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
                   className="rounded-xl h-12 border-2 focus:border-accent bg-white"
-                  autoComplete="off"
+                  autoComplete="name"
                 />
               </div>
 
@@ -176,7 +196,11 @@ export default function PlayEvent() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="wallet-select" className="text-slate-700">Tujuan THR</Label>
-                  <Select onValueChange={v => setFormData(prev => ({ ...prev, wallet: v }))} required>
+                  <Select 
+                    value={formData.wallet}
+                    onValueChange={v => setFormData(prev => ({ ...prev, wallet: v }))} 
+                    required
+                  >
                     <SelectTrigger id="wallet-select" className="h-12 rounded-xl border-2 bg-white">
                       <SelectValue placeholder="Pilih..." />
                     </SelectTrigger>
@@ -192,11 +216,12 @@ export default function PlayEvent() {
                   <Input 
                     id="account-number"
                     name="account-number"
-                    placeholder="0812..." 
+                    placeholder="Contoh: 0812..." 
                     required 
                     value={formData.walletNumber}
                     onChange={e => setFormData(prev => ({ ...prev, walletNumber: e.target.value }))}
                     className="h-12 rounded-xl border-2 bg-white"
+                    autoComplete="tel"
                   />
                 </div>
               </div>
