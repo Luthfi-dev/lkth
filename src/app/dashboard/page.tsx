@@ -290,16 +290,16 @@ export default function AdminDashboard() {
                           <XCircle className="w-4 h-4 mr-2" /> Hapus Event Ini
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent className="rounded-[2.5rem] p-10">
+                      <AlertDialogContent className="rounded-[2.5rem] p-6 sm:p-10">
                         <AlertDialogHeader>
-                          <AlertDialogTitle className="text-3xl font-black">Hapus Event? 🗑️</AlertDialogTitle>
-                          <AlertDialogDescription className="text-base mt-4 leading-relaxed italic">
+                          <AlertDialogTitle className="text-2xl sm:text-3xl font-black">Hapus Event? 🗑️</AlertDialogTitle>
+                          <AlertDialogDescription className="text-sm sm:text-base mt-2 leading-relaxed italic">
                             Event "{currentEvent?.title}" akan dihapus permanen. Link play tidak akan bisa diakses lagi.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
-                        <AlertDialogFooter className="mt-8 gap-3">
-                          <AlertDialogCancel className="h-14 rounded-2xl font-black text-lg border-2">Batal</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDeleteEvent(selectedEventId)} className="h-14 rounded-2xl bg-red-600 font-black text-lg text-white shadow-lg">Ya, Hapus Permanen! 🔥</AlertDialogAction>
+                        <AlertDialogFooter className="mt-6 gap-3 flex flex-col sm:flex-row">
+                          <AlertDialogCancel className="h-14 rounded-2xl font-black text-lg border-2 w-full sm:w-auto">Batal</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDeleteEvent(selectedEventId)} className="h-14 rounded-2xl bg-red-600 font-black text-lg text-white shadow-lg w-full sm:w-auto">Hapus Permanen! 🔥</AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
@@ -346,14 +346,14 @@ export default function AdminDashboard() {
                             <Trash2 className="w-4 h-4 sm:mr-2" /> <span className="hidden sm:inline">Reset Semua</span>
                           </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent className="rounded-[2.5rem] p-10">
+                        <AlertDialogContent className="rounded-[2.5rem] p-6 sm:p-10">
                           <AlertDialogHeader>
-                            <AlertDialogTitle className="text-3xl font-black">Yakin Reset Data? ⚠️</AlertDialogTitle>
-                            <AlertDialogDescription className="text-base mt-4 leading-relaxed italic">Seluruh riwayat pemenang akan dihapus permanen. Peserta bisa ikut memutar lagi.</AlertDialogDescription>
+                            <AlertDialogTitle className="text-2xl sm:text-3xl font-black">Yakin Reset Data? ⚠️</AlertDialogTitle>
+                            <AlertDialogDescription className="text-sm sm:text-base mt-2 leading-relaxed italic">Seluruh riwayat pemenang akan dihapus permanen. Peserta bisa ikut memutar lagi.</AlertDialogDescription>
                           </AlertDialogHeader>
-                          <AlertDialogFooter className="mt-8 gap-3">
-                            <AlertDialogCancel className="h-14 rounded-2xl font-black text-lg border-2">Batal</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleClearWinners} className="h-14 rounded-2xl bg-red-600 font-black text-lg text-white shadow-lg">Ya, Reset Sekarang! 🔥</AlertDialogAction>
+                          <AlertDialogFooter className="mt-6 gap-3 flex flex-col sm:flex-row">
+                            <AlertDialogCancel className="h-14 rounded-2xl font-black text-lg border-2 w-full sm:w-auto">Batal</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleClearWinners} className="h-14 rounded-2xl bg-red-600 font-black text-lg text-white shadow-lg w-full sm:w-auto">Reset Sekarang! 🔥</AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
