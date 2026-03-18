@@ -5,13 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ShieldAlert, LogOut, Users, Database, Server, Settings, Heart, Save, Plus, Trash2, Key, RefreshCw, Globe, CreditCard, Layout, Image as ImageIcon, Type, Link as LinkIcon, Trash } from 'lucide-react';
+import { ShieldAlert, LogOut, Users, Database, Server, Settings, Heart, Save, Plus, Trash2, Key, RefreshCw, Globe, CreditCard, Layout, Image as ImageIcon, Type, Link as LinkIcon, Trash, LayoutGrid, Zap, Shield, Gift, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { getEvents, getWinners, getAllUsers, getSystemSettings, updateSystemSettings } from '@/app/actions/db-actions';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/textarea";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -291,11 +291,11 @@ export default function SuperAdminDashboard() {
                           <Select value={feat.icon} onValueChange={(v) => handleUpdateFeature(feat.id, 'icon', v)}>
                             <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
                             <SelectContent className="rounded-xl">
-                              <SelectItem value="Zap">Zap (Petir)</SelectItem>
-                              <SelectItem value="Shield">Shield (Tameng)</SelectItem>
-                              <SelectItem value="Gift">Gift (Hadiah)</SelectItem>
-                              <SelectItem value="Sparkles">Sparkles (Bintang)</SelectItem>
-                              <SelectItem value="Heart">Heart (Hati)</SelectItem>
+                              <SelectItem value="Zap">Zap</SelectItem>
+                              <SelectItem value="Shield">Shield</SelectItem>
+                              <SelectItem value="Gift">Gift</SelectItem>
+                              <SelectItem value="Sparkles">Sparkles</SelectItem>
+                              <SelectItem value="Heart">Heart</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
