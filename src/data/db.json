@@ -17,16 +17,92 @@
       "message": "Selamat Hari Raya $nama! Semoga berkah dan bahagia selalu.",
       "interaction_type": "wheel",
       "nominals": [
-        { "value": 10000, "blocked": false },
-        { "value": 20000, "blocked": false },
-        { "value": 50000, "blocked": false },
-        { "value": 100000, "blocked": false },
-        { "value": 5000, "blocked": false },
-        { "value": 2000, "blocked": false }
+        {
+          "value": 10000,
+          "blocked": false
+        },
+        {
+          "value": 20000,
+          "blocked": false
+        },
+        {
+          "value": 50000,
+          "blocked": false
+        },
+        {
+          "value": 100000,
+          "blocked": false
+        },
+        {
+          "value": 5000,
+          "blocked": false
+        },
+        {
+          "value": 2000,
+          "blocked": false
+        }
       ],
       "is_active": true,
       "allow_multiple_plays": false
+    },
+    {
+      "title": "Tesd",
+      "message": "Selamat Hari Raya $nama! Semoga berkah selalu.",
+      "nominals": [
+        {
+          "value": 1000,
+          "blocked": false
+        },
+        {
+          "value": 2000,
+          "blocked": false
+        },
+        {
+          "value": 5000,
+          "blocked": false
+        },
+        {
+          "value": 10000,
+          "blocked": false
+        },
+        {
+          "value": 20000,
+          "blocked": false
+        },
+        {
+          "value": 50000,
+          "blocked": false
+        },
+        {
+          "value": 100000,
+          "blocked": false
+        }
+      ],
+      "allow_multiple_plays": true,
+      "interaction_type": "angpao",
+      "is_active": true,
+      "id": "5hcwfasmu",
+      "timestamp": "2026-03-18T13:04:14.729Z"
     }
   ],
-  "winners": []
+  "winners": [
+    {
+      "event_id": "5hcwfasmu",
+      "name": "Tess",
+      "photo_url": "",
+      "amount": 100000,
+      "wallet_info": "BSI - 08383737",
+      "id": "99z4p06lv",
+      "timestamp": "2026-03-18T13:05:25.864Z"
+    },
+    {
+      "event_id": "5hcwfasmu",
+      "name": "Tess",
+      "photo_url": "",
+      "amount": 1000,
+      "wallet_info": "BSI - 08383737",
+      "id": "5m38j2bc4",
+      "timestamp": "2026-03-18T13:06:25.899Z"
+    }
+  ]
 }
