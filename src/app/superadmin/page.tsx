@@ -42,7 +42,7 @@ export default function SuperAdminDashboard() {
       { id: "f3", title: "Custom Nominal", description: "Atur sendiri nominal THR yang tersedia, mulai dari receh sampai jutaan!", icon: "Gift" }
     ],
     footer: {
-      copyright: "© 2024 LuckyTHR. Rayakan hari raya dengan sukacita.",
+      copyright: "© 2026 LuckyTHR. Rayakan hari raya dengan sukacita.",
       linkText: "maudigi.com",
       linkUrl: "https://maudigi.com"
     }
@@ -192,7 +192,7 @@ export default function SuperAdminDashboard() {
   if (isLoading) return <div className="min-h-screen flex items-center justify-center"><RefreshCw className="animate-spin text-accent w-10 h-10" /></div>;
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col overflow-x-hidden">
       <nav className="border-b bg-white px-4 sm:px-6 py-4 flex justify-between items-center sticky top-0 z-50">
         <div className="flex items-center gap-2 sm:gap-3">
           <ShieldAlert className="text-red-600 w-5 h-5 sm:w-6 sm:h-6" />
@@ -309,7 +309,7 @@ export default function SuperAdminDashboard() {
                 <CardContent className="p-6 sm:p-8">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {settings?.homepage?.features?.map((feat: any) => (
-                      <div key={feat.id} className="p-6 rounded-[2rem] bg-slate-50 border-2 border-slate-100 space-y-4 relative group">
+                      <div key={feat.id} className="p-6 rounded-[2rem] bg-slate-50 border-2 border-slate-100 space-y-4 relative group overflow-hidden">
                         <Button size="icon" variant="ghost" onClick={() => handleRemoveFeature(feat.id)} className="absolute top-4 right-4 text-red-400 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"><Trash2 className="w-4 h-4" /></Button>
                         <div className="space-y-2">
                           <Label className="text-[10px] font-black uppercase">Ikon</Label>

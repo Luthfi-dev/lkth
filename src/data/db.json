@@ -28,7 +28,7 @@
   "events": [
     {
       "title": "THR PIC 2A",
-      "message": "Selamat Hari Raya $nama! Semoga berkah selalu.",
+      "message": "​\"Selamat Hari Raya $nama! Terima kasih atas kerja kerasnya di PIC 2A. Keep elevating your performance and stay consistent! Tetap semangat!\"",
       "nominals": [
         {
           "value": 20000,
@@ -73,19 +73,49 @@
       "is_active": true,
       "id": "18uolr7je",
       "timestamp": "2026-03-18T16:58:51.891Z"
-    }
-  ],
-  "winners": [
+    },
     {
-      "event_id": "18uolr7je",
-      "name": "Tess",
-      "photo_url": "",
-      "amount": 75000,
-      "wallet_info": "BSI - 08383737",
-      "id": "cbyovzlgk",
-      "timestamp": "2026-03-18T17:00:20.143Z"
+      "title": "Tes",
+      "message": "Selamat Hari Raya $nama! Semoga berkah selalu.",
+      "nominals": [
+        {
+          "value": 1000,
+          "blocked": false
+        },
+        {
+          "value": 2000,
+          "blocked": false
+        },
+        {
+          "value": 5000,
+          "blocked": false
+        },
+        {
+          "value": 10000,
+          "blocked": false
+        },
+        {
+          "value": 20000,
+          "blocked": false
+        },
+        {
+          "value": 50000,
+          "blocked": false
+        },
+        {
+          "value": 100000,
+          "blocked": false
+        }
+      ],
+      "allow_multiple_plays": false,
+      "interaction_type": "angpao",
+      "admin_id": "bordknu8m",
+      "is_active": true,
+      "id": "8ixfrhyzn",
+      "timestamp": "2026-03-18T18:52:49.705Z"
     }
   ],
+  "winners": [],
   "settings": {
     "siteTitle": "Lucky THR",
     "banks": [

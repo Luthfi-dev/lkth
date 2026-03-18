@@ -151,8 +151,8 @@ export default function PlayEvent() {
         <div className="bg-red-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
           <XCircle className="w-14 h-14 text-red-600" />
         </div>
-        <h2 className="text-3xl font-black tracking-tight">Event Tidak Ditemukan</h2>
-        <p className="text-muted-foreground mt-3 leading-relaxed">Maaf, event ini mungkin sudah dihapus atau link yang Anda gunakan salah.</p>
+        <h2 className="text-3xl font-black tracking-tight">Event Selesai</h2>
+        <p className="text-muted-foreground mt-3 leading-relaxed">Maaf, event ini mungkin sudah dihapus atau sudah mencapai batas waktu yang ditentukan.</p>
         <Link href="/">
           <Button className="mt-8 rounded-2xl bg-accent font-black px-10 h-14 w-full text-lg shadow-lg">Kembali</Button>
         </Link>
@@ -175,8 +175,8 @@ export default function PlayEvent() {
         <div className="bg-orange-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
           <AlertCircle className="w-14 h-14 text-orange-600" />
         </div>
-        <h2 className="text-3xl font-black tracking-tight">Sudah Bermain</h2>
-        <p className="text-muted-foreground mt-3 leading-relaxed">Alamat IP atau Browser Anda tercatat sudah bermain di event ini. Berkah hanya bisa diambil sekali.</p>
+        <h2 className="text-3xl font-black tracking-tight">Terima Kasih</h2>
+        <p className="text-muted-foreground mt-3 leading-relaxed">Mohon maaf, Anda sudah berpartisipasi dalam event ini sebelumnya. Berkah hanya dapat diambil satu kali agar semua mendapatkan kesempatan yang sama.</p>
         <div className="mt-10 pt-8 border-t flex flex-col items-center gap-2">
            <div className="flex items-center gap-2 text-[10px] text-slate-400 font-black uppercase tracking-widest">
              <span>developed by</span>
