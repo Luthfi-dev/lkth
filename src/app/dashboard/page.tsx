@@ -68,7 +68,7 @@ export default function AdminDashboard() {
       toast({ variant: "destructive", title: "Gagal", description: "Judul event wajib diisi." });
       return;
     }
-    // Ubah format nominal dari string ke array object { value, blocked }
+    
     const nominalArray = newEvent.nominals.split(',')
       .map(n => parseInt(n.trim()))
       .filter(n => !isNaN(n))
@@ -225,7 +225,7 @@ export default function AdminDashboard() {
               </div>
 
               <div className="space-y-3 pt-4 border-t">
-                 <Label className="text-xs font-black uppercase text-muted-foreground">Isi Roda & Blokir Rezeki</p>
+                 <Label className="text-xs font-black uppercase text-muted-foreground">Isi Roda & Blokir Rezeki</Label>
                  <p className="text-[10px] text-muted-foreground italic mb-2">*Klik nominal untuk blokir (Warna merah = tidak bisa didapat)</p>
                  <div className="flex gap-2">
                     <Input 
