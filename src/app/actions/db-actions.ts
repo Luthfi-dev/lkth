@@ -1,3 +1,4 @@
+
 'use server';
 
 import { getData, saveData, deleteData, updateData, saveFile } from '@/lib/storage';
@@ -36,6 +37,22 @@ export async function createEvent(eventData: any) {
 
 export async function updateEvent(id: string, data: any) {
   await updateData('events', id, data);
+  return { success: true };
+}
+
+export async function deleteEvent(id: string) {
+  await deleteData('events', id);
+  // Optional: clear winners of this event
+  const winners = await getData('winners');
+  const filtered = winners.filter((w: any) => w.event_id !== id);
+  
+  const dbPath = require('path').join(process.cwd(), 'src/data/db.json');
+  const fs = require('fs');
+  if (fs.existsSync(dbPath)) {
+    const db = JSON.parse(fs.readFileSync(dbPath, 'utf-8'));
+    db.winners = filtered;
+    fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
+  }
   return { success: true };
 }
 

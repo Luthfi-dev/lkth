@@ -8,12 +8,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { PlusCircle, Share2, LogOut, Users, Gift, LayoutGrid, Trash2, Settings2, Plus, Coins, MousePointer2, RefreshCw, Sparkles, Heart, CreditCard, Key, Search } from 'lucide-react';
+import { PlusCircle, Share2, LogOut, Users, Gift, LayoutGrid, Trash2, Settings2, Plus, Coins, MousePointer2, RefreshCw, Sparkles, Heart, CreditCard, Key, Search, XCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
-import { getWinners, getEvents, deleteWinner, createEvent, updateEvent, clearWinnersByEvent, getSystemSettings, updateSystemSettings } from '@/app/actions/db-actions';
+import { getWinners, getEvents, deleteWinner, createEvent, updateEvent, deleteEvent, clearWinnersByEvent, getSystemSettings, updateSystemSettings } from '@/app/actions/db-actions';
 import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -111,6 +111,19 @@ export default function AdminDashboard() {
     setIsDialogOpen(false);
     setSelectedEventId(created.id);
     toast({ title: "Berhasil", description: "Event baru telah dibuat." });
+    fetchData(currentUser);
+  };
+
+  const handleDeleteEvent = async (id: string) => {
+    await deleteEvent(id);
+    toast({ title: "Event Dihapus", description: "Event dan riwayat pemenangnya telah dihapus." });
+    const nextEvents = events.filter(e => e.id !== id);
+    setEvents(nextEvents);
+    if (nextEvents.length > 0) {
+      setSelectedEventId(nextEvents[0].id);
+    } else {
+      setSelectedEventId('');
+    }
     fetchData(currentUser);
   };
 
@@ -270,6 +283,26 @@ export default function AdminDashboard() {
                       <div className="text-xs font-black uppercase tracking-widest text-slate-600">Main Berkali-kali</div>
                       <Switch checked={currentEvent?.allow_multiple_plays} onCheckedChange={async (v) => { await updateEvent(selectedEventId, { allow_multiple_plays: v }); fetchData(currentUser); }} />
                     </div>
+                    
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="outline" className="w-full h-12 rounded-xl border-red-200 text-red-500 font-bold hover:bg-red-50">
+                          <XCircle className="w-4 h-4 mr-2" /> Hapus Event Ini
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="rounded-[2.5rem] p-10">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="text-3xl font-black">Hapus Event? 🗑️</AlertDialogTitle>
+                          <AlertDialogDescription className="text-base mt-4 leading-relaxed italic">
+                            Event "{currentEvent?.title}" akan dihapus permanen. Link play tidak akan bisa diakses lagi.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter className="mt-8 gap-3">
+                          <AlertDialogCancel className="h-14 rounded-2xl font-black text-lg border-2">Batal</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDeleteEvent(selectedEventId)} className="h-14 rounded-2xl bg-red-600 font-black text-lg text-white shadow-lg">Ya, Hapus Permanen! 🔥</AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </CardContent>
                 </Card>
 

@@ -241,5 +241,18 @@
       "id": "wc5asafx7",
       "timestamp": "2026-03-18T15:51:53.885Z"
     }
-  ]
+  ],
+  "settings": {
+    "siteTitle": "Lucky THR",
+    "banks": [
+      "Dana",
+      "OVO",
+      "GoPay",
+      "ShopeePay",
+      "BCA",
+      "BSI",
+      "Lainnya"
+    ],
+    "footerText": "maudigi.com"
+  }
 }

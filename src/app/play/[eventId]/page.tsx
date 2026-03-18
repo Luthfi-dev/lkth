@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { SpinWheel } from '@/components/SpinWheel';
 import { AngpaoGrid } from '@/components/AngpaoGrid';
 import { ResultCard } from '@/components/ResultCard';
-import { Camera, AlertCircle, Loader2, Gift, Heart, Sparkles } from 'lucide-react';
+import { Camera, AlertCircle, Loader2, Gift, Heart, Sparkles, Home } from 'lucide-react';
 import { addWinner, getEvents, getSystemSettings } from '@/app/actions/db-actions';
 import Link from 'next/link';
 
@@ -148,12 +148,18 @@ export default function PlayEvent() {
 
   if (error) return (
     <div className="min-h-screen flex items-center justify-center p-4 text-center bg-slate-50">
-      <Card className="p-8 sm:p-12 rounded-[3rem] shadow-2xl border-none max-w-sm w-full">
-        <AlertCircle className="w-20 h-20 text-destructive mx-auto mb-6" />
-        <h2 className="text-3xl font-black tracking-tight">Event Berakhir 🧧</h2>
-        <p className="text-muted-foreground mt-3 leading-relaxed">Maaf, event ini sudah tidak tersedia atau link salah.</p>
+      <Card className="p-8 sm:p-12 rounded-[3rem] shadow-2xl border-none max-w-sm w-full animate-in zoom-in duration-300">
+        <div className="bg-red-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+          <XCircle className="w-14 h-14 text-red-600" />
+        </div>
+        <h2 className="text-3xl font-black tracking-tight">Event Tidak Ditemukan!</h2>
+        <p className="text-muted-foreground mt-3 leading-relaxed">
+          Maaf, event ini mungkin sudah dihapus oleh admin atau link yang Anda masukkan salah.
+        </p>
         <Link href="/">
-          <Button className="mt-8 rounded-2xl bg-accent font-black px-10 h-14 w-full text-lg shadow-lg">Kembali ke Beranda</Button>
+          <Button className="mt-8 rounded-2xl bg-accent font-black px-10 h-14 w-full text-lg shadow-lg hover:scale-[1.02] transition-transform">
+            <Home className="w-5 h-5 mr-2" /> Kembali ke Beranda
+          </Button>
         </Link>
       </Card>
     </div>
