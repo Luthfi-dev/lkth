@@ -34,7 +34,7 @@ export default function PlayEvent() {
     timestamp: ''
   });
 
-  // Load saved identity from localStorage
+  // Memuat identitas yang tersimpan di browser (Hydration Safe)
   useEffect(() => {
     const savedName = localStorage.getItem('lucky_thr_name');
     const savedWallet = localStorage.getItem('lucky_thr_wallet');
@@ -50,15 +50,13 @@ export default function PlayEvent() {
         walletNumber: savedWalletNumber || ''
       }));
     }
-  }, []);
 
-  useEffect(() => {
     const loadEvent = async () => {
       try {
         const events = await getEvents();
         const currentEvent = events.find((e: any) => e.id === eventId);
         if (currentEvent) {
-          const normalizedNominals = currentEvent.nominals.map((item: any) => 
+          const normalizedNominals = (currentEvent.nominals || []).map((item: any) => 
             typeof item === 'number' ? { value: item, blocked: false } : item
           );
           setEventData({ ...currentEvent, nominals: normalizedNominals });
@@ -91,7 +89,7 @@ export default function PlayEvent() {
     if (!formData.name || !formData.wallet || !formData.walletNumber) return;
     if (formData.wallet === 'Lainnya' && !formData.customWalletName) return;
     
-    // Save identity to localStorage for future use
+    // Simpan identitas ke localStorage untuk masa depan
     localStorage.setItem('lucky_thr_name', formData.name);
     localStorage.setItem('lucky_thr_wallet', formData.wallet);
     localStorage.setItem('lucky_thr_custom_wallet', formData.customWalletName);
@@ -195,7 +193,7 @@ export default function PlayEvent() {
                   </div>
                   <div className="flex-1 text-[11px] text-muted-foreground leading-tight">
                     <p className="font-bold text-slate-800 mb-1">Ambil Foto Wajah</p>
-                    <p>Wajib senyum ya! Foto ini akan muncul di kartu pemenang setelah roda berhenti.</p>
+                    <p>Foto ini akan muncul di kartu pemenang setelah roda berhenti. Boleh dikosongkan jika tidak mau.</p>
                   </div>
                 </div>
               </div>
@@ -239,7 +237,7 @@ export default function PlayEvent() {
                     <Label htmlFor="custom-bank" className="text-slate-700">Nama Bank / E-Wallet</Label>
                     <Input 
                       id="custom-bank"
-                      placeholder="Masukkan nama bank tujuan (Contoh: SeaBank, Bank Jago...)" 
+                      placeholder="Masukkan nama bank tujuan (SeaBank, Jago...)" 
                       required 
                       value={formData.customWalletName}
                       onChange={e => setFormData(prev => ({ ...prev, customWalletName: e.target.value }))}
@@ -251,7 +249,7 @@ export default function PlayEvent() {
 
               <Button 
                 type="submit" 
-                className="w-full h-14 rounded-2xl bg-accent text-lg font-bold hover:bg-accent/90 shadow-lg shadow-accent/20 transition-all hover:scale-[1.02] active:scale-95"
+                className="w-full h-14 rounded-2xl bg-accent text-lg font-bold hover:bg-accent/90 shadow-lg shadow-accent/20 transition-all"
                 disabled={isLoading || !formData.name || !formData.wallet || !formData.walletNumber || (formData.wallet === 'Lainnya' && !formData.customWalletName)}
               >
                 {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Lanjut ke Roda! 🎡'}

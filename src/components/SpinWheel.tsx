@@ -35,20 +35,25 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
     setIsSpinning(true);
     
     const segmentAngle = 360 / items.length;
-    const extraSpins = 12 * 360; // Berputar 12 kali sebelum berhenti
+    const extraSpins = 10 * 360; // Berputar 10 kali putaran penuh
     
-    // Hitung target agar berhenti tepat di tengah segmen pemenang (arah jam 12 / atas)
-    // Formula: putaran tambahan + (360 - posisi_relatif_pemenang)
-    const currentRotationBase = Math.ceil(rotation / 360) * 360;
-    const targetAngle = currentRotationBase + extraSpins + (360 - (winnerIndex * segmentAngle + segmentAngle / 2));
+    // Hitung posisi berhenti agar tepat di panah atas (arah jam 12)
+    // 0 derajat di SVG kita adalah arah jam 3, jadi kita sesuaikan offsetnya
+    const stopAt = 360 - (winnerIndex * segmentAngle + segmentAngle / 2);
     
-    setRotation(targetAngle);
+    // Kalkulasi rotasi kumulatif agar animasi tidak 'jump' atau berputar balik
+    const currentRotationOffset = rotation % 360;
+    let delta = stopAt - currentRotationOffset;
+    if (delta <= 0) delta += 360;
+    
+    const finalRotation = rotation + extraSpins + delta;
+    setRotation(finalRotation);
 
-    // Durasi 8.2 detik (8 detik animasi + 0.2 detik jeda)
+    // Durasi animasi diset 8 detik di CSS, kita beri jeda sedikit sebelum memunculkan hasil
     setTimeout(() => {
       setIsSpinning(false);
       onFinish(winner.value);
-    }, 8200); 
+    }, 8500); 
   };
 
   const renderSegments = () => {
@@ -60,7 +65,6 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
       const startAngle = i * angleStep;
       const endAngle = (i + 1) * angleStep;
       
-      // Hitung path SVG untuk setiap irisan roda
       const x1 = radius + radius * Math.cos((Math.PI * (startAngle - 90)) / 180);
       const y1 = radius + radius * Math.sin((Math.PI * (startAngle - 90)) / 180);
       const x2 = radius + radius * Math.cos((Math.PI * (endAngle - 90)) / 180);
@@ -94,27 +98,27 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
   return (
     <div className="flex flex-col items-center gap-12">
       <div className="relative w-72 h-72 sm:w-80 sm:h-80 md:w-96 md:h-96">
-        {/* Penunjuk Panah (Top) */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 -mt-2 z-30 drop-shadow-lg">
+        {/* Penunjuk Panah Atas */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 -mt-4 z-30 drop-shadow-xl">
           <div 
-            className="w-10 h-10 bg-slate-900" 
+            className="w-10 h-12 bg-slate-900 shadow-xl" 
             style={{ clipPath: 'polygon(50% 100%, 0 0, 100% 0)' }}
           ></div>
         </div>
 
-        {/* Roda SVG */}
-        <svg
-          ref={wheelRef}
-          viewBox="0 0 200 200"
-          className="w-full h-full drop-shadow-2xl transition-transform duration-[8000ms] ease-[cubic-bezier(0.15,0,0.15,1)]"
-          style={{ transform: `rotate(${rotation}deg)` }}
-        >
-          <circle cx="100" cy="100" r="100" fill="#0f172a" />
-          {renderSegments()}
-          <circle cx="100" cy="100" r="100" fill="transparent" stroke="rgba(0,0,0,0.1)" strokeWidth="4" />
-        </svg>
+        {/* Roda Utama */}
+        <div className="w-full h-full rounded-full border-[12px] border-slate-900 bg-slate-900 shadow-[0_0_50px_rgba(0,0,0,0.3)] overflow-hidden">
+          <svg
+            ref={wheelRef}
+            viewBox="0 0 200 200"
+            className="w-full h-full transition-transform duration-[8000ms] ease-[cubic-bezier(0.15,0,0.15,1)]"
+            style={{ transform: `rotate(${rotation}deg)` }}
+          >
+            {renderSegments()}
+          </svg>
+        </div>
 
-        {/* Pin Tengah */}
+        {/* Pin Tengah (Bling-bling) */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-white border-[6px] border-slate-900 rounded-full z-20 flex items-center justify-center shadow-2xl">
           <div className={`w-8 h-8 bg-accent rounded-full ${isSpinning ? 'animate-pulse' : ''}`}></div>
         </div>
@@ -123,7 +127,7 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
       <Button 
         onClick={spin} 
         disabled={isSpinning}
-        className="h-20 w-20 rounded-full bg-accent hover:bg-accent/90 shadow-2xl shadow-accent/40 border-8 border-white group transition-all hover:scale-110 active:scale-95"
+        className="h-20 w-20 rounded-full bg-accent hover:bg-accent/90 shadow-2xl shadow-accent/40 border-8 border-white group transition-all hover:scale-110 active:scale-95 z-40"
       >
         <Play className={`w-8 h-8 fill-white ${isSpinning ? 'opacity-50' : ''}`} />
       </Button>
