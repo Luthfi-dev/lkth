@@ -50,5 +50,24 @@
       "timestamp": "2026-03-18T11:38:59.567Z"
     }
   ],
-  "winners": []
+  "winners": [
+    {
+      "event_id": "p1mp7dgpj",
+      "name": "Fifi",
+      "photo_url": "",
+      "amount": 50000,
+      "wallet_info": "GoPay - 082273747483",
+      "id": "gnl5p5mya",
+      "timestamp": "2026-03-18T12:12:36.462Z"
+    },
+    {
+      "event_id": "p1mp7dgpj",
+      "name": "Fifi",
+      "photo_url": "",
+      "amount": 5000,
+      "wallet_info": "GoPay - 082273747483",
+      "id": "dxwv7umm4",
+      "timestamp": "2026-03-18T12:12:36.861Z"
+    }
+  ]
 }
