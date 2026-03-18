@@ -1,10 +1,9 @@
-
 "use client"
 
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Share2, Sparkles, Star, Smartphone, Zap, ExternalLink } from 'lucide-react';
+import { Share2, Sparkles, Star, Smartphone, Zap, Heart } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/hooks/use-toast';
 
@@ -19,14 +18,18 @@ interface ResultCardProps {
 export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCardProps) {
   const { toast } = useToast();
   const [currentUrl, setCurrentUrl] = useState('');
+  const [domain, setDomain] = useState('');
 
   useEffect(() => {
-    setCurrentUrl(window.location.origin);
+    const origin = window.location.origin;
+    setCurrentUrl(origin);
+    setDomain(window.location.hostname);
   }, []);
 
   const handleShare = async () => {
     const shareText = `OMG! 😱 Gue baru aja dapet THR Rp ${amount.toLocaleString('id-ID')} dari LuckyTHR! 🎉🧧\n\n"${message.replace('$nama', name)}"\n\nCek keberuntungan lo juga di: ${currentUrl}\n#LuckyTHR #BerkahDigital #maudigi`;
     
+    // Web Share API (Modern Browser/Mobile)
     if (navigator.share) {
       try {
         await navigator.share({
@@ -34,13 +37,17 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
           text: shareText,
           url: currentUrl,
         });
+        toast({ title: "Berhasil Berbagi!", description: "Terima kasih sudah menyebarkan kebahagiaan!" });
       } catch (err) {
-        console.error('Error sharing:', err);
+        if ((err as Error).name !== 'AbortError') {
+          console.error('Error sharing:', err);
+        }
       }
     } else {
-      // Fallback to WhatsApp if Web Share API is not available
+      // Fallback to WhatsApp for Desktop/Old Browser
       const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
       window.open(waUrl, '_blank');
+      toast({ title: "Membuka WhatsApp", description: "Membagikan via link WhatsApp..." });
     }
   };
 
@@ -123,9 +130,14 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
           </Button>
           <div className="text-center space-y-2">
             <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em] flex items-center justify-center gap-1">
-              Experience at <span className="text-accent">{currentUrl.replace('https://', '').replace('http://', '')}</span>
+              Experience at <span className="text-accent">{domain || 'LuckyTHR.app'}</span>
             </p>
-            <p className="text-[9px] text-slate-400 font-medium">Developed by maudigi.com</p>
+            <div className="flex items-center justify-center gap-1 text-[9px] text-slate-400 font-bold">
+              <span>by</span>
+              <a href="https://maudigi.com" target="_blank" className="text-accent hover:underline flex items-center gap-0.5">
+                maudigi.com <Heart className="w-2 h-2 fill-accent" />
+              </a>
+            </div>
           </div>
         </div>
       </CardContent>
