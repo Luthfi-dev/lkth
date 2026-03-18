@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { PlusCircle, Share2, LogOut, Users, Gift, LayoutGrid, Trash2, Settings2, Plus, Coins, MousePointer2, RefreshCw, Sparkles, Heart, CreditCard, Search, XCircle, Save, Type, MessageCircle } from 'lucide-react';
+import { PlusCircle, Share2, LogOut, Users, Gift, LayoutGrid, Trash2, Settings2, Plus, Coins, MousePointer2, RefreshCw, Sparkles, Heart, CreditCard, Search, XCircle, Save, Type, MessageCircle, Link as LinkIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -115,7 +115,7 @@ export default function AdminDashboard() {
 
   const handleDeleteWinner = async (id: string) => {
     await deleteWinner(id);
-    toast({ title: "Dihapus", description: "Peserta sekarang bisa ikut lagi." });
+    toast({ title: "Dihapus", description: "Data pemenang telah dihapus." });
     fetchData(currentUser);
   };
 
@@ -152,7 +152,7 @@ export default function AdminDashboard() {
 
   const handleSaveBanks = async () => {
     await updateSystemSettings({ banks: settings.banks });
-    toast({ title: "Tersimpan", description: "Daftar bank sistem telah diperbarui secara permanen." });
+    toast({ title: "Tersimpan", description: "Daftar bank sistem telah diperbarui." });
     fetchData(currentUser);
   };
 
@@ -165,7 +165,7 @@ export default function AdminDashboard() {
   const copyLink = (id: string) => {
     const link = `${window.location.origin}/play/${id}`;
     navigator.clipboard.writeText(link);
-    toast({ title: "Link Tersalin!", description: "Bagikan ke grup WhatsApp." });
+    toast({ title: "Link Tersalin", description: "Tautan event telah disalin ke clipboard." });
   };
 
   const filteredWinners = winners.filter(w => 
@@ -194,9 +194,11 @@ export default function AdminDashboard() {
         {events.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-[2.5rem] border shadow-sm">
              <Sparkles className="w-16 h-16 text-accent mx-auto mb-6" />
-             <h2 className="text-3xl font-black">Selamat Datang, {currentUser.name}!</h2>
-             <p className="mt-4 text-muted-foreground">Mulai buat event THR pertamamu.</p>
-             <Button onClick={() => setIsDialogOpen(true)} className="mt-8 bg-accent h-14 px-10 rounded-2xl font-black">BUAT EVENT BARU 🧧</Button>
+             <h2 className="text-3xl font-black">Selamat Datang, {currentUser.name}</h2>
+             <p className="mt-4 text-muted-foreground">Mulai buat event THR pertama Anda sekarang.</p>
+             <Button onClick={() => setIsDialogOpen(true)} className="mt-8 bg-accent h-14 px-10 rounded-2xl font-black gap-2">
+               <Plus className="w-5 h-5" /> BUAT EVENT BARU
+             </Button>
           </div>
         ) : (
           <>
@@ -212,7 +214,7 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
               <div className="lg:col-span-4 space-y-6">
                 <Card className="rounded-[2.5rem] border-none shadow-sm">
-                  <CardHeader><CardTitle className="text-lg font-black">⚙️ Pengaturan Event</CardTitle></CardHeader>
+                  <CardHeader><CardTitle className="text-lg font-black flex items-center gap-2"><Settings2 className="w-5 h-5" /> Pengaturan Event</CardTitle></CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
                       <Label className="text-[10px] font-black uppercase">Judul Event</Label>
@@ -223,23 +225,27 @@ export default function AdminDashboard() {
                       <Textarea value={editMessage} onChange={e => setEditMessage(e.target.value)} className="rounded-xl min-h-[80px]" />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase">Nominal (Koma)</Label>
+                      <Label className="text-[10px] font-black uppercase">Nominal (Pemisah Koma)</Label>
                       <Textarea value={editNominals} onChange={e => setEditNominals(e.target.value)} className="rounded-xl" />
                     </div>
                     <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
                       <span className="text-xs font-black uppercase">Main Berkali-kali</span>
                       <Switch checked={currentEvent?.allow_multiple_plays} onCheckedChange={async (v) => { await updateEvent(selectedEventId, { allow_multiple_plays: v }); fetchData(currentUser); }} />
                     </div>
-                    <Button onClick={handleSaveEventDetails} className="w-full h-12 rounded-xl bg-accent font-black">SIMPAN PERUBAHAN</Button>
-                    <Button onClick={() => copyLink(selectedEventId)} variant="outline" className="w-full h-12 rounded-xl border-accent text-accent font-black">BAGIKAN LINK 🧧</Button>
+                    <Button onClick={handleSaveEventDetails} className="w-full h-12 rounded-xl bg-accent font-black gap-2">
+                      <Save className="w-4 h-4" /> SIMPAN PERUBAHAN
+                    </Button>
+                    <Button onClick={() => copyLink(selectedEventId)} variant="outline" className="w-full h-12 rounded-xl border-accent text-accent font-black gap-2">
+                      <LinkIcon className="w-4 h-4" /> BAGIKAN TAUTAN
+                    </Button>
                   </CardContent>
                 </Card>
 
                 <Card className="rounded-[2.5rem] border-none shadow-sm">
-                  <CardHeader><CardTitle className="text-lg font-black">🏦 Master Bank</CardTitle></CardHeader>
+                  <CardHeader><CardTitle className="text-lg font-black flex items-center gap-2"><CreditCard className="w-5 h-5" /> Master Bank</CardTitle></CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex gap-2">
-                      <Input placeholder="Nama bank..." value={newBank} onChange={e => setNewBank(e.target.value)} className="rounded-xl" />
+                      <Input placeholder="Nama bank baru..." value={newBank} onChange={e => setNewBank(e.target.value)} className="rounded-xl" />
                       <Button onClick={handleAddBank} className="bg-accent rounded-xl px-4"><Plus className="w-4 h-4" /></Button>
                     </div>
                     <div className="space-y-2 max-h-40 overflow-y-auto pr-2 no-scrollbar">
@@ -250,7 +256,9 @@ export default function AdminDashboard() {
                         </div>
                       ))}
                     </div>
-                    <Button onClick={handleSaveBanks} className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black">💾 SIMPAN DAFTAR BANK</Button>
+                    <Button onClick={handleSaveBanks} className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black gap-2">
+                      <Save className="w-4 h-4" /> SIMPAN DAFTAR BANK
+                    </Button>
                   </CardContent>
                 </Card>
               </div>
@@ -258,7 +266,7 @@ export default function AdminDashboard() {
               <div className="lg:col-span-8">
                 <Card className="rounded-[2.5rem] border-none shadow-sm h-full">
                   <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle className="text-lg font-black">👥 Monitoring Pemenang</CardTitle>
+                    <CardTitle className="text-lg font-black flex items-center gap-2"><Users className="w-5 h-5" /> Monitoring Pemenang</CardTitle>
                     <Badge className="bg-emerald-100 text-emerald-600 border-none font-bold">Total: Rp {totalThr.toLocaleString('id-ID')}</Badge>
                   </CardHeader>
                   <CardContent className="p-0">
@@ -299,18 +307,18 @@ export default function AdminDashboard() {
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="rounded-[2.5rem] p-10 max-w-lg">
-          <DialogHeader><DialogTitle className="text-2xl font-black">Buat Event Baru 🚀</DialogTitle></DialogHeader>
+          <DialogHeader><DialogTitle className="text-2xl font-black">Buat Event Baru</DialogTitle></DialogHeader>
           <div className="space-y-6 py-6">
             <div className="space-y-2">
               <Label className="text-[10px] font-black uppercase">Judul Event</Label>
-              <Input placeholder="THR Keluarga Sulaiman..." value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})} className="rounded-xl h-12" />
+              <Input placeholder="Contoh: THR Keluarga Besar" value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})} className="rounded-xl h-12" />
             </div>
             <div className="space-y-2">
-              <Label className="text-[10px] font-black uppercase">Nominal THR (Koma)</Label>
+              <Label className="text-[10px] font-black uppercase">Nominal THR (Pemisah Koma)</Label>
               <Textarea placeholder="1000, 5000, 10000..." value={newEvent.nominals} onChange={e => setNewEvent({...newEvent, nominals: e.target.value})} className="rounded-xl" />
             </div>
           </div>
-          <DialogFooter><Button onClick={handleCreateEvent} className="w-full h-14 bg-accent font-black rounded-xl text-lg">BUAT SEKARANG! 🧧</Button></DialogFooter>
+          <DialogFooter><Button onClick={handleCreateEvent} className="w-full h-14 bg-accent font-black rounded-xl text-lg">BUAT SEKARANG</Button></DialogFooter>
         </DialogContent>
       </Dialog>
 

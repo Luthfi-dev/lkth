@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { SpinWheel } from '@/components/SpinWheel';
 import { AngpaoGrid } from '@/components/AngpaoGrid';
 import { ResultCard } from '@/components/ResultCard';
-import { Camera, AlertCircle, Loader2, Gift, Heart, Sparkles, Home, XCircle } from 'lucide-react';
+import { Camera, AlertCircle, Loader2, Gift, Heart, Sparkles, Home, XCircle, Play } from 'lucide-react';
 import { addWinner, getEvents, getSystemSettings, checkIpPlayed } from '@/app/actions/db-actions';
 import Link from 'next/link';
 
@@ -44,7 +44,6 @@ export default function PlayEvent() {
   const loadData = useCallback(async () => {
     if (!eventId) return;
     try {
-      // Fetch public IP first
       const ipRes = await fetch('https://api.ipify.org?format=json');
       const ipData = await ipRes.json();
       const ip = ipData.ip;
@@ -66,7 +65,6 @@ export default function PlayEvent() {
         );
         setEventData({ ...currentEvent, nominals: normalizedNominals });
         
-        // Anti-cheat: Check LocalStorage AND Server-side IP Check
         if (!currentEvent.allow_multiple_plays) {
           const playedLocally = localStorage.getItem(`played_${eventId}`);
           const playedByIp = await checkIpPlayed(eventId, ip);
@@ -97,15 +95,6 @@ export default function PlayEvent() {
     }
     loadData();
   }, [loadData]);
-
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setFormData(prev => ({ ...prev, photo: reader.result as string }));
-      reader.readAsDataURL(file);
-    }
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -162,8 +151,8 @@ export default function PlayEvent() {
         <div className="bg-red-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
           <XCircle className="w-14 h-14 text-red-600" />
         </div>
-        <h2 className="text-3xl font-black tracking-tight">Event Tidak Ditemukan!</h2>
-        <p className="text-muted-foreground mt-3 leading-relaxed">Maaf, event ini mungkin sudah dihapus atau link salah.</p>
+        <h2 className="text-3xl font-black tracking-tight">Event Tidak Ditemukan</h2>
+        <p className="text-muted-foreground mt-3 leading-relaxed">Maaf, event ini mungkin sudah dihapus atau link yang Anda gunakan salah.</p>
         <Link href="/">
           <Button className="mt-8 rounded-2xl bg-accent font-black px-10 h-14 w-full text-lg shadow-lg">Kembali</Button>
         </Link>
@@ -186,11 +175,11 @@ export default function PlayEvent() {
         <div className="bg-orange-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
           <AlertCircle className="w-14 h-14 text-orange-600" />
         </div>
-        <h2 className="text-3xl font-black tracking-tight">Jatah Habis!</h2>
-        <p className="text-muted-foreground mt-3 leading-relaxed">IP atau Browser Anda tercatat sudah bermain. Berkah hanya bisa diambil sekali ya!</p>
+        <h2 className="text-3xl font-black tracking-tight">Sudah Bermain</h2>
+        <p className="text-muted-foreground mt-3 leading-relaxed">Alamat IP atau Browser Anda tercatat sudah bermain di event ini. Berkah hanya bisa diambil sekali.</p>
         <div className="mt-10 pt-8 border-t flex flex-col items-center gap-2">
            <div className="flex items-center gap-2 text-[10px] text-slate-400 font-black uppercase tracking-widest">
-             <span>by</span>
+             <span>developed by</span>
              <span className="text-accent">maudigi.com</span>
              <Heart className="w-3 h-3 text-accent fill-accent" />
            </div>
@@ -208,27 +197,31 @@ export default function PlayEvent() {
       {step === 'form' && (
         <Card className="w-full max-w-md border-none shadow-2xl rounded-[3rem] overflow-hidden relative z-50 animate-in zoom-in duration-500">
           <div className="bg-accent p-10 text-center text-white relative">
-             <Gift className="w-16 h-16 mx-auto mb-4" />
+             <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+               <Gift className="w-10 h-10" />
+             </div>
              <h2 className="text-3xl font-black uppercase tracking-tighter leading-none">{eventData.title || settings.siteTitle}</h2>
           </div>
           <CardContent className="p-8 sm:p-10">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label className="font-black text-xs uppercase tracking-widest text-muted-foreground">Nama Lengkap</Label>
-                <Input placeholder="Masukkan nama..." required value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} className="rounded-2xl h-14 text-lg font-bold px-5" />
+                <Input placeholder="Masukkan nama Anda" required value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} className="rounded-2xl h-14 text-lg font-bold px-5" />
               </div>
               <div className="space-y-2">
                 <Label className="font-black text-xs uppercase tracking-widest text-muted-foreground">Tujuan THR & No. Rekening</Label>
                 <div className="grid grid-cols-1 gap-4">
                   <Select value={formData.wallet} onValueChange={v => setFormData(prev => ({ ...prev, wallet: v }))} required>
-                    <SelectTrigger className="h-14 rounded-2xl font-bold px-5"><SelectValue placeholder="Pilih Bank/Wallet..." /></SelectTrigger>
+                    <SelectTrigger className="h-14 rounded-2xl font-bold px-5"><SelectValue placeholder="Pilih Bank/Wallet" /></SelectTrigger>
                     <SelectContent className="rounded-2xl">{settings.banks.map((opt: string) => <SelectItem key={opt} value={opt} className="rounded-xl">{opt}</SelectItem>)}</SelectContent>
                   </Select>
-                  <Input placeholder="No. HP / Rekening..." required value={formData.walletNumber} onChange={e => setFormData(prev => ({ ...prev, walletNumber: e.target.value }))} className="h-14 rounded-2xl font-bold px-5" />
+                  <Input placeholder="Nomor HP atau Rekening" required value={formData.walletNumber} onChange={e => setFormData(prev => ({ ...prev, walletNumber: e.target.value }))} className="h-14 rounded-2xl font-bold px-5" />
                 </div>
               </div>
-              {formData.wallet === 'Lainnya' && <Input placeholder="Nama Bank/E-Wallet..." required value={formData.customWalletName} onChange={e => setFormData(prev => ({ ...prev, customWalletName: e.target.value }))} className="h-14 rounded-2xl font-bold px-5" />}
-              <Button type="submit" className="w-full h-16 rounded-2xl bg-accent text-xl font-black shadow-xl hover:scale-[1.02] transition-all" disabled={isLoading}>{isLoading ? <Loader2 className="animate-spin w-8 h-8" /> : 'MULAI MAIN! 🧧'}</Button>
+              {formData.wallet === 'Lainnya' && <Input placeholder="Nama Bank/E-Wallet" required value={formData.customWalletName} onChange={e => setFormData(prev => ({ ...prev, customWalletName: e.target.value }))} className="h-14 rounded-2xl font-bold px-5" />}
+              <Button type="submit" className="w-full h-16 rounded-2xl bg-accent text-xl font-black shadow-xl hover:scale-[1.02] transition-all gap-2" disabled={isLoading}>
+                {isLoading ? <Loader2 className="animate-spin w-8 h-8" /> : <><Play className="w-6 h-6 fill-white" /> MULAI MAIN</>}
+              </Button>
             </form>
           </CardContent>
         </Card>
@@ -237,8 +230,8 @@ export default function PlayEvent() {
       {step === 'spinning' && (
         <div className="text-center space-y-12 animate-in fade-in duration-700 max-w-2xl w-full">
           <div className="space-y-4">
-            <h2 className="text-5xl font-black text-accent uppercase leading-none italic tracking-tighter">Bismillah Beruntung!</h2>
-            <p className="text-muted-foreground font-black uppercase tracking-[0.3em] text-[10px]">Semoga Hari Raya Ini Berkah Untuk Anda</p>
+            <h2 className="text-5xl font-black text-accent uppercase leading-none italic tracking-tighter">Bismillah Beruntung</h2>
+            <p className="text-muted-foreground font-black uppercase tracking-[0.3em] text-[10px]">Semoga Hari Raya Ini Membawa Keberkahan</p>
           </div>
           {eventData.interaction_type === 'angpao' ? <AngpaoGrid items={eventData.nominals} onFinish={onFinishInteraction} /> : <SpinWheel items={eventData.nominals} onFinish={onFinishInteraction} />}
         </div>
@@ -247,7 +240,11 @@ export default function PlayEvent() {
       {step === 'result' && (
         <div className="animate-in slide-in-from-bottom-20 duration-1000 w-full max-w-lg">
           <ResultCard name={formData.name} photoUrl={formData.photo || ''} amount={result.amount} message={eventData.message} wallet={`${formData.wallet} - ${formData.walletNumber}`} />
-          <div className="text-center mt-8"><Button variant="link" onClick={() => window.location.reload()} className="text-accent font-black uppercase tracking-widest text-xs">Tutup & Selesai</Button></div>
+          <div className="text-center mt-8">
+            <Button variant="link" onClick={() => window.location.reload()} className="text-accent font-black uppercase tracking-widest text-xs">
+              Selesai dan Tutup
+            </Button>
+          </div>
         </div>
       )}
     </div>

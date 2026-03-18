@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -12,7 +11,7 @@ import { getEvents, getWinners, getAllUsers, getSystemSettings, updateSystemSett
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from "@/textarea";
 import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -67,7 +66,7 @@ export default function SuperAdminDashboard() {
 
   const handleUpdateSettings = async () => {
     await updateSystemSettings(settings);
-    toast({ title: "Berhasil", description: "Pengaturan sistem diperbarui secara permanen." });
+    toast({ title: "Berhasil", description: "Pengaturan sistem telah diperbarui." });
     fetchAllData();
   };
 
@@ -88,7 +87,6 @@ export default function SuperAdminDashboard() {
     setSettings({ ...settings, banks: newBanks });
   };
 
-  // Homepage Editor Functions
   const handleUpdateHero = (field: string, value: string) => {
     setSettings({
       ...settings,
@@ -181,7 +179,7 @@ export default function SuperAdminDashboard() {
               <Button variant="outline" size="sm" className="rounded-xl font-bold"><Key className="w-3 h-3 mr-2" /> Encrypt</Button>
             </DialogTrigger>
             <DialogContent className="rounded-[2.5rem]">
-              <DialogHeader><DialogTitle className="font-black">Bcrypt Encryptor 🛡️</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle className="font-black">Bcrypt Encryptor</DialogTitle></DialogHeader>
               <div className="space-y-4 py-4">
                 <Input placeholder="Password mentah..." value={plain} onChange={e => setPlain(e.target.value)} className="rounded-xl h-12" />
                 <Button onClick={generateHash} className="w-full bg-red-600 rounded-xl h-12 font-black">Generate</Button>
@@ -212,7 +210,7 @@ export default function SuperAdminDashboard() {
 
           <TabsContent value="users">
             <Card className="rounded-[2.5rem] border-none shadow-sm overflow-hidden bg-white">
-              <CardHeader className="bg-slate-50 border-b px-6 py-5"><CardTitle className="text-lg font-black">👥 System Users</CardTitle></CardHeader>
+              <CardHeader className="bg-slate-50 border-b px-6 py-5"><CardTitle className="text-lg font-black flex items-center gap-2"><Users className="w-5 h-5" /> System Users</CardTitle></CardHeader>
               <CardContent className="p-0">
                 <Table>
                   <TableHeader><TableRow><TableHead className="pl-6 font-black text-[10px] uppercase">Name</TableHead><TableHead className="font-black text-[10px] uppercase">Email</TableHead><TableHead className="font-black text-[10px] uppercase">Role</TableHead></TableRow></TableHeader>
@@ -224,15 +222,14 @@ export default function SuperAdminDashboard() {
 
           <TabsContent value="landing" className="space-y-8">
              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Hero Section Editor */}
                 <Card className="rounded-[2.5rem] border-none shadow-sm bg-white overflow-hidden">
                   <CardHeader className="bg-slate-50 border-b flex flex-row items-center gap-2">
                     <Layout className="w-5 h-5 text-accent" />
-                    <CardTitle className="text-lg font-black">🚀 Hero Section</CardTitle>
+                    <CardTitle className="text-lg font-black">Hero Section</CardTitle>
                   </CardHeader>
                   <CardContent className="p-8 space-y-4">
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase">Judul Hero (Bisa \n untuk baris baru)</Label>
+                      <Label className="text-[10px] font-black uppercase">Judul Hero</Label>
                       <Textarea value={settings?.homepage?.hero?.title} onChange={e => handleUpdateHero('title', e.target.value)} className="rounded-xl font-bold text-lg" />
                     </div>
                     <div className="space-y-2">
@@ -240,7 +237,7 @@ export default function SuperAdminDashboard() {
                       <Textarea value={settings?.homepage?.hero?.description} onChange={e => handleUpdateHero('description', e.target.value)} className="rounded-xl" />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase">Gambar Hero (Unggah Baru)</Label>
+                      <Label className="text-[10px] font-black uppercase">Gambar Hero</Label>
                       <div className="flex flex-col gap-4">
                          <div className="relative w-full h-32 rounded-xl overflow-hidden border">
                            <img src={settings?.homepage?.hero?.imageUrl} className="w-full h-full object-cover" alt="Hero Preview" />
@@ -251,11 +248,10 @@ export default function SuperAdminDashboard() {
                   </CardContent>
                 </Card>
 
-                {/* Footer Section Editor */}
                 <Card className="rounded-[2.5rem] border-none shadow-sm bg-white overflow-hidden">
                    <CardHeader className="bg-slate-50 border-b flex flex-row items-center gap-2">
                     <Type className="w-5 h-5 text-accent" />
-                    <CardTitle className="text-lg font-black">📝 Footer Branding</CardTitle>
+                    <CardTitle className="text-lg font-black">Footer Branding</CardTitle>
                   </CardHeader>
                   <CardContent className="p-8 space-y-4">
                     <div className="space-y-2">
@@ -263,24 +259,25 @@ export default function SuperAdminDashboard() {
                       <Input value={settings?.homepage?.footer?.copyright} onChange={e => handleUpdateFooter('copyright', e.target.value)} className="rounded-xl font-bold" />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase">Branding Link Text (e.g. maudigi.com)</Label>
+                      <Label className="text-[10px] font-black uppercase">Link Text Branding</Label>
                       <Input value={settings?.homepage?.footer?.linkText} onChange={e => handleUpdateFooter('linkText', e.target.value)} className="rounded-xl font-black text-accent" />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-[10px] font-black uppercase">Branding Link URL</Label>
                       <Input value={settings?.homepage?.footer?.linkUrl} onChange={e => handleUpdateFooter('linkUrl', e.target.value)} className="rounded-xl" />
                     </div>
-                    <Button onClick={handleUpdateSettings} className="w-full h-16 bg-accent rounded-2xl font-black text-lg text-white mt-4">SIMPAN TAMPILAN 💾</Button>
+                    <Button onClick={handleUpdateSettings} className="w-full h-16 bg-accent rounded-2xl font-black text-lg text-white mt-4 gap-2">
+                      <Save className="w-5 h-5" /> SIMPAN TAMPILAN
+                    </Button>
                   </CardContent>
                 </Card>
              </div>
 
-             {/* Features Management */}
              <Card className="rounded-[2.5rem] border-none shadow-sm bg-white overflow-hidden">
                 <CardHeader className="bg-slate-50 border-b flex flex-row items-center justify-between px-8 py-5">
                   <div className="flex items-center gap-2">
-                    <CreditCard className="w-5 h-5 text-accent" />
-                    <CardTitle className="text-lg font-black">✨ Keunggulan / Fitur Card</CardTitle>
+                    <LayoutGrid className="w-5 h-5 text-accent" />
+                    <CardTitle className="text-lg font-black">Fitur Keunggulan</CardTitle>
                   </div>
                   <Button onClick={handleAddFeature} variant="outline" className="rounded-xl font-bold"><Plus className="w-4 h-4 mr-1" /> Tambah Kartu</Button>
                 </CardHeader>
@@ -313,30 +310,34 @@ export default function SuperAdminDashboard() {
                       </div>
                     ))}
                   </div>
-                  <Button onClick={handleUpdateSettings} className="w-full h-14 bg-accent rounded-2xl font-black text-white mt-8">💾 SIMPAN SEMUA KARTU FITUR</Button>
+                  <Button onClick={handleUpdateSettings} className="w-full h-14 bg-accent rounded-2xl font-black text-white mt-8 gap-2">
+                    <Save className="w-5 h-5" /> SIMPAN KARTU FITUR
+                  </Button>
                 </CardContent>
              </Card>
           </TabsContent>
 
           <TabsContent value="settings" className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <Card className="rounded-[2.5rem] border-none shadow-sm bg-white">
-              <CardHeader className="bg-slate-50 border-b"><CardTitle className="text-lg font-black">🌐 Global Config</CardTitle></CardHeader>
+              <CardHeader className="bg-slate-50 border-b"><CardTitle className="text-lg font-black flex items-center gap-2"><Settings className="w-5 h-5" /> Global Config</CardTitle></CardHeader>
               <CardContent className="p-8 space-y-6">
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase">App Title (Site Name)</Label>
+                  <Label className="text-[10px] font-black uppercase">Site Name</Label>
                   <Input value={settings?.siteTitle} onChange={e => setSettings({...settings, siteTitle: e.target.value})} className="h-12 rounded-xl" />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-[10px] font-black uppercase">Footer Dev Text</Label>
+                  <Label className="text-[10px] font-black uppercase">Branding Footer Text</Label>
                   <Input value={settings?.footerText} onChange={e => setSettings({...settings, footerText: e.target.value})} className="h-12 rounded-xl" />
                 </div>
-                <Button onClick={handleUpdateSettings} className="w-full bg-accent h-16 rounded-2xl font-black text-lg text-white">SAVE GLOBAL CONFIG 🚀</Button>
+                <Button onClick={handleUpdateSettings} className="w-full bg-accent h-16 rounded-2xl font-black text-lg text-white gap-2">
+                  <Save className="w-6 h-6" /> SIMPAN KONFIGURASI
+                </Button>
               </CardContent>
             </Card>
 
             <Card className="rounded-[2.5rem] border-none shadow-sm bg-white">
               <CardHeader className="bg-slate-50 border-b flex flex-row items-center justify-between">
-                <CardTitle className="text-lg font-black">🏦 Master Bank & E-Wallet</CardTitle>
+                <CardTitle className="text-lg font-black flex items-center gap-2"><CreditCard className="w-5 h-5" /> Master Bank & E-Wallet</CardTitle>
                 <Button size="sm" onClick={handleAddBank} variant="outline" className="rounded-xl font-bold h-9"><Plus className="w-4 h-4 mr-1" /> Add Bank</Button>
               </CardHeader>
               <CardContent className="p-8 space-y-4">
@@ -348,7 +349,9 @@ export default function SuperAdminDashboard() {
                     </div>
                   ))}
                 </div>
-                <Button onClick={handleUpdateSettings} className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl mt-4">💾 SAVE BANK LIST</Button>
+                <Button onClick={handleUpdateSettings} className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl mt-4 gap-2">
+                  <Save className="w-5 h-5" /> SIMPAN DAFTAR BANK
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>

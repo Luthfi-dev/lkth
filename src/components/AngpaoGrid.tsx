@@ -1,9 +1,8 @@
-
 "use client"
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Gift, Loader2 } from 'lucide-react';
+import { Gift, Loader2, Check } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NominalItem {
@@ -28,31 +27,21 @@ export function AngpaoGrid({ items, onFinish }: AngpaoGridProps) {
     setIsSelecting(true);
     setSelectedIndex(index);
 
-    // 1. Ambil semua nilai nominal asli
     const allNominalValues = items.map(i => i.value);
-    
-    // 2. Acak urutannya untuk tampilan reveal
     let shuffled = [...allNominalValues].sort(() => Math.random() - 0.5);
 
-    // 3. Pastikan index yang dipilih BUKAN nominal yang diblokir
     const blockedValues = items.filter(i => i.blocked).map(i => i.value);
     const allowedValues = items.filter(i => !i.blocked).map(i => i.value);
     
-    // Jika nilai yang teracak di posisi klik adalah nilai terblokir
     if (blockedValues.includes(shuffled[index])) {
-      // Cari index nilai yang 'allowed' di dalam array shuffled untuk ditukar
       const allowedIdxInShuffled = shuffled.findIndex(v => allowedValues.includes(v));
-      
       if (allowedIdxInShuffled !== -1) {
-        // Tukar posisinya
         [shuffled[index], shuffled[allowedIdxInShuffled]] = [shuffled[allowedIdxInShuffled], shuffled[index]];
       } else {
-        // Fallback jika semua nominal diblokir (pengaman sistem)
         shuffled[index] = allowedValues[0] || 0;
       }
     }
 
-    // Animasi pemilihan selama 1.5 detik
     setTimeout(() => {
       setEnvelopesValues(shuffled);
       setIsRevealed(true);
@@ -83,7 +72,6 @@ export function AngpaoGrid({ items, onFinish }: AngpaoGridProps) {
                 !isRevealed && !isSelecting && "hover:shadow-emerald-500/40",
                 isSelecting && isCurrentPick && "animate-angpao-shake"
               )}>
-                {/* Visual Pattern */}
                 <div className="absolute top-0 left-0 w-full h-1/3 bg-emerald-800 rounded-b-[2rem] sm:rounded-b-[3rem] shadow-inner opacity-50"></div>
                 
                 {!showValue ? (
@@ -95,7 +83,7 @@ export function AngpaoGrid({ items, onFinish }: AngpaoGridProps) {
                   </>
                 ) : (
                   <div className="flex flex-col items-center animate-in zoom-in duration-500 z-10 px-2 text-center">
-                    <span className="text-[9px] text-emerald-200 font-bold uppercase mb-1">Isi:</span>
+                    <span className="text-[9px] text-emerald-200 font-bold uppercase mb-1">Isi Berkah</span>
                     <span className="text-sm sm:text-lg font-black text-white">
                       Rp {envelopesValues[idx]?.toLocaleString('id-ID')}
                     </span>
@@ -106,9 +94,9 @@ export function AngpaoGrid({ items, onFinish }: AngpaoGridProps) {
                           e.stopPropagation();
                           onFinish(envelopesValues[idx]);
                         }}
-                        className="mt-4 bg-yellow-400 hover:bg-yellow-300 text-emerald-950 font-black rounded-xl h-8 sm:h-10 px-4 sm:px-6 shadow-lg animate-bounce text-xs sm:text-sm"
+                        className="mt-4 bg-yellow-400 hover:bg-yellow-300 text-emerald-950 font-black rounded-xl h-8 sm:h-10 px-4 sm:px-6 shadow-lg animate-bounce text-xs sm:text-sm gap-2"
                       >
-                        AMBIL! 🧧
+                        <Check className="w-4 h-4" /> AMBIL
                       </Button>
                     )}
                   </div>
@@ -132,7 +120,7 @@ export function AngpaoGrid({ items, onFinish }: AngpaoGridProps) {
       {!isRevealed && !isSelecting && (
         <div className="text-center space-y-2 animate-float">
           <p className="font-black text-emerald-800 text-sm sm:text-lg uppercase tracking-[0.2em]">
-             Pilih Satu Amplop Berkah!
+             Pilih Satu Amplop Berkah
           </p>
           <div className="flex justify-center gap-1">
             <div className="w-2 h-2 rounded-full bg-emerald-400"></div>

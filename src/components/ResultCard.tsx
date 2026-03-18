@@ -1,10 +1,9 @@
-
 "use client"
 
 import React, { useEffect, useState, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Share2, Star, Smartphone, Zap, Heart, Download, Loader2 } from 'lucide-react';
+import { Share2, Star, Smartphone, Zap, Heart, Download, Loader2, Image as ImageIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { toBlob } from 'html-to-image';
 
@@ -63,7 +62,7 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      toast({ title: "Berhasil!", description: "Gambar telah diunduh ke galeri." });
+      toast({ title: "Berhasil", description: "Gambar telah disimpan di perangkat Anda." });
     }
   };
 
@@ -74,8 +73,8 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
     if (navigator.share && typeof window !== 'undefined') {
       try {
         const shareData: any = {
-          title: 'LuckyTHR Jackpot!',
-          text: formattedMessage, // Hanya ucapan saja sesuai permintaan
+          title: 'LuckyTHR Jackpot',
+          text: formattedMessage,
         };
 
         if (blob) {
@@ -101,7 +100,6 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
   return (
     <div className="space-y-6">
       <div className="overflow-hidden p-2">
-        {/* Card dibuat lebih pendek & visual terfokus */}
         <div ref={cardRef} className="bg-white rounded-[2.5rem] overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.15)] max-w-sm mx-auto">
           <Card className="border-none rounded-[2.5rem] bg-white group">
             <div className="relative h-36 w-full bg-gradient-to-br from-accent via-orange-600 to-yellow-400 overflow-hidden">
@@ -125,7 +123,7 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
                     )}
                   </div>
                 </div>
-                <h2 className="text-xl font-black text-white tracking-tighter italic">JACKPOT!</h2>
+                <h2 className="text-xl font-black text-white tracking-tighter italic">JACKPOT</h2>
               </div>
             </div>
 
@@ -152,7 +150,7 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
                   Experience at <span className="text-accent">{domain || 'LuckyTHR'}</span>
                 </p>
                 <div className="flex items-center justify-center gap-1 text-[8px] text-slate-400 font-bold mt-1">
-                  <span>by</span>
+                  <span>developed by</span>
                   <span className="text-accent flex items-center gap-0.5">
                     maudigi.com <Heart className="w-2 h-2 fill-accent" />
                   </span>
@@ -164,7 +162,6 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
       </div>
 
       <div className="flex flex-col gap-3 px-4">
-        {/* Tombol Simpan Gambar di Atas sesuai permintaan */}
         <Button 
           onClick={handleDownload}
           disabled={isExporting}
@@ -172,7 +169,7 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
           className="w-full h-14 rounded-[1.5rem] border-2 border-slate-200 text-md font-black gap-3 bg-white hover:bg-slate-50 active:scale-95 transition-all"
         >
           {isExporting ? <Loader2 className="animate-spin" /> : <Download className="w-5 h-5" />}
-          SIMPAN GAMBAR 📸
+          SIMPAN GAMBAR
         </Button>
         
         <Button 
@@ -181,7 +178,7 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
           className="w-full h-14 rounded-[1.5rem] bg-accent hover:bg-accent/90 text-md font-black gap-3 shadow-lg active:scale-95 transition-all"
         >
           {isExporting ? <Loader2 className="animate-spin" /> : <Share2 className="w-5 h-5" />}
-          SHARE MEDSOS 🚀
+          SHARE MEDSOS
         </Button>
       </div>
     </div>
