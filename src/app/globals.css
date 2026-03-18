@@ -74,3 +74,31 @@
 .animate-float {
   animation: float 3s ease-in-out infinite;
 }
+
+@keyframes angpao-shake {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
+}
+
+.animate-angpao-shake {
+  animation: angpao-shake 0.2s ease-in-out infinite;
+}
+
+@keyframes angpao-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+.animate-angpao-bounce {
+  animation: angpao-bounce 0.8s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% { filter: drop-shadow(0 0 5px rgba(225, 87, 14, 0.5)); }
+  50% { filter: drop-shadow(0 0 20px rgba(225, 87, 14, 0.8)); }
+}
+
+.animate-glow {
+  animation: glow-pulse 1.5s ease-in-out infinite;
+}

@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -8,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { PlusCircle, Copy, LogOut, Users, Gift, Share2, Search, Database, Trash2, Settings2, Plus, Coins, Ban, Download, AlertTriangle } from 'lucide-react';
+import { PlusCircle, Copy, LogOut, Users, Gift, Share2, Search, Database, Trash2, Settings2, Plus, Coins, Ban, Download, AlertTriangle, MousePointer2, RefreshCw } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
@@ -16,6 +15,7 @@ import { getWinners, getEvents, deleteWinner, createEvent, updateEvent, clearWin
 import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from '@/lib/utils';
 
 export default function AdminDashboard() {
@@ -32,7 +32,8 @@ export default function AdminDashboard() {
     title: '',
     message: 'Selamat Hari Raya $nama! Semoga berkah selalu.',
     nominals: '1000, 2000, 5000, 10000, 20000, 50000, 100000',
-    allow_multiple_plays: false
+    allow_multiple_plays: false,
+    interaction_type: 'wheel'
   });
 
   const fetchData = async () => {
@@ -79,7 +80,7 @@ export default function AdminDashboard() {
     const headers = ["Nama", "Wallet Info", "Amount", "Timestamp"];
     const rows = filtered.map(w => [
       w.name,
-      w.wallet_info,
+      `"${w.wallet_info}"`,
       w.amount,
       new Date(w.timestamp).toLocaleString('id-ID')
     ]);
@@ -94,7 +95,7 @@ export default function AdminDashboard() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    toast({ title: "Ekspor Berhasil", description: "Data telah diunduh dalam format CSV (Excel compatible)." });
+    toast({ title: "Ekspor Berhasil", description: "Data telah diunduh dalam format CSV." });
   };
 
   const handleCreateEvent = async () => {
@@ -118,6 +119,12 @@ export default function AdminDashboard() {
     fetchData();
   };
 
+  const updateEventType = async (type: string) => {
+    await updateEvent(selectedEventId, { interaction_type: type });
+    toast({ title: "Tampilan Diubah", description: `Model interaksi diganti ke ${type === 'wheel' ? 'Roda' : 'Angpao'}.` });
+    fetchData();
+  };
+
   const toggleMultiPlay = async (eventId: string, currentVal: boolean) => {
     await updateEvent(eventId, { allow_multiple_plays: !currentVal });
     toast({ title: "Updated", description: "Pengaturan akses telah diubah." });
@@ -130,14 +137,14 @@ export default function AdminDashboard() {
     const updatedNominals = [...(currentEvent?.nominals || []), { value: val, blocked: false }];
     await updateEvent(selectedEventId, { nominals: updatedNominals });
     setNewNominal('');
-    toast({ title: "Nominal Ditambahkan", description: `Rp ${val.toLocaleString('id-ID')} masuk ke roda.` });
+    toast({ title: "Nominal Ditambahkan", description: `Rp ${val.toLocaleString('id-ID')} masuk ke sistem.` });
     fetchData();
   };
 
   const removeNominal = async (index: number) => {
     const updatedNominals = currentEvent.nominals.filter((_: any, i: number) => i !== index);
     await updateEvent(selectedEventId, { nominals: updatedNominals });
-    toast({ title: "Nominal Dihapus", description: "Pilihan tersebut dihapus dari roda." });
+    toast({ title: "Nominal Dihapus", description: "Pilihan tersebut dihapus dari sistem." });
     fetchData();
   };
 
@@ -221,6 +228,18 @@ export default function AdminDashboard() {
                     <Input placeholder="THR Keluarga Besar..." value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})} className="rounded-xl" />
                   </div>
                   <div className="space-y-2">
+                    <Label>Model Permainan</Label>
+                    <Select value={newEvent.interaction_type} onValueChange={(v) => setNewEvent({...newEvent, interaction_type: v})}>
+                      <SelectTrigger className="rounded-xl">
+                        <SelectValue placeholder="Pilih Tampilan" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="wheel">Roda Putar (Default)</SelectItem>
+                        <SelectItem value="angpao">Pilih Ampao (Seru!)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
                     <Label>Pesan Kartu Pemenang</Label>
                     <Input placeholder="Selamat $nama! Semoga berkah." value={newEvent.message} onChange={e => setNewEvent({...newEvent, message: e.target.value})} className="rounded-xl" />
                   </div>
@@ -246,14 +265,34 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <Card className="lg:col-span-1 border-none shadow-sm h-fit rounded-3xl overflow-hidden">
             <CardHeader className="bg-white border-b">
-              <CardTitle className="text-lg flex items-center gap-2"><Settings2 className="w-4 h-4" /> Pengaturan Roda</CardTitle>
+              <CardTitle className="text-lg flex items-center gap-2"><Settings2 className="w-4 h-4" /> Pengaturan Event</CardTitle>
             </CardHeader>
             <CardContent className="p-6 space-y-6">
-              <div className="space-y-3">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                   <Label className="text-xs font-black uppercase text-muted-foreground">Model Tampilan</Label>
+                   <div className="grid grid-cols-2 gap-2">
+                      <Button 
+                        variant={currentEvent?.interaction_type === 'wheel' || !currentEvent?.interaction_type ? 'default' : 'outline'} 
+                        className="rounded-xl h-10 text-xs gap-2"
+                        onClick={() => updateEventType('wheel')}
+                      >
+                        <RefreshCw className="w-4 h-4" /> Roda
+                      </Button>
+                      <Button 
+                        variant={currentEvent?.interaction_type === 'angpao' ? 'default' : 'outline'} 
+                        className="rounded-xl h-10 text-xs gap-2"
+                        onClick={() => updateEventType('angpao')}
+                      >
+                        <MousePointer2 className="w-4 h-4" /> Angpao
+                      </Button>
+                   </div>
+                </div>
+
                 <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border">
                   <div>
                     <p className="font-bold text-sm">Main Berkali-kali</p>
-                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Tanpa batasan IP</p>
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wider">Tanpa batasan browser</p>
                   </div>
                   <Switch 
                     checked={currentEvent?.allow_multiple_plays} 
@@ -263,7 +302,7 @@ export default function AdminDashboard() {
               </div>
 
               <div className="space-y-3 pt-4 border-t">
-                 <Label className="text-xs font-black uppercase text-muted-foreground">Isi Roda & Blokir Rezeki</Label>
+                 <Label className="text-xs font-black uppercase text-muted-foreground">Isi Hadiah & Blokir Nominal</Label>
                  <p className="text-[10px] text-muted-foreground italic mb-2">*Klik nominal untuk blokir (Warna merah = tidak bisa didapat)</p>
                  <div className="flex gap-2">
                     <Input 
@@ -315,9 +354,6 @@ export default function AdminDashboard() {
                       </div>
                     );
                   })}
-                  {(!currentEvent?.nominals || currentEvent?.nominals.length === 0) && (
-                    <p className="text-center py-4 text-xs text-muted-foreground italic">Roda masih kosong</p>
-                  )}
                  </div>
               </div>
             </CardContent>
@@ -327,7 +363,7 @@ export default function AdminDashboard() {
             <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between bg-white border-b px-6 py-5 gap-4">
               <div>
                 <CardTitle className="text-lg font-black">Monitoring Pemenang</CardTitle>
-                <p className="text-xs text-muted-foreground">Daftar peserta yang sudah memutar roda</p>
+                <p className="text-xs text-muted-foreground">Daftar peserta yang sudah berpartisipasi</p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <Button onClick={exportToExcel} size="sm" variant="outline" className="rounded-xl border-green-600 text-green-600 hover:bg-green-50 h-10">
@@ -346,7 +382,7 @@ export default function AdminDashboard() {
                         <AlertTriangle className="w-6 h-6" /> Hapus Semua Data?
                       </AlertDialogTitle>
                       <AlertDialogDescription>
-                        Tindakan ini akan menghapus SELURUH daftar pemenang untuk event ini. Peserta akan bisa memutar roda kembali. Tindakan ini tidak dapat dibatalkan.
+                        Tindakan ini akan menghapus SELURUH daftar pemenang untuk event ini. Peserta akan bisa bermain kembali. Tindakan ini tidak dapat dibatalkan.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
@@ -358,9 +394,9 @@ export default function AdminDashboard() {
 
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input 
+                  <input 
                     placeholder="Cari nama..." 
-                    className="pl-9 w-[180px] sm:w-[200px] rounded-xl h-10" 
+                    className="pl-9 w-[180px] sm:w-[200px] border rounded-xl h-10 text-sm focus:outline-none focus:ring-2 focus:ring-accent/50" 
                     value={searchTerm}
                     onChange={e => setSearchTerm(e.target.value)}
                   />

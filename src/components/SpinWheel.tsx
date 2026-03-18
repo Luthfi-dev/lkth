@@ -1,7 +1,6 @@
-
 "use client"
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Play } from 'lucide-react';
 
@@ -18,7 +17,12 @@ interface SpinWheelProps {
 export function SpinWheel({ items, onFinish }: SpinWheelProps) {
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
   const wheelRef = useRef<SVGSVGElement>(null);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const colors = [
     '#E6C24C', '#E1570E', '#F3A712', '#D33F49', '#77AF9C', '#285943', '#1B4332', '#081C15'
@@ -36,23 +40,22 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
     setIsSpinning(true);
     
     const segmentAngle = 360 / items.length;
-    // Berputar minimal 15 kali putaran penuh (5400 derajat) agar terlihat sangat cepat di awal
-    const extraSpins = 15 * 360; 
+    // Berputar minimal 20 kali putaran penuh (7200 derajat) agar terlihat sangat cepat
+    const extraSpins = 20 * 360; 
     
-    // Hitung posisi berhenti agar tepat di panah atas (arah jam 12)
-    // SVG dimulai dari 0 derajat (arah jam 3), panah ada di jam 12 (-90 derajat).
+    // SVG dimulai dari 0 derajat (arah jam 3). Panah ada di arah jam 12 (-90 derajat).
+    // Posisi berhenti = (360 - offset_winner) - offset_panah
     const stopAt = 360 - (winnerIndex * segmentAngle + segmentAngle / 2);
     
-    // Kalkulasi rotasi kumulatif agar animasi selalu berputar maju
-    const currentRotationOffset = rotation % 360;
-    let delta = stopAt - currentRotationOffset;
-    if (delta <= 0) delta += 360;
+    // Kalkulasi rotasi kumulatif agar animasi selalu berputar maju dengan cantik
+    // Kita tambahkan rotasi saat ini dengan extraSpins dan sisa sudut target
+    const currentRotationBase = Math.floor(rotation / 360) * 360;
+    const finalRotation = currentRotationBase + extraSpins + stopAt;
     
-    const finalRotation = rotation + extraSpins + delta;
     setRotation(finalRotation);
 
-    // Durasi animasi 8 detik dengan easing dramatis sesuai permintaan
-    // cubic-bezier(0.15, 0, 0.05, 1) memberikan efek melambat yang sangat halus di akhir
+    // Durasi animasi 8 detik dengan easing dramatis yang sangat halus di akhir
+    // cubic-bezier(0.1, 0, 0, 1) memberikan efek melambat yang sangat elegan
     setTimeout(() => {
       setIsSpinning(false);
       onFinish(winner.value);
@@ -84,11 +87,11 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
               x={radius}
               y={radius - 65}
               fill="white"
-              fontSize={totalItems > 12 ? "4" : "6"}
+              fontSize={totalItems > 12 ? "4" : totalItems > 8 ? "5" : "7"}
               fontWeight="900"
               textAnchor="middle"
               transform={`rotate(-90, ${radius}, ${radius - 65})`}
-              className="pointer-events-none select-none"
+              className="pointer-events-none select-none font-sans"
             >
               {item.value.toLocaleString('id-ID')}
             </text>
@@ -97,6 +100,8 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
       );
     });
   };
+
+  if (!isMounted) return null;
 
   return (
     <div className="flex flex-col items-center gap-12">
@@ -114,7 +119,7 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
           <svg
             ref={wheelRef}
             viewBox="0 0 200 200"
-            className="w-full h-full transition-transform duration-[8000ms] ease-[cubic-bezier(0.15,0,0.05,1)]"
+            className="w-full h-full transition-transform duration-[8000ms] ease-[cubic-bezier(0.1,0,0,1)]"
             style={{ transform: `rotate(${rotation}deg)` }}
           >
             {renderSegments()}

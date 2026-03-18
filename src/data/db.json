@@ -7,237 +7,26 @@
       "password": "123456",
       "role": "superadmin",
       "timestamp": "2024-03-18T00:00:00.000Z"
-    },
-    {
-      "name": "Fifi",
-      "email": "dilfarisna@gmail.com",
-      "password": "123456",
-      "id": "7cpabpwyd",
-      "timestamp": "2024-03-18T11:09:44.888Z"
     }
   ],
   "events": [
     {
       "id": "event-123",
-      "admin_id": "default-admin",
+      "admin_id": "sa-1",
       "title": "THR Keluarga Besar Haji Sulaiman",
       "message": "Selamat Hari Raya $nama! Semoga berkah dan bahagia selalu.",
+      "interaction_type": "wheel",
       "nominals": [
-        {
-          "value": 10000,
-          "blocked": false
-        },
-        {
-          "value": 20000,
-          "blocked": false
-        },
-        {
-          "value": 50000,
-          "blocked": false
-        },
-        {
-          "value": 100000,
-          "blocked": false
-        },
-        {
-          "value": 5000,
-          "blocked": false
-        },
-        {
-          "value": 2000,
-          "blocked": false
-        }
+        { "value": 10000, "blocked": false },
+        { "value": 20000, "blocked": false },
+        { "value": 50000, "blocked": false },
+        { "value": 100000, "blocked": false },
+        { "value": 5000, "blocked": false },
+        { "value": 2000, "blocked": false }
       ],
-      "is_active": true
-    },
-    {
-      "title": "Tess",
-      "message": "Selamat Hari Raya $nama! Semoga berkah selalu.",
-      "nominals": [
-        {
-          "value": 1000,
-          "blocked": false
-        },
-        {
-          "value": 2000,
-          "blocked": false
-        },
-        {
-          "value": 5000,
-          "blocked": false
-        },
-        {
-          "value": 20000,
-          "blocked": true
-        },
-        {
-          "value": 50000,
-          "blocked": true
-        },
-        {
-          "value": 100000,
-          "blocked": true
-        }
-      ],
-      "allow_multiple_plays": true,
       "is_active": true,
-      "id": "p1mp7dgpj",
-      "timestamp": "2026-03-18T11:38:59.567Z"
+      "allow_multiple_plays": false
     }
   ],
-  "winners": [
-    {
-      "event_id": "p1mp7dgpj",
-      "name": "Fifi",
-      "photo_url": "",
-      "amount": 50000,
-      "wallet_info": "GoPay - 082273747483",
-      "id": "gnl5p5mya",
-      "timestamp": "2026-03-18T12:12:36.462Z"
-    },
-    {
-      "event_id": "p1mp7dgpj",
-      "name": "Fifi",
-      "photo_url": "",
-      "amount": 5000,
-      "wallet_info": "GoPay - 082273747483",
-      "id": "dxwv7umm4",
-      "timestamp": "2026-03-18T12:12:36.861Z"
-    },
-    {
-      "event_id": "p1mp7dgpj",
-      "name": "Hhhh",
-      "photo_url": "",
-      "amount": 100000,
-      "wallet_info": "Lainnya - 0887",
-      "id": "kcg2d06xl",
-      "timestamp": "2026-03-18T12:15:56.225Z"
-    },
-    {
-      "event_id": "p1mp7dgpj",
-      "name": "Hhhh",
-      "photo_url": "",
-      "amount": 2000,
-      "wallet_info": "Lainnya - 0887",
-      "id": "datw3svb9",
-      "timestamp": "2026-03-18T12:15:56.775Z"
-    },
-    {
-      "event_id": "event-123",
-      "name": "Fff",
-      "photo_url": "",
-      "amount": 50000,
-      "wallet_info": "Lainnya - 093838",
-      "id": "szjewkr7v",
-      "timestamp": "2026-03-18T12:17:19.397Z"
-    },
-    {
-      "event_id": "event-123",
-      "name": "Fff",
-      "photo_url": "",
-      "amount": 50000,
-      "wallet_info": "Lainnya - 093838",
-      "id": "0l8er85nt",
-      "timestamp": "2026-03-18T12:17:19.862Z"
-    },
-    {
-      "event_id": "p1mp7dgpj",
-      "name": "Aaaa",
-      "photo_url": "",
-      "amount": 5000,
-      "wallet_info": "Lainnya - 08837373",
-      "id": "mohnyg187",
-      "timestamp": "2026-03-18T12:23:30.881Z"
-    },
-    {
-      "event_id": "p1mp7dgpj",
-      "name": "Tess",
-      "photo_url": "",
-      "amount": 2000,
-      "wallet_info": "Lainnya - 08383737",
-      "id": "pmh8r98lm",
-      "timestamp": "2026-03-18T12:32:20.956Z"
-    },
-    {
-      "event_id": "p1mp7dgpj",
-      "name": "Tess",
-      "photo_url": "",
-      "amount": 5000,
-      "wallet_info": "Lainnya - 08383737",
-      "id": "13iv62ezt",
-      "timestamp": "2026-03-18T12:32:45.426Z"
-    },
-    {
-      "event_id": "p1mp7dgpj",
-      "name": "Tess",
-      "photo_url": "",
-      "amount": 5000,
-      "wallet_info": "BSI - 08383737",
-      "id": "5mhoofil4",
-      "timestamp": "2026-03-18T12:35:56.288Z"
-    },
-    {
-      "event_id": "p1mp7dgpj",
-      "name": "Tess",
-      "photo_url": "",
-      "amount": 1000,
-      "wallet_info": "BSI - 08383737",
-      "id": "yjvmpurwv",
-      "timestamp": "2026-03-18T12:37:48.764Z"
-    },
-    {
-      "event_id": "p1mp7dgpj",
-      "name": "Tess",
-      "photo_url": "",
-      "amount": 1000,
-      "wallet_info": "BSI - 08383737",
-      "id": "ig1l11yeo",
-      "timestamp": "2026-03-18T12:39:06.011Z"
-    },
-    {
-      "event_id": "p1mp7dgpj",
-      "name": "Tess",
-      "photo_url": "",
-      "amount": 5000,
-      "wallet_info": "BSI - 08383737",
-      "id": "4vz7mhdjg",
-      "timestamp": "2026-03-18T12:42:08.545Z"
-    },
-    {
-      "event_id": "p1mp7dgpj",
-      "name": "Tess",
-      "photo_url": "",
-      "amount": 5000,
-      "wallet_info": "BSI - 08383737",
-      "id": "ry0wk7b3o",
-      "timestamp": "2026-03-18T12:44:58.899Z"
-    },
-    {
-      "event_id": "p1mp7dgpj",
-      "name": "Tess",
-      "photo_url": "",
-      "amount": 5000,
-      "wallet_info": "BSI - 08383737",
-      "id": "6l7m9p2jc",
-      "timestamp": "2026-03-18T12:45:27.953Z"
-    },
-    {
-      "event_id": "p1mp7dgpj",
-      "name": "Tess",
-      "photo_url": "",
-      "amount": 1000,
-      "wallet_info": "BSI - 08383737",
-      "id": "hwpxc9b7e",
-      "timestamp": "2026-03-18T12:50:30.410Z"
-    },
-    {
-      "event_id": "p1mp7dgpj",
-      "name": "Tess",
-      "photo_url": "",
-      "amount": 2000,
-      "wallet_info": "BSI - 08383737",
-      "id": "qamueszk1",
-      "timestamp": "2026-03-18T12:51:09.981Z"
-    }
-  ]
+  "winners": []
 }

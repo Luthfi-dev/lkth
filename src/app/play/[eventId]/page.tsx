@@ -8,8 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SpinWheel } from '@/components/SpinWheel';
+import { AngpaoGrid } from '@/components/AngpaoGrid';
 import { ResultCard } from '@/components/ResultCard';
-import { Camera, AlertCircle, Loader2, Gift } from 'lucide-react';
+import { Camera, AlertCircle, Loader2, Gift, MousePointer2, RefreshCw } from 'lucide-react';
 import { addWinner, getEvents } from '@/app/actions/db-actions';
 
 const BANK_OPTIONS = ['Dana', 'OVO', 'GoPay', 'ShopeePay', 'BCA', 'Mandiri', 'BNI', 'BRI', 'Lainnya'];
@@ -104,17 +105,17 @@ export default function PlayEvent() {
   };
 
   const createConfetti = () => {
-    const newConfetti = Array.from({ length: 60 }).map((_, i) => ({
+    const newConfetti = Array.from({ length: 80 }).map((_, i) => ({
       id: i,
       left: Math.random() * 100,
       color: ['#E6C24C', '#E1570E', '#F3A712', '#D33F49', '#77AF9C', '#3B82F6', '#10B981'][Math.floor(Math.random() * 7)],
       delay: Math.random() * 3,
-      size: Math.random() * 10 + 5
+      size: Math.random() * 12 + 4
     }));
     setConfetti(newConfetti);
   };
 
-  const onSpinFinish = async (amount: number) => {
+  const onFinishInteraction = async (amount: number) => {
     const walletDisplay = formData.wallet === 'Lainnya' ? formData.customWalletName : formData.wallet;
     
     const winnerData = {
@@ -161,7 +162,7 @@ export default function PlayEvent() {
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 sm:p-8 flex flex-col items-center justify-center relative overflow-hidden">
-      {/* Confetti Particles - Muncul saat step === result */}
+      {/* Confetti Particles */}
       {step === 'result' && confetti.map(c => (
         <div 
           key={c.id} 
@@ -281,7 +282,7 @@ export default function PlayEvent() {
                 className="w-full h-14 rounded-2xl bg-accent text-lg font-bold hover:bg-accent/90 shadow-lg shadow-accent/20 transition-all"
                 disabled={isLoading || !formData.name || !formData.wallet || !formData.walletNumber || (formData.wallet === 'Lainnya' && !formData.customWalletName)}
               >
-                {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Lanjut ke Roda! 🎡'}
+                {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : `Mulai Sekarang ${eventData.interaction_type === 'angpao' ? '🎁' : '🎡'}`}
               </Button>
             </form>
           </CardContent>
@@ -291,10 +292,22 @@ export default function PlayEvent() {
       {step === 'spinning' && (
         <div className="text-center space-y-12 animate-in fade-in zoom-in duration-500 max-w-2xl w-full">
           <div className="space-y-2 px-4">
-            <h2 className="text-4xl font-black text-accent tracking-tighter uppercase leading-none drop-shadow-sm">Bismillah Beruntung!</h2>
-            <p className="text-slate-600 font-medium">Klik tombol PUTAR untuk mulai, {formData.name.split(' ')[0]}!</p>
+            <h2 className="text-4xl font-black text-accent tracking-tighter uppercase leading-none drop-shadow-sm flex items-center justify-center gap-3">
+              {eventData.interaction_type === 'angpao' ? <MousePointer2 className="w-8 h-8" /> : <RefreshCw className="w-8 h-8" />}
+              Bismillah Beruntung!
+            </h2>
+            <p className="text-slate-600 font-medium">
+               {eventData.interaction_type === 'angpao' 
+                 ? 'Pilih satu amplop untuk melihat isinya!' 
+                 : `Klik tombol PUTAR untuk mulai, ${formData.name.split(' ')[0]}!`}
+            </p>
           </div>
-          <SpinWheel items={eventData.nominals} onFinish={onSpinFinish} />
+          
+          {eventData.interaction_type === 'angpao' ? (
+            <AngpaoGrid items={eventData.nominals} onFinish={onFinishInteraction} />
+          ) : (
+            <SpinWheel items={eventData.nominals} onFinish={onFinishInteraction} />
+          )}
         </div>
       )}
 
