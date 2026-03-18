@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useEffect, useState, useRef } from 'react';
@@ -32,6 +31,7 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
     if (!cardRef.current) return null;
     setIsExporting(true);
     try {
+      // Mengurangi font check untuk menghindari SecurityError cors
       const blob = await toBlob(cardRef.current, { 
         cacheBust: true,
         skipFonts: false,
@@ -86,10 +86,8 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
         }
 
         await navigator.share(shareData);
-        toast({ title: "Dibagikan!", description: "Terima kasih sudah berbagi!" });
       } catch (err: any) {
         if (err.name !== 'AbortError') {
-          // Fallback manual jika gagal
           const waUrl = `https://wa.me/?text=${encodeURIComponent(formattedMessage)}`;
           window.open(waUrl, '_blank');
         }
@@ -104,53 +102,53 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
   return (
     <div className="space-y-6">
       <div className="overflow-hidden p-2">
+        {/* Card dibuat lebih pendek */}
         <div ref={cardRef} className="bg-white rounded-[2.5rem] overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.15)] max-w-sm mx-auto">
           <Card className="border-none rounded-[2.5rem] bg-white group">
-            <div className="relative h-44 w-full bg-gradient-to-br from-accent via-orange-600 to-yellow-400 overflow-hidden">
+            <div className="relative h-36 w-full bg-gradient-to-br from-accent via-orange-600 to-yellow-400 overflow-hidden">
               <div className="absolute top-4 left-4 animate-bounce">
-                <Star className="text-white/40 fill-white/20 w-6 h-6" />
+                <Star className="text-white/40 fill-white/20 w-4 h-4" />
               </div>
               <div className="absolute top-6 right-6 rotate-45 animate-pulse">
-                <Zap className="text-white/20 fill-white/10 w-12 h-12" />
+                <Zap className="text-white/20 fill-white/10 w-8 h-8" />
               </div>
 
               <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
-                <div className="relative mb-2">
+                <div className="relative mb-1">
                   <div className="absolute -inset-2 bg-white/20 blur-xl rounded-full"></div>
-                  <div className="relative w-16 h-16 rounded-2xl border-4 border-white shadow-xl overflow-hidden bg-slate-100 rotate-3">
+                  <div className="relative w-14 h-14 rounded-2xl border-4 border-white shadow-xl overflow-hidden bg-slate-100 rotate-3">
                     {photoUrl ? (
                       <img src={photoUrl} alt={name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-slate-200 text-slate-400">
-                        <Smartphone className="w-6 h-6" />
+                        <Smartphone className="w-5 h-5" />
                       </div>
                     )}
                   </div>
                 </div>
-                <h2 className="text-2xl font-black text-white tracking-tighter italic">JACKPOT!</h2>
-                <p className="text-white/90 text-[7px] font-black uppercase tracking-[0.3em]">#LUCKYTHR_WINNER</p>
+                <h2 className="text-xl font-black text-white tracking-tighter italic">JACKPOT!</h2>
               </div>
             </div>
 
-            <CardContent className="pt-6 pb-8 px-6 space-y-5 relative bg-white">
-              <div className="text-center space-y-1">
+            <CardContent className="pt-4 pb-6 px-6 space-y-4 relative bg-white text-center">
+              <div className="space-y-1">
                 <p className="text-[7px] text-muted-foreground uppercase font-black tracking-[0.2em]">Total Berkah:</p>
                 <div className="relative inline-block">
                   <div className="absolute -inset-x-3 bottom-1 h-3 bg-yellow-400/30 -rotate-1"></div>
-                  <div className="relative text-4xl font-black text-slate-900 tracking-tighter">
+                  <div className="relative text-3xl font-black text-slate-900 tracking-tighter">
                     <span className="text-lg align-top mr-0.5">Rp</span>
                     {amount.toLocaleString('id-ID')}
                   </div>
                 </div>
               </div>
 
-              <div className="bg-slate-50/80 p-4 rounded-2xl border-2 border-slate-100/50">
-                <p className="text-slate-800 italic text-center font-bold text-xs leading-relaxed">
+              <div className="bg-slate-50/80 p-3 rounded-2xl border-2 border-slate-100/50">
+                <p className="text-slate-800 italic font-bold text-xs leading-relaxed">
                   {message.replace('$nama', name)}
                 </p>
               </div>
 
-              <div className="text-center pt-4 border-t border-dashed">
+              <div className="pt-3 border-t border-dashed">
                 <p className="text-[7px] text-muted-foreground font-black uppercase tracking-[0.2em] flex items-center justify-center gap-1">
                   Lucky Experience at <span className="text-accent">{domain || 'LuckyTHR'}</span>
                 </p>
@@ -167,11 +165,12 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
       </div>
 
       <div className="flex flex-col gap-3 px-4">
+        {/* Tombol Simpan Gambar di Atas */}
         <Button 
           onClick={handleDownload}
           disabled={isExporting}
           variant="outline"
-          className="w-full h-16 rounded-[1.5rem] border-2 border-slate-200 text-md font-black gap-3 bg-white hover:bg-slate-50 active:scale-95 transition-all"
+          className="w-full h-14 rounded-[1.5rem] border-2 border-slate-200 text-md font-black gap-3 bg-white hover:bg-slate-50 active:scale-95 transition-all"
         >
           {isExporting ? <Loader2 className="animate-spin" /> : <Download className="w-5 h-5" />}
           SIMPAN GAMBAR 📸
@@ -180,7 +179,7 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
         <Button 
           onClick={handleShare} 
           disabled={isExporting}
-          className="w-full h-16 rounded-[1.5rem] bg-accent hover:bg-accent/90 text-md font-black gap-3 shadow-lg active:scale-95 transition-all"
+          className="w-full h-14 rounded-[1.5rem] bg-accent hover:bg-accent/90 text-md font-black gap-3 shadow-lg active:scale-95 transition-all"
         >
           {isExporting ? <Loader2 className="animate-spin" /> : <Share2 className="w-5 h-5" />}
           SHARE MEDSOS 🚀

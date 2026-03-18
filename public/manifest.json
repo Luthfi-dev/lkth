@@ -1,20 +1,20 @@
-
 {
   "name": "Lucky THR - Bagikan Kebahagiaan",
   "short_name": "LuckyTHR",
-  "description": "Platform interaktif bagi-bagi THR digital.",
+  "description": "Platform interaktif untuk berbagi THR dengan cara yang seru.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#e1570e",
   "icons": [
     {
-      "src": "https://picsum.photos/seed/thr-icon/192/192",
+      "src": "https://picsum.photos/seed/gift/192/192",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
-      "src": "https://picsum.photos/seed/thr-icon/512/512",
+      "src": "https://picsum.photos/seed/gift/512/512",
       "sizes": "512x512",
       "type": "image/png"
     }

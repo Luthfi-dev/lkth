@@ -1,9 +1,9 @@
-
 import fs from 'fs';
 import path from 'path';
 
+// DB tersimpan di src/data/db.json
 const DB_PATH = path.join(process.cwd(), 'src/data/db.json');
-// Menyimpan di root proyek (selevel dengan src)
+// Gambar tersimpan di root projek /uploads
 const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
 
 function ensureDbExists() {
@@ -98,6 +98,5 @@ export async function saveFile(base64Data: string) {
   const filePath = path.join(UPLOADS_DIR, fileName);
   
   fs.writeFileSync(filePath, base64Content, { encoding: 'base64' });
-  // Sekarang URL mengarah ke API Route
   return `/api/uploads/${fileName}`;
 }
