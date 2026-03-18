@@ -35,8 +35,8 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
     setIsSpinning(true);
     
     const segmentAngle = 360 / items.length;
-    // Berputar minimal 12 kali putaran penuh (4320 derajat) agar terlihat sangat cepat di awal
-    const extraSpins = 12 * 360; 
+    // Berputar minimal 15 kali putaran penuh (5400 derajat) agar terlihat sangat cepat
+    const extraSpins = 15 * 360; 
     
     // Hitung posisi berhenti agar tepat di panah atas (arah jam 12)
     // SVG dimulai dari 0 derajat (arah jam 3), panah ada di jam 12 (-90 derajat).
@@ -50,11 +50,11 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
     const finalRotation = rotation + extraSpins + delta;
     setRotation(finalRotation);
 
-    // Durasi animasi 8 detik dengan easing dramatis
+    // Durasi animasi 8 detik dengan easing dramatis sesuai permintaan
     setTimeout(() => {
       setIsSpinning(false);
       onFinish(winner.value);
-    }, 8200); 
+    }, 8100); 
   };
 
   const renderSegments = () => {
@@ -76,13 +76,13 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
 
       return (
         <g key={i}>
-          <path d={d} fill={colors[i % colors.length]} stroke="#000" strokeWidth="0.5" />
+          <path d={d} fill={colors[i % colors.length]} stroke="#000" strokeWidth="0.2" />
           <g transform={`rotate(${startAngle + angleStep / 2}, ${radius}, ${radius})`}>
             <text
               x={radius}
               y={radius - 65}
               fill="white"
-              fontSize={totalItems > 12 ? "5" : "7"}
+              fontSize={totalItems > 12 ? "4" : "6"}
               fontWeight="900"
               textAnchor="middle"
               transform={`rotate(-90, ${radius}, ${radius - 65})`}
@@ -108,11 +108,11 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
         </div>
 
         {/* Roda Utama */}
-        <div className="w-full h-full rounded-full border-[12px] border-slate-900 bg-slate-900 shadow-[0_0_50px_rgba(0,0,0,0.3)] overflow-hidden">
+        <div className="w-full h-full rounded-full border-[12px] border-slate-900 bg-slate-900 shadow-[0_0_60px_rgba(0,0,0,0.4)] overflow-hidden">
           <svg
             ref={wheelRef}
             viewBox="0 0 200 200"
-            className="w-full h-full transition-transform duration-[8000ms] ease-[cubic-bezier(0.15,0,0.15,1)]"
+            className="w-full h-full transition-transform duration-[8000ms] ease-[cubic-bezier(0.1,0,0,1)]"
             style={{ transform: `rotate(${rotation}deg)` }}
           >
             {renderSegments()}
@@ -121,7 +121,7 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
 
         {/* Pin Tengah */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-white border-[6px] border-slate-900 rounded-full z-20 flex items-center justify-center shadow-2xl">
-          <div className={`w-8 h-8 bg-accent rounded-full ${isSpinning ? 'animate-pulse' : ''}`}></div>
+          <div className="w-8 h-8 bg-accent rounded-full"></div>
         </div>
       </div>
 

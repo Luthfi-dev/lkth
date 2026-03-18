@@ -42,19 +42,28 @@
   }
 }
 
+/* Confetti Animation */
 .confetti-particle {
   position: fixed;
-  top: -10px;
-  width: 10px;
-  height: 10px;
-  z-index: 100;
+  top: -20px;
+  z-index: 1000;
   pointer-events: none;
-  animation: confetti-fall 4s linear forwards;
+  animation: confetti-fall 4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
 @keyframes confetti-fall {
-  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+  0% { 
+    transform: translateY(0) rotate(0deg) scale(0); 
+    opacity: 0; 
+  }
+  10% {
+    opacity: 1;
+    transform: translateY(10vh) rotate(45deg) scale(1);
+  }
+  100% { 
+    transform: translateY(100vh) rotate(720deg) scale(0.5); 
+    opacity: 0; 
+  }
 }
 
 @keyframes float {

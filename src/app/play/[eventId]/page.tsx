@@ -104,11 +104,12 @@ export default function PlayEvent() {
   };
 
   const createConfetti = () => {
-    const newConfetti = Array.from({ length: 40 }).map((_, i) => ({
+    const newConfetti = Array.from({ length: 60 }).map((_, i) => ({
       id: i,
       left: Math.random() * 100,
-      color: ['#E6C24C', '#E1570E', '#F3A712', '#D33F49', '#77AF9C'][Math.floor(Math.random() * 5)],
-      delay: Math.random() * 2
+      color: ['#E6C24C', '#E1570E', '#F3A712', '#D33F49', '#77AF9C', '#3B82F6', '#10B981'][Math.floor(Math.random() * 7)],
+      delay: Math.random() * 3,
+      size: Math.random() * 10 + 5
     }));
     setConfetti(newConfetti);
   };
@@ -160,8 +161,8 @@ export default function PlayEvent() {
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 sm:p-8 flex flex-col items-center justify-center relative overflow-hidden">
-      {/* Confetti Particles */}
-      {confetti.map(c => (
+      {/* Confetti Particles - Muncul saat step === result */}
+      {step === 'result' && confetti.map(c => (
         <div 
           key={c.id} 
           className="confetti-particle" 
@@ -169,8 +170,9 @@ export default function PlayEvent() {
             left: `${c.left}%`, 
             backgroundColor: c.color, 
             animationDelay: `${c.delay}s`,
-            width: Math.random() * 8 + 4 + 'px',
-            height: Math.random() * 8 + 4 + 'px'
+            width: `${c.size}px`,
+            height: `${c.size}px`,
+            borderRadius: Math.random() > 0.5 ? '50%' : '2px'
           }} 
         />
       ))}
@@ -179,7 +181,7 @@ export default function PlayEvent() {
       <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl"></div>
 
       {step === 'form' && (
-        <Card className="w-full max-w-md border-none shadow-2xl rounded-3xl overflow-hidden relative z-10">
+        <Card className="w-full max-w-md border-none shadow-2xl rounded-3xl overflow-hidden relative z-50">
           <div className="bg-accent p-6 text-center text-white">
              <Gift className="w-12 h-12 mx-auto mb-2" />
              <h2 className="text-2xl font-black uppercase tracking-tighter leading-none">{eventData.title}</h2>
@@ -196,7 +198,7 @@ export default function PlayEvent() {
                   required 
                   value={formData.name}
                   onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  className="rounded-xl h-12 border-2 focus:border-accent bg-white"
+                  className="rounded-xl h-12 border-2 focus:border-accent bg-white relative z-50"
                   autoComplete="name"
                 />
               </div>
@@ -234,10 +236,10 @@ export default function PlayEvent() {
                       onValueChange={v => setFormData(prev => ({ ...prev, wallet: v }))} 
                       required
                     >
-                      <SelectTrigger id="wallet-select" className="h-12 rounded-xl border-2 bg-white">
+                      <SelectTrigger id="wallet-select" className="h-12 rounded-xl border-2 bg-white relative z-50">
                         <SelectValue placeholder="Pilih..." />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="z-[100]">
                         {BANK_OPTIONS.map(opt => (
                           <SelectItem key={opt} value={opt}>{opt}</SelectItem>
                         ))}
@@ -253,7 +255,7 @@ export default function PlayEvent() {
                       required 
                       value={formData.walletNumber}
                       onChange={e => setFormData(prev => ({ ...prev, walletNumber: e.target.value }))}
-                      className="h-12 rounded-xl border-2 bg-white"
+                      className="h-12 rounded-xl border-2 bg-white relative z-50"
                       autoComplete="tel"
                     />
                   </div>
@@ -268,7 +270,7 @@ export default function PlayEvent() {
                       required 
                       value={formData.customWalletName}
                       onChange={e => setFormData(prev => ({ ...prev, customWalletName: e.target.value }))}
-                      className="h-12 rounded-xl border-2 bg-white"
+                      className="h-12 rounded-xl border-2 bg-white relative z-50"
                     />
                   </div>
                 )}
