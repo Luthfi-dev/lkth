@@ -26,6 +26,7 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
   const spin = () => {
     if (isSpinning || items.length === 0) return;
     
+    // Logika pemilihan pemenang: hanya dari yang tidak diblokir
     const allowedItems = items.filter(item => !item.blocked);
     const pool = allowedItems.length > 0 ? allowedItems : items;
     const winner = pool[Math.floor(Math.random() * pool.length)];
@@ -34,14 +35,16 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
     setIsSpinning(true);
     
     const segmentAngle = 360 / items.length;
-    const extraSpins = 10 * 360; 
+    const extraSpins = 12 * 360; // Berputar 12 kali sebelum berhenti
     
     // Hitung target agar berhenti tepat di tengah segmen pemenang (arah jam 12 / atas)
-    const targetAngle = extraSpins + (360 - (winnerIndex * segmentAngle)) - (segmentAngle / 2);
-    const newRotation = rotation + targetAngle;
+    // Formula: putaran tambahan + (360 - posisi_relatif_pemenang)
+    const currentRotationBase = Math.ceil(rotation / 360) * 360;
+    const targetAngle = currentRotationBase + extraSpins + (360 - (winnerIndex * segmentAngle + segmentAngle / 2));
     
-    setRotation(newRotation);
+    setRotation(targetAngle);
 
+    // Durasi 8.2 detik (8 detik animasi + 0.2 detik jeda)
     setTimeout(() => {
       setIsSpinning(false);
       onFinish(winner.value);
@@ -57,7 +60,7 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
       const startAngle = i * angleStep;
       const endAngle = (i + 1) * angleStep;
       
-      // Calculate SVG path for the slice
+      // Hitung path SVG untuk setiap irisan roda
       const x1 = radius + radius * Math.cos((Math.PI * (startAngle - 90)) / 180);
       const y1 = radius + radius * Math.sin((Math.PI * (startAngle - 90)) / 180);
       const x2 = radius + radius * Math.cos((Math.PI * (endAngle - 90)) / 180);
@@ -91,7 +94,7 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
   return (
     <div className="flex flex-col items-center gap-12">
       <div className="relative w-72 h-72 sm:w-80 sm:h-80 md:w-96 md:h-96">
-        {/* Arrow Pointer */}
+        {/* Penunjuk Panah (Top) */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 -mt-2 z-30 drop-shadow-lg">
           <div 
             className="w-10 h-10 bg-slate-900" 
@@ -99,7 +102,7 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
           ></div>
         </div>
 
-        {/* The Wheel */}
+        {/* Roda SVG */}
         <svg
           ref={wheelRef}
           viewBox="0 0 200 200"
@@ -108,11 +111,10 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
         >
           <circle cx="100" cy="100" r="100" fill="#0f172a" />
           {renderSegments()}
-          {/* Inner Shadow Circle */}
           <circle cx="100" cy="100" r="100" fill="transparent" stroke="rgba(0,0,0,0.1)" strokeWidth="4" />
         </svg>
 
-        {/* Center Pin */}
+        {/* Pin Tengah */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-white border-[6px] border-slate-900 rounded-full z-20 flex items-center justify-center shadow-2xl">
           <div className={`w-8 h-8 bg-accent rounded-full ${isSpinning ? 'animate-pulse' : ''}`}></div>
         </div>

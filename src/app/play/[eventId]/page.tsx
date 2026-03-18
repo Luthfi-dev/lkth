@@ -25,6 +25,7 @@ export default function PlayEvent() {
     name: '',
     photo: null as string | null,
     wallet: '',
+    customWalletName: '',
     walletNumber: ''
   });
 
@@ -37,6 +38,7 @@ export default function PlayEvent() {
   useEffect(() => {
     const savedName = localStorage.getItem('lucky_thr_name');
     const savedWallet = localStorage.getItem('lucky_thr_wallet');
+    const savedCustomWallet = localStorage.getItem('lucky_thr_custom_wallet');
     const savedWalletNumber = localStorage.getItem('lucky_thr_wallet_number');
     
     if (savedName || savedWallet || savedWalletNumber) {
@@ -44,6 +46,7 @@ export default function PlayEvent() {
         ...prev,
         name: savedName || '',
         wallet: savedWallet || '',
+        customWalletName: savedCustomWallet || '',
         walletNumber: savedWalletNumber || ''
       }));
     }
@@ -86,10 +89,12 @@ export default function PlayEvent() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.wallet || !formData.walletNumber) return;
+    if (formData.wallet === 'Lainnya' && !formData.customWalletName) return;
     
     // Save identity to localStorage for future use
     localStorage.setItem('lucky_thr_name', formData.name);
     localStorage.setItem('lucky_thr_wallet', formData.wallet);
+    localStorage.setItem('lucky_thr_custom_wallet', formData.customWalletName);
     localStorage.setItem('lucky_thr_wallet_number', formData.walletNumber);
 
     setIsLoading(true);
@@ -100,12 +105,14 @@ export default function PlayEvent() {
   };
 
   const onSpinFinish = async (amount: number) => {
+    const walletDisplay = formData.wallet === 'Lainnya' ? formData.customWalletName : formData.wallet;
+    
     const winnerData = {
       event_id: eventId,
       name: formData.name,
       photo_url: formData.photo || '',
       amount: amount,
-      wallet_info: `${formData.wallet} - ${formData.walletNumber}`
+      wallet_info: `${walletDisplay} - ${formData.walletNumber}`
     };
 
     try {
@@ -193,43 +200,59 @@ export default function PlayEvent() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="wallet-select" className="text-slate-700">Tujuan THR</Label>
-                  <Select 
-                    value={formData.wallet}
-                    onValueChange={v => setFormData(prev => ({ ...prev, wallet: v }))} 
-                    required
-                  >
-                    <SelectTrigger id="wallet-select" className="h-12 rounded-xl border-2 bg-white">
-                      <SelectValue placeholder="Pilih..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {BANK_OPTIONS.map(opt => (
-                        <SelectItem key={opt} value={opt}>{opt}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="wallet-select" className="text-slate-700">Tujuan THR</Label>
+                    <Select 
+                      value={formData.wallet}
+                      onValueChange={v => setFormData(prev => ({ ...prev, wallet: v }))} 
+                      required
+                    >
+                      <SelectTrigger id="wallet-select" className="h-12 rounded-xl border-2 bg-white">
+                        <SelectValue placeholder="Pilih..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {BANK_OPTIONS.map(opt => (
+                          <SelectItem key={opt} value={opt}>{opt}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="account-number" className="text-slate-700">No. Rekening/HP</Label>
+                    <Input 
+                      id="account-number"
+                      name="account-number"
+                      placeholder="Contoh: 0812..." 
+                      required 
+                      value={formData.walletNumber}
+                      onChange={e => setFormData(prev => ({ ...prev, walletNumber: e.target.value }))}
+                      className="h-12 rounded-xl border-2 bg-white"
+                      autoComplete="tel"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="account-number" className="text-slate-700">No. Rekening/HP</Label>
-                  <Input 
-                    id="account-number"
-                    name="account-number"
-                    placeholder="Contoh: 0812..." 
-                    required 
-                    value={formData.walletNumber}
-                    onChange={e => setFormData(prev => ({ ...prev, walletNumber: e.target.value }))}
-                    className="h-12 rounded-xl border-2 bg-white"
-                    autoComplete="tel"
-                  />
-                </div>
+
+                {formData.wallet === 'Lainnya' && (
+                  <div className="space-y-2 animate-in slide-in-from-top-2">
+                    <Label htmlFor="custom-bank" className="text-slate-700">Nama Bank / E-Wallet</Label>
+                    <Input 
+                      id="custom-bank"
+                      placeholder="Masukkan nama bank tujuan (Contoh: SeaBank, Bank Jago...)" 
+                      required 
+                      value={formData.customWalletName}
+                      onChange={e => setFormData(prev => ({ ...prev, customWalletName: e.target.value }))}
+                      className="h-12 rounded-xl border-2 bg-white"
+                    />
+                  </div>
+                )}
               </div>
 
               <Button 
                 type="submit" 
                 className="w-full h-14 rounded-2xl bg-accent text-lg font-bold hover:bg-accent/90 shadow-lg shadow-accent/20 transition-all hover:scale-[1.02] active:scale-95"
-                disabled={isLoading || !formData.name || !formData.wallet || !formData.walletNumber}
+                disabled={isLoading || !formData.name || !formData.wallet || !formData.walletNumber || (formData.wallet === 'Lainnya' && !formData.customWalletName)}
               >
                 {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Lanjut ke Roda! 🎡'}
               </Button>
@@ -255,7 +278,7 @@ export default function PlayEvent() {
             photoUrl={formData.photo || ''}
             amount={result.amount}
             message={eventData.message}
-            wallet={`${formData.wallet} - ${formData.walletNumber}`}
+            wallet={`${formData.wallet === 'Lainnya' ? formData.customWalletName : formData.wallet} - ${formData.walletNumber}`}
           />
           <div className="text-center mt-6">
             <Button variant="link" onClick={() => window.location.reload()} className="text-accent font-bold">
