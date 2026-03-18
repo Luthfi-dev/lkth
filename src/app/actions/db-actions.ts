@@ -41,6 +41,7 @@ export async function updateEvent(id: string, data: any) {
 
 export async function deleteEvent(id: string) {
   await deleteData('events', id);
+  // Hapus pemenang terkait agar data bersih
   const winners = await getData('winners');
   const filtered = winners.filter((w: any) => w.event_id !== id);
   
@@ -83,20 +84,6 @@ export async function deleteWinner(winnerId: string) {
   return { success: true };
 }
 
-export async function clearWinnersByEvent(eventId: string) {
-  const winners = await getData('winners');
-  const filtered = winners.filter((w: any) => w.event_id !== eventId);
-  
-  const dbPath = require('path').join(process.cwd(), 'src/data/db.json');
-  const fs = require('fs');
-  if (fs.existsSync(dbPath)) {
-    const db = JSON.parse(fs.readFileSync(dbPath, 'utf-8'));
-    db.winners = filtered;
-    fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
-  }
-  return { success: true };
-}
-
 export async function getSystemSettings() {
   return await getData('settings');
 }
@@ -108,5 +95,6 @@ export async function updateSystemSettings(newSettings: any) {
 
 export async function checkIpPlayed(eventId: string, ip: string) {
   const winners = await getData('winners');
+  // Mencocokkan IP dan Event ID untuk validasi anti-curang
   return winners.some((w: any) => w.event_id === eventId && w.ip_address === ip);
 }

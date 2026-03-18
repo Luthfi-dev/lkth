@@ -44,6 +44,7 @@ export default function PlayEvent() {
   const loadData = useCallback(async () => {
     if (!eventId) return;
     try {
+      // Mendapatkan IP publik user secara real-time
       const ipRes = await fetch('https://api.ipify.org?format=json');
       const ipData = await ipRes.json();
       const ip = ipData.ip;
@@ -65,6 +66,7 @@ export default function PlayEvent() {
         );
         setEventData({ ...currentEvent, nominals: normalizedNominals });
         
+        // Cek penguncian IP jika main berkali-kali tidak diaktifkan
         if (!currentEvent.allow_multiple_plays) {
           const playedLocally = localStorage.getItem(`played_${eventId}`);
           const playedByIp = await checkIpPlayed(eventId, ip);

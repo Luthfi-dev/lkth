@@ -11,7 +11,7 @@ import { PlusCircle, Share2, LogOut, Users, Gift, LayoutGrid, Trash2, Settings2,
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { getWinners, getEvents, deleteWinner, createEvent, updateEvent, deleteEvent, clearWinnersByEvent, getSystemSettings, updateSystemSettings } from '@/app/actions/db-actions';
+import { getWinners, getEvents, deleteWinner, createEvent, updateEvent, deleteEvent, getSystemSettings, updateSystemSettings } from '@/app/actions/db-actions';
 import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -71,7 +71,8 @@ export default function AdminDashboard() {
       setSettings(sysSettings || { banks: ['Dana', 'OVO', 'GoPay', 'ShopeePay', 'BCA', 'Lainnya'] });
       
       if (eventsData.length > 0) {
-        const initialEvent = selectedEventId ? eventsData.find((e: any) => e.id === selectedEventId) : eventsData[0];
+        const currentId = selectedEventId || eventsData[0].id;
+        const initialEvent = eventsData.find((e: any) => e.id === currentId);
         if (initialEvent) {
           setSelectedEventId(initialEvent.id);
           setEditTitle(initialEvent.title);
@@ -95,7 +96,7 @@ export default function AdminDashboard() {
     if (!selectedEventId) return;
     
     const nominalArray = editNominals.split(',')
-      .map(n => parseInt(n.trim()))
+      .map(n => parseInt(n.replace(/\./g, '').trim()))
       .filter(n => !isNaN(n))
       .map(n => ({ value: n, blocked: false }));
 
@@ -114,7 +115,7 @@ export default function AdminDashboard() {
 
   const handleDeleteWinner = async (id: string) => {
     await deleteWinner(id);
-    toast({ title: "Dihapus", description: "Data pemenang telah dihapus." });
+    toast({ title: "Dihapus", description: "Pemenang dihapus. IP tersebut kini bisa main lagi." });
     fetchData(currentUser);
   };
 
@@ -125,7 +126,7 @@ export default function AdminDashboard() {
     }
     
     const nominalArray = newEvent.nominals.split(',')
-      .map(n => parseInt(n.trim()))
+      .map(n => parseInt(n.replace(/\./g, '').trim()))
       .filter(n => !isNaN(n))
       .map(n => ({ value: n, blocked: false }));
 
@@ -166,7 +167,7 @@ export default function AdminDashboard() {
     const updatedBanks = [...(settings?.banks || []), newBank.trim()];
     setSettings({...settings, banks: updatedBanks});
     setNewBank('');
-    toast({ title: "Siap Disimpan", description: `${newBank} ditambahkan ke daftar antrian.` });
+    toast({ title: "Bank Ditambahkan", description: "Silakan klik tombol simpan di bawah untuk menerapkan perubahan." });
   };
 
   const handleSaveBanks = async () => {
@@ -290,7 +291,7 @@ export default function AdminDashboard() {
                         <AlertDialogContent className="rounded-[2.5rem]">
                           <AlertDialogHeader>
                             <AlertDialogTitle>Hapus Event Ini?</AlertDialogTitle>
-                            <AlertDialogDescription>Semua data pemenang akan tetap ada, namun link permainan tidak akan bisa diakses lagi.</AlertDialogDescription>
+                            <AlertDialogDescription>Data pemenang di event ini akan tetap tersimpan, namun link permainan tidak akan bisa diakses lagi.</AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>BATAL</AlertDialogCancel>
