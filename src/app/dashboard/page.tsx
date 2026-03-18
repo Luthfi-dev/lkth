@@ -1,28 +1,44 @@
 "use client"
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { PlusCircle, Copy, LogOut, Users, Gift, Share2, Search, ExternalLink } from 'lucide-react';
+import { PlusCircle, Copy, LogOut, Users, Gift, Share2, Search, Database } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
-
-const MOCK_WINNERS = [
-  { id: 1, name: 'Budi Santoso', amount: 100000, wallet: 'BCA 123456789', time: '10:30', photo: 'https://picsum.photos/seed/1/50/50' },
-  { id: 2, name: 'Siti Aminah', amount: 50000, wallet: 'Dana 08123456789', time: '10:45', photo: 'https://picsum.photos/seed/2/50/50' },
-  { id: 3, name: 'Andi Wijaya', amount: 20000, wallet: 'GoPay 08123456789', time: '11:05', photo: 'https://picsum.photos/seed/3/50/50' },
-];
+import { getWinners, getEvents } from '@/app/actions/db-actions';
+import { useRouter } from 'next/navigation';
 
 export default function AdminDashboard() {
   const { toast } = useToast();
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
+  const [winners, setWinners] = useState<any[]>([]);
+  const [eventCount, setEventCount] = useState(0);
+  const [dbStatus, setDbStatus] = useState(process.env.NEXT_PUBLIC_DB_STATUS);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [winnersData, eventsData] = await Promise.all([
+          getWinners(),
+          getEvents()
+        ]);
+        setWinners(winnersData);
+        setEventCount(eventsData.length);
+      } catch (err) {
+        console.error("Error loading data", err);
+      }
+    };
+    fetchData();
+  }, []);
 
   const copyLink = () => {
-    navigator.clipboard.writeText('https://luckythr.app/play/event-123');
+    navigator.clipboard.writeText(`${window.location.origin}/play/event-123`);
     toast({
       title: "Link Tersalin!",
       description: "Bagikan link ini ke grup WhatsApp keluarga atau teman.",
@@ -37,27 +53,38 @@ export default function AdminDashboard() {
     });
   };
 
+  const handleLogout = () => {
+    router.push('/login');
+  };
+
+  const filteredWinners = winners.filter(w => 
+    w.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const totalThr = winners.reduce((acc, curr) => acc + curr.amount, 0);
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
-      {/* Sidebar / Top Nav */}
       <nav className="bg-white border-b px-6 py-4 flex justify-between items-center sticky top-0 z-10">
         <div className="flex items-center gap-2">
           <div className="bg-accent p-1.5 rounded-lg">
             <Gift className="text-white w-5 h-5" />
           </div>
           <span className="font-black text-xl tracking-tight">LuckyTHR <span className="text-accent">Admin</span></span>
+          <Badge variant="outline" className="ml-2 gap-1 bg-blue-50 text-blue-700 border-blue-200">
+            <Database className="w-3 h-3" /> {dbStatus === 'online' ? 'Cloud' : 'Local JSON'}
+          </Badge>
         </div>
         <div className="flex items-center gap-4">
-          <Button variant="ghost" className="text-muted-foreground"><LogOut className="w-4 h-4 mr-2" /> Logout</Button>
+          <Button variant="ghost" className="text-muted-foreground" onClick={handleLogout}><LogOut className="w-4 h-4 mr-2" /> Logout</Button>
         </div>
       </nav>
 
       <main className="flex-1 p-4 sm:p-8 max-w-7xl mx-auto w-full space-y-8">
-        {/* Stats & Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-black">Dashboard Event</h1>
-            <p className="text-muted-foreground">Kelola event THR Keluarga Besar Haji Sulaiman</p>
+            <p className="text-muted-foreground">Kelola event THR kamu secara real-time</p>
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
             <Button onClick={copyLink} variant="outline" className="flex-1 sm:flex-none border-primary text-primary">
@@ -70,29 +97,34 @@ export default function AdminDashboard() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <StatCard icon={<Users className="w-5 h-5" />} label="Total Peserta" value="124" trend="+12 hari ini" />
-          <StatCard icon={<Gift className="w-5 h-5" />} label="Total THR Keluar" value="Rp 2.450.000" trend="85% kuota" />
-          <StatCard icon={<Search className="w-5 h-5" />} label="Status Event" value="Aktif" trend="Sisa 3 hari" />
+          <StatCard icon={<Users className="w-5 h-5" />} label="Total Pemenang" value={winners.length.toString()} trend="Aktif" />
+          <StatCard icon={<Gift className="w-5 h-5" />} label="Total THR Keluar" value={`Rp ${totalThr.toLocaleString('id-ID')}`} trend="Kuota Aman" />
+          <StatCard icon={<Search className="w-5 h-5" />} label="Total Event" value={eventCount.toString()} trend="Tersedia" />
         </div>
 
-        {/* Configuration */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <Card className="lg:col-span-1 border-none shadow-sm">
             <CardHeader>
-              <CardTitle className="text-lg">Konfigurasi Nominal</CardTitle>
+              <CardTitle className="text-lg">Pengaturan Local</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {[100000, 50000, 20000, 10000, 5000].map(val => (
-                <div key={val} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border">
-                  <span className="font-bold text-lg">Rp {val.toLocaleString('id-ID')}</span>
-                  <Switch defaultChecked />
-                </div>
-              ))}
-              <Button variant="outline" className="w-full mt-4">Simpan Pengaturan</Button>
+              <div className="p-4 bg-primary/5 rounded-xl border border-primary/20 text-sm">
+                <p className="font-semibold text-primary mb-2">Migrasi Data</p>
+                <p className="text-xs text-muted-foreground mb-3">Gunakan file <code>data.sql</code> untuk memindahkan data lokal ini ke database online nantinya.</p>
+                <Button variant="outline" size="sm" className="w-full text-xs">Unduh Data (Coming Soon)</Button>
+              </div>
+              <div className="space-y-2">
+                 <Label className="text-xs">Nominal Tersedia</Label>
+                {[100000, 50000, 20000, 10000, 5000].map(val => (
+                  <div key={val} className="flex items-center justify-between p-2 bg-slate-50 rounded-lg border text-sm">
+                    <span className="font-bold">Rp {val.toLocaleString('id-ID')}</span>
+                    <Switch defaultChecked />
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
 
-          {/* Real-time Winners Table */}
           <Card className="lg:col-span-2 border-none shadow-sm overflow-hidden">
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
@@ -118,25 +150,35 @@ export default function AdminDashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {MOCK_WINNERS.map((winner) => (
-                    <TableRow key={winner.id}>
+                  {filteredWinners.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">Belum ada pemenang saat ini</TableCell>
+                    </TableRow>
+                  ) : filteredWinners.map((winner, idx) => (
+                    <TableRow key={idx}>
                       <TableCell>
-                        <div className="relative w-10 h-10 rounded-lg overflow-hidden border">
-                          <Image src={winner.photo} alt={winner.name} fill className="object-cover" />
+                        <div className="relative w-10 h-10 rounded-lg overflow-hidden border bg-muted">
+                          {winner.photo_url ? (
+                            <Image src={winner.photo_url} alt={winner.name} fill className="object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-[10px] text-muted-foreground">No Foto</div>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="font-bold">{winner.name}</div>
-                        <div className="text-[10px] text-muted-foreground uppercase font-semibold">{winner.time} WIB</div>
+                        <div className="text-[10px] text-muted-foreground uppercase font-semibold">
+                          {new Date(winner.timestamp).toLocaleTimeString('id-ID')} WIB
+                        </div>
                       </TableCell>
                       <TableCell>
                         <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-100 font-bold">
                           Rp {winner.amount.toLocaleString('id-ID')}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-xs font-mono">{winner.wallet}</TableCell>
+                      <TableCell className="text-xs font-mono">{winner.wallet_info}</TableCell>
                       <TableCell className="text-right">
-                        <Button size="icon" variant="ghost" onClick={() => copyWallet(winner.wallet)}>
+                        <Button size="icon" variant="ghost" onClick={() => copyWallet(winner.wallet_info)}>
                           <Copy className="w-4 h-4" />
                         </Button>
                       </TableCell>

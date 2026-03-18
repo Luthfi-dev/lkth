@@ -6,32 +6,35 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Gift, Chrome, Loader2, UserPlus } from 'lucide-react';
+import { Gift, Loader2, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import { loginUser } from '@/app/actions/db-actions';
+import { registerUser } from '@/app/actions/db-actions';
 import { useToast } from '@/hooks/use-toast';
 
-export default function LoginPage() {
+export default function RegisterPage() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: ''
+  });
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await loginUser(email, password);
+      await registerUser(formData);
       toast({
-        title: "Login Berhasil",
-        description: "Selamat datang kembali di dashboard!",
+        title: "Pendaftaran Berhasil!",
+        description: "Silakan login dengan akun baru kamu.",
       });
-      router.push('/dashboard');
+      router.push('/login');
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Gagal Login",
+        title: "Gagal Mendaftar",
         description: error.message,
       });
     } finally {
@@ -50,24 +53,22 @@ export default function LoginPage() {
 
       <Card className="w-full max-w-md border-none shadow-2xl overflow-hidden rounded-3xl">
         <CardHeader className="text-center space-y-2 bg-white pb-8">
-          <CardTitle className="text-3xl font-black">Selamat Datang!</CardTitle>
-          <CardDescription>Masuk untuk mengelola event bagi-bagi THR kamu.</CardDescription>
+          <CardTitle className="text-3xl font-black">Buat Akun</CardTitle>
+          <CardDescription>Mulai bagi-bagi kebahagiaan hari ini.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6 pt-6">
-          <Button variant="outline" className="w-full h-14 border-2 rounded-2xl font-bold flex gap-3 hover:bg-slate-50 transition-all">
-            <Chrome className="w-5 h-5 text-red-500" /> Masuk dengan Google
-          </Button>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-muted"></span>
+        <CardContent className="pt-6">
+          <form onSubmit={handleRegister} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Nama Lengkap</Label>
+              <Input 
+                id="name" 
+                placeholder="Haji Sulaiman" 
+                className="h-12 rounded-xl" 
+                required 
+                value={formData.name}
+                onChange={e => setFormData({...formData, name: e.target.value})}
+              />
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground font-semibold">Atau masuk manual</span>
-            </div>
-          </div>
-
-          <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input 
@@ -76,8 +77,8 @@ export default function LoginPage() {
                 placeholder="admin@luckythr.app" 
                 className="h-12 rounded-xl" 
                 required 
-                value={email}
-                onChange={e => setEmail(e.target.value)}
+                value={formData.email}
+                onChange={e => setFormData({...formData, email: e.target.value})}
               />
             </div>
             <div className="space-y-2">
@@ -87,8 +88,8 @@ export default function LoginPage() {
                 type="password" 
                 className="h-12 rounded-xl" 
                 required 
-                value={password}
-                onChange={e => setPassword(e.target.value)}
+                value={formData.password}
+                onChange={e => setFormData({...formData, password: e.target.value})}
               />
             </div>
             <Button 
@@ -96,22 +97,17 @@ export default function LoginPage() {
               className="w-full h-14 rounded-2xl bg-accent text-lg font-bold shadow-lg shadow-accent/20"
               disabled={isLoading}
             >
-              {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Masuk ke Dashboard'}
+              {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Daftar Sekarang'}
             </Button>
           </form>
+
+          <div className="mt-6 text-center">
+            <Link href="/login" className="text-sm text-muted-foreground hover:text-accent flex items-center justify-center gap-2">
+              <ArrowLeft className="w-4 h-4" /> Sudah punya akun? Login di sini
+            </Link>
+          </div>
         </CardContent>
       </Card>
-
-      <div className="mt-8 text-center space-y-2">
-        <p className="text-muted-foreground text-sm font-medium">
-          Belum punya akun?
-        </p>
-        <Link href="/register">
-          <Button variant="ghost" className="text-accent font-bold gap-2">
-            <UserPlus className="w-4 h-4" /> Daftar Akun Baru Sekarang
-          </Button>
-        </Link>
-      </div>
     </div>
   );
 }

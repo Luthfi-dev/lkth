@@ -11,18 +11,13 @@ import { SpinWheel } from '@/components/SpinWheel';
 import { ResultCard } from '@/components/ResultCard';
 import { Camera, AlertCircle, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-
-const MOCK_EVENT = {
-  id: 'event-123',
-  title: 'THR Keluarga Besar Haji Sulaiman',
-  message: 'Selamat Hari Raya $nama! Semoga berkah dan bahagia selalu.',
-  nominals: [10000, 20000, 50000, 100000, 5000, 2000],
-};
+import { addWinner, getEvents } from '@/app/actions/db-actions';
 
 const BANK_OPTIONS = ['Dana', 'OVO', 'GoPay', 'ShopeePay', 'BCA', 'Mandiri', 'BNI', 'BRI'];
 
 export default function PlayEvent() {
   const { eventId } = useParams();
+  const [eventData, setEventData] = useState<any>(null);
   const [step, setStep] = useState<'form' | 'spinning' | 'result'>('form');
   const [isLoading, setIsLoading] = useState(false);
   const [hasPlayed, setHasPlayed] = useState(false);
@@ -40,7 +35,15 @@ export default function PlayEvent() {
   });
 
   useEffect(() => {
-    // Basic anti-cheat: check localStorage
+    const loadEvent = async () => {
+      const events = await getEvents();
+      const currentEvent = events.find((e: any) => e.id === eventId);
+      if (currentEvent) {
+        setEventData(currentEvent);
+      }
+    };
+    loadEvent();
+
     const played = localStorage.getItem(`played_${eventId}`);
     if (played) {
       setHasPlayed(true);
@@ -59,18 +62,32 @@ export default function PlayEvent() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    // Simulate API call
     setTimeout(() => {
       setIsLoading(false);
       setStep('spinning');
     }, 1000);
   };
 
-  const onSpinFinish = (amount: number) => {
-    setResult({ amount, timestamp: new Date().toISOString() });
-    setStep('result');
-    localStorage.setItem(`played_${eventId}`, 'true');
+  const onSpinFinish = async (amount: number) => {
+    const winnerData = {
+      event_id: eventId,
+      name: formData.name,
+      photo_url: formData.photo,
+      amount: amount,
+      wallet_info: `${formData.wallet} - ${formData.walletNumber}`
+    };
+
+    try {
+      await addWinner(winnerData);
+      setResult({ amount, timestamp: new Date().toISOString() });
+      setStep('result');
+      localStorage.setItem(`played_${eventId}`, 'true');
+    } catch (err) {
+      console.error("Gagal menyimpan pemenang", err);
+    }
   };
+
+  if (!eventData) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin" /></div>;
 
   if (hasPlayed) {
     return (
@@ -91,7 +108,7 @@ export default function PlayEvent() {
       {step === 'form' && (
         <Card className="w-full max-w-md border-none shadow-xl">
           <CardHeader className="text-center space-y-2">
-            <CardTitle className="text-2xl font-bold text-accent">{MOCK_EVENT.title}</CardTitle>
+            <CardTitle className="text-2xl font-bold text-accent">{eventData.title}</CardTitle>
             <CardDescription>Isi data diri kamu untuk mulai memutar roda keberuntungan!</CardDescription>
           </CardHeader>
           <CardContent>
@@ -177,7 +194,7 @@ export default function PlayEvent() {
             <h2 className="text-3xl font-black text-accent">Semoga Beruntung, {formData.name}!</h2>
             <p className="text-muted-foreground">Roda akan menentukan THR yang kamu dapatkan.</p>
           </div>
-          <SpinWheel items={MOCK_EVENT.nominals} onFinish={onSpinFinish} isSpinning={true} />
+          <SpinWheel items={eventData.nominals} onFinish={onSpinFinish} isSpinning={true} />
         </div>
       )}
 
@@ -187,7 +204,7 @@ export default function PlayEvent() {
             name={formData.name}
             photoUrl={formData.photo || ''}
             amount={result.amount}
-            message={MOCK_EVENT.message}
+            message={eventData.message}
             wallet={`${formData.wallet} - ${formData.walletNumber}`}
           />
         </div>
