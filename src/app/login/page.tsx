@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Gift, Chrome, Loader2, UserPlus } from 'lucide-react';
+import { Gift, Chrome, Loader2, UserPlus, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import { loginUser } from '@/app/actions/db-actions';
 import { useToast } from '@/hooks/use-toast';
@@ -22,12 +22,18 @@ export default function LoginPage() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await loginUser(email, password);
+      const result = await loginUser(email, password);
       toast({
         title: "Login Berhasil",
-        description: "Selamat datang kembali di dashboard!",
+        description: `Selamat datang kembali, ${result.user.name}!`,
       });
-      router.push('/dashboard');
+      
+      // Redirect berdasarkan role
+      if (result.user.role === 'superadmin') {
+        router.push('/superadmin');
+      } else {
+        router.push('/dashboard');
+      }
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -102,13 +108,21 @@ export default function LoginPage() {
         </CardContent>
       </Card>
 
-      <div className="mt-8 text-center space-y-2">
-        <p className="text-muted-foreground text-sm font-medium">
-          Belum punya akun?
-        </p>
-        <Link href="/register">
-          <Button variant="ghost" className="text-accent font-bold gap-2">
-            <UserPlus className="w-4 h-4" /> Daftar Akun Baru Sekarang
+      <div className="mt-8 text-center space-y-4">
+        <div className="space-y-1">
+          <p className="text-muted-foreground text-sm font-medium">
+            Belum punya akun?
+          </p>
+          <Link href="/register">
+            <Button variant="ghost" className="text-accent font-bold gap-2">
+              <UserPlus className="w-4 h-4" /> Daftar Akun Baru Sekarang
+            </Button>
+          </Link>
+        </div>
+        
+        <Link href="/enc" className="block">
+          <Button variant="link" size="sm" className="text-muted-foreground text-xs gap-1">
+            <ShieldCheck className="w-3 h-3" /> Dev Tools: Enkripsi Password
           </Button>
         </Link>
       </div>

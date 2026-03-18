@@ -1,11 +1,19 @@
 {
   "users": [
     {
+      "id": "sa-1",
+      "name": "Super Admin",
+      "email": "superadmin@gmail.com",
+      "password": "123456",
+      "role": "superadmin",
+      "timestamp": "2024-03-18T00:00:00.000Z"
+    },
+    {
       "name": "Fifi",
       "email": "dilfarisna@gmail.com",
       "password": "123456",
       "id": "7cpabpwyd",
-      "timestamp": "2026-03-18T11:09:44.888Z"
+      "timestamp": "2024-03-18T11:09:44.888Z"
     }
   ],
   "events": [

@@ -106,14 +106,9 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <Card className="lg:col-span-1 border-none shadow-sm">
             <CardHeader>
-              <CardTitle className="text-lg">Pengaturan Local</CardTitle>
+              <CardTitle className="text-lg">Pengaturan THR</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="p-4 bg-primary/5 rounded-xl border border-primary/20 text-sm">
-                <p className="font-semibold text-primary mb-2">Migrasi Data</p>
-                <p className="text-xs text-muted-foreground mb-3">Gunakan file <code>data.sql</code> di root folder untuk memindahkan data lokal ini ke database online nantinya.</p>
-                <Button variant="outline" size="sm" className="w-full text-xs">Unduh Skema SQL</Button>
-              </div>
               <div className="space-y-2">
                  <Label className="text-xs">Nominal Tersedia</Label>
                 {[100000, 50000, 20000, 10000, 5000].map(val => (
