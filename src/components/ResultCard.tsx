@@ -18,13 +18,11 @@ interface ResultCardProps {
 export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCardProps) {
   const { toast } = useToast();
   const cardRef = useRef<HTMLDivElement>(null);
-  const [currentUrl, setCurrentUrl] = useState('');
   const [domain, setDomain] = useState('');
   const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setCurrentUrl(window.location.origin);
       setDomain(window.location.hostname);
     }
   }, []);
@@ -33,11 +31,10 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
     if (!cardRef.current) return null;
     setIsExporting(true);
     try {
-      // Menggunakan filter untuk menghindari error SecurityError pada stylesheet eksternal
       const blob = await toBlob(cardRef.current, { 
         cacheBust: true,
         skipFonts: false,
-        fontEmbedCSS: '', 
+        pixelRatio: 2,
       });
       if (!blob) throw new Error('Failed to generate image');
       return blob;
@@ -69,7 +66,8 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
   };
 
   const handleShare = async () => {
-    const shareText = `OMG! 😱 Gue baru aja dapet THR Rp ${amount.toLocaleString('id-ID')} dari LuckyTHR! 🎉🧧\n\n"${message.replace('$nama', name)}"\n\nCek keberuntungan lo juga di: ${currentUrl}\n#LuckyTHR #BerkahDigital #maudigi`;
+    const formattedMessage = message.replace('$nama', name);
+    const shareText = `"${formattedMessage}"`;
     
     const blob = await handleExportImage();
     
@@ -78,7 +76,6 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
         const shareData: any = {
           title: 'LuckyTHR Jackpot!',
           text: shareText,
-          url: currentUrl,
         };
 
         if (blob) {
@@ -108,66 +105,60 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <div className="overflow-hidden p-2">
-        <div ref={cardRef} className="bg-white rounded-[3.5rem] overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.15)]">
-          <Card className="w-full max-w-md mx-auto overflow-hidden border-none rounded-[3.5rem] bg-white group">
-            <div className="relative h-72 w-full bg-gradient-to-br from-accent via-orange-600 to-yellow-400 overflow-hidden">
-              <div className="absolute top-8 left-8 animate-bounce delay-75">
-                <Star className="text-white/40 fill-white/20 w-10 h-10" />
+        <div ref={cardRef} className="bg-white rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.1)]">
+          <Card className="w-full max-w-sm mx-auto overflow-hidden border-none rounded-[2.5rem] bg-white group">
+            {/* Header lebih pendek */}
+            <div className="relative h-48 w-full bg-gradient-to-br from-accent via-orange-600 to-yellow-400 overflow-hidden">
+              <div className="absolute top-4 left-4 animate-bounce delay-75">
+                <Star className="text-white/40 fill-white/20 w-6 h-6" />
               </div>
-              <div className="absolute bottom-16 left-1/4 animate-float">
-                <Sparkles className="text-white/30 w-16 h-16" />
-              </div>
-              <div className="absolute top-12 right-12 rotate-45 animate-pulse">
-                <Zap className="text-white/20 fill-white/10 w-20 h-20" />
+              <div className="absolute top-6 right-6 rotate-45 animate-pulse">
+                <Zap className="text-white/20 fill-white/10 w-12 h-12" />
               </div>
 
-              <div className="absolute inset-0 bg-black/5 flex flex-col items-center justify-center p-6 text-center">
-                <div className="relative mb-6">
-                  <div className="absolute -inset-4 bg-white/20 blur-2xl rounded-full"></div>
-                  <div className="relative w-28 h-28 rounded-[2rem] border-4 border-white shadow-2xl overflow-hidden bg-slate-100 rotate-6 group-hover:rotate-0 transition-transform duration-700">
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
+                <div className="relative mb-3">
+                  <div className="absolute -inset-2 bg-white/20 blur-xl rounded-full"></div>
+                  <div className="relative w-20 h-20 rounded-2xl border-4 border-white shadow-xl overflow-hidden bg-slate-100 rotate-3">
                     {photoUrl ? (
                       <img src={photoUrl} alt={name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-slate-200 text-slate-400">
-                        <Smartphone className="w-10 h-10" />
+                        <Smartphone className="w-8 h-8" />
                       </div>
                     )}
                   </div>
                 </div>
-                <h2 className="text-4xl font-black text-white tracking-tighter drop-shadow-lg italic">JACKPOT!</h2>
-                <p className="text-white/90 text-xs font-black uppercase tracking-[0.4em] mt-1">#LUCKYTHR_WINNER</p>
+                <h2 className="text-2xl font-black text-white tracking-tighter italic">JACKPOT!</h2>
+                <p className="text-white/90 text-[8px] font-black uppercase tracking-[0.3em]">#LUCKYTHR_WINNER</p>
               </div>
             </div>
 
-            <CardContent className="pt-10 pb-12 px-8 space-y-10 relative bg-white">
-              <div className="text-center space-y-2">
-                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.3em]">Total Berkah Didapat:</p>
+            <CardContent className="pt-6 pb-8 px-6 space-y-6 relative bg-white">
+              <div className="text-center space-y-1">
+                <p className="text-[8px] text-muted-foreground uppercase font-black tracking-[0.2em]">Total Berkah:</p>
                 <div className="relative inline-block">
-                  <div className="absolute -inset-x-6 bottom-2 h-6 bg-yellow-400/40 -rotate-2"></div>
-                  <div className="relative text-7xl font-black text-slate-900 tracking-tighter">
-                    <span className="text-3xl align-top mt-2 inline-block">Rp</span>
+                  <div className="absolute -inset-x-4 bottom-1 h-4 bg-yellow-400/40 -rotate-1"></div>
+                  <div className="relative text-5xl font-black text-slate-900 tracking-tighter">
+                    <span className="text-xl align-top mt-1 inline-block">Rp</span>
                     {amount.toLocaleString('id-ID')}
                   </div>
                 </div>
               </div>
 
-              <div className="relative">
-                <div className="absolute -top-4 -left-3 text-5xl text-accent/20 font-serif">“</div>
-                <div className="bg-slate-50/80 backdrop-blur-sm p-8 rounded-[2.5rem] border-2 border-slate-100/50 shadow-inner">
-                  <p className="text-slate-800 italic text-center font-bold text-lg leading-relaxed">
-                    {message.replace('$nama', name)}
-                  </p>
-                </div>
-                <div className="absolute -bottom-12 -right-3 text-5xl text-accent/20 font-serif rotate-180">“</div>
+              <div className="bg-slate-50/80 p-5 rounded-2xl border-2 border-slate-100/50">
+                <p className="text-slate-800 italic text-center font-bold text-sm leading-relaxed">
+                  {message.replace('$nama', name)}
+                </p>
               </div>
 
-              <div className="text-center pt-8 border-t border-dashed">
-                <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em] flex items-center justify-center gap-1">
+              <div className="text-center pt-4 border-t border-dashed">
+                <p className="text-[8px] text-muted-foreground font-black uppercase tracking-[0.2em] flex items-center justify-center gap-1">
                   Experience at <span className="text-accent">{domain || 'LuckyTHR'}</span>
                 </p>
-                <div className="flex items-center justify-center gap-1 text-[9px] text-slate-400 font-bold mt-1">
+                <div className="flex items-center justify-center gap-1 text-[8px] text-slate-400 font-bold mt-1">
                   <span>by</span>
                   <span className="text-accent flex items-center gap-0.5">
                     maudigi.com <Heart className="w-2 h-2 fill-accent" />
@@ -179,23 +170,24 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="flex flex-col gap-3 px-2">
+        <Button 
+          onClick={handleDownload}
+          disabled={isExporting}
+          variant="outline"
+          className="w-full h-14 rounded-2xl border-2 border-slate-200 text-md font-black gap-3 transition-all hover:-translate-y-1 active:scale-95 bg-white"
+        >
+          {isExporting ? <Loader2 className="animate-spin w-5 h-5" /> : <Download className="w-5 h-5" />}
+          SIMPAN GAMBAR 📸
+        </Button>
+        
         <Button 
           onClick={handleShare} 
           disabled={isExporting}
-          className="w-full h-16 rounded-[2rem] bg-accent hover:bg-accent/90 text-lg font-black gap-3 shadow-[0_15px_40px_rgba(225,87,14,0.4)] transition-all hover:-translate-y-1 active:scale-95"
+          className="w-full h-14 rounded-2xl bg-accent hover:bg-accent/90 text-md font-black gap-3 shadow-[0_10px_30px_rgba(225,87,14,0.3)] transition-all hover:-translate-y-1 active:scale-95"
         >
-          {isExporting ? <Loader2 className="animate-spin" /> : <Share2 className="w-6 h-6" />}
+          {isExporting ? <Loader2 className="animate-spin w-5 h-5" /> : <Share2 className="w-5 h-5" />}
           SHARE MEDSOS 🚀
-        </Button>
-        <Button 
-          onClick={handleDownload}
-          variant="outline"
-          disabled={isExporting}
-          className="w-full h-16 rounded-[2rem] border-2 border-slate-200 text-lg font-black gap-3 transition-all hover:-translate-y-1 active:scale-95 bg-white"
-        >
-          {isExporting ? <Loader2 className="animate-spin" /> : <Download className="w-6 h-6" />}
-          SIMPAN GAMBAR 📸
         </Button>
       </div>
     </div>
