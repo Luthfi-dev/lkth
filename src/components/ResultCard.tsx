@@ -1,11 +1,12 @@
 
 "use client"
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Share2, Sparkles, Star, Smartphone, Zap } from 'lucide-react';
+import { Share2, Sparkles, Star, Smartphone, Zap, ExternalLink } from 'lucide-react';
 import Image from 'next/image';
+import { useToast } from '@/hooks/use-toast';
 
 interface ResultCardProps {
   name: string;
@@ -16,9 +17,31 @@ interface ResultCardProps {
 }
 
 export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCardProps) {
-  const shareToWhatsApp = () => {
-    const text = `OMG! 😱 Gue baru aja dapet THR Rp ${amount.toLocaleString('id-ID')} dari LuckyTHR! 🎉🧧\n\n"${message.replace('$nama', name)}"\n\nCek keberuntungan lo juga di: ${window.location.origin}\n#LuckyTHR #BerkahDigital #GenZLife`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+  const { toast } = useToast();
+  const [currentUrl, setCurrentUrl] = useState('');
+
+  useEffect(() => {
+    setCurrentUrl(window.location.origin);
+  }, []);
+
+  const handleShare = async () => {
+    const shareText = `OMG! 😱 Gue baru aja dapet THR Rp ${amount.toLocaleString('id-ID')} dari LuckyTHR! 🎉🧧\n\n"${message.replace('$nama', name)}"\n\nCek keberuntungan lo juga di: ${currentUrl}\n#LuckyTHR #BerkahDigital #maudigi`;
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'LuckyTHR Jackpot!',
+          text: shareText,
+          url: currentUrl,
+        });
+      } catch (err) {
+        console.error('Error sharing:', err);
+      }
+    } else {
+      // Fallback to WhatsApp if Web Share API is not available
+      const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+      window.open(waUrl, '_blank');
+    }
   };
 
   return (
@@ -95,11 +118,14 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
         </div>
 
         <div className="grid grid-cols-1 gap-4 pt-6">
-          <Button onClick={shareToWhatsApp} className="w-full h-20 rounded-[2rem] bg-accent hover:bg-accent/90 text-xl font-black gap-4 shadow-[0_15px_40px_rgba(225,87,14,0.4)] transition-all hover:-translate-y-1 active:scale-95">
-            <Share2 className="w-7 h-7" /> SHARE KE WA 🚀
+          <Button onClick={handleShare} className="w-full h-20 rounded-[2rem] bg-accent hover:bg-accent/90 text-xl font-black gap-4 shadow-[0_15px_40px_rgba(225,87,14,0.4)] transition-all hover:-translate-y-1 active:scale-95">
+            <Share2 className="w-7 h-7" /> SHARE KE MEDSOS 🚀
           </Button>
-          <div className="text-center">
-            <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em]">Experience at LuckyTHR.app</p>
+          <div className="text-center space-y-2">
+            <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em] flex items-center justify-center gap-1">
+              Experience at <span className="text-accent">{currentUrl.replace('https://', '').replace('http://', '')}</span>
+            </p>
+            <p className="text-[9px] text-slate-400 font-medium">Developed by maudigi.com</p>
           </div>
         </div>
       </CardContent>

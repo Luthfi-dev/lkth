@@ -1,6 +1,7 @@
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Gift, Zap, Shield, Sparkles } from 'lucide-react';
+import { Gift, Zap, Shield, Sparkles, Heart } from 'lucide-react';
 import Image from 'next/image';
 
 export default function Home() {
@@ -88,7 +89,15 @@ export default function Home() {
       </section>
 
       <footer className="bg-background border-t py-12 text-center text-muted-foreground text-sm">
-        <p>© 2024 LuckyTHR Multi-User. Rayakan hari raya dengan sukacita.</p>
+        <div className="flex flex-col items-center gap-4">
+           <p>© 2024 LuckyTHR Multi-User. Rayakan hari raya dengan sukacita.</p>
+           <div className="flex items-center gap-2 font-bold text-slate-800">
+             <span>Powered by</span>
+             <Link href="https://maudigi.com" target="_blank" className="text-accent hover:underline flex items-center gap-1">
+               maudigi.com <Heart className="w-3 h-3 fill-accent" />
+             </Link>
+           </div>
+        </div>
       </footer>
     </div>
   );

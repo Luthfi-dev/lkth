@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { PlusCircle, Copy, LogOut, Users, Gift, Share2, Search, Database, Trash2, Settings2, Plus, Coins, Ban, Download, AlertTriangle, MousePointer2, RefreshCw, Sparkles, ChevronRight, LayoutGrid } from 'lucide-react';
+import { PlusCircle, Copy, LogOut, Users, Gift, Share2, Search, Database, Trash2, Settings2, Plus, Coins, Ban, Download, AlertTriangle, MousePointer2, RefreshCw, Sparkles, ChevronRight, LayoutGrid, Heart } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 export default function AdminDashboard() {
   const { toast } = useToast();
@@ -148,7 +149,7 @@ export default function AdminDashboard() {
     const updatedNominals = [...(currentEvent?.nominals || []), { value: val, blocked: false }];
     await updateEvent(selectedEventId, { nominals: updatedNominals });
     setNewNominal('');
-    toast({ title: "Nominal Ditambahkan", description: `Rp ${val.toLocaleString('id-ID')} masuk ke sistem.` });
+    toast({ title: "Nominal Ditambahkan", description: `Rp {val.toLocaleString('id-ID')} masuk ke sistem.` });
     fetchData();
   };
 
@@ -607,6 +608,18 @@ export default function AdminDashboard() {
           </>
         )}
       </main>
+
+      <footer className="py-8 bg-slate-100 border-t mt-12">
+        <div className="max-w-7xl mx-auto px-6 flex flex-col items-center gap-2">
+           <div className="flex items-center gap-2 text-slate-400 font-bold text-sm">
+             <span>Powered by</span>
+             <Link href="https://maudigi.com" target="_blank" className="text-accent hover:underline flex items-center gap-1">
+               maudigi.com <Heart className="w-3 h-3 fill-accent" />
+             </Link>
+           </div>
+           <p className="text-[10px] text-slate-400 uppercase tracking-widest">© 2024 LuckyTHR Engine v2.1.0</p>
+        </div>
+      </footer>
     </div>
   );
 }
