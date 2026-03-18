@@ -10,13 +10,13 @@ import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
 import { PlusCircle, Copy, LogOut, Users, Gift, Share2, Search, Database, Trash2, Settings2, Plus, Coins, Ban, Download, AlertTriangle, MousePointer2, RefreshCw, Sparkles, ChevronRight, LayoutGrid } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 import { getWinners, getEvents, deleteWinner, createEvent, updateEvent, clearWinnersByEvent } from '@/app/actions/db-actions';
 import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from '@/lib/utils';
 
 export default function AdminDashboard() {
@@ -35,7 +35,7 @@ export default function AdminDashboard() {
     message: 'Selamat Hari Raya $nama! Semoga berkah selalu.',
     nominals: '1000, 2000, 5000, 10000, 20000, 50000, 100000',
     allow_multiple_plays: false,
-    interaction_type: 'wheel'
+    interaction_type: 'angpao' // Default sekarang Angpao
   });
 
   const fetchData = async () => {
@@ -108,10 +108,16 @@ export default function AdminDashboard() {
       return;
     }
     
+    // Split nominals by comma and clean them
     const nominalArray = newEvent.nominals.split(',')
       .map(n => parseInt(n.trim()))
       .filter(n => !isNaN(n))
       .map(n => ({ value: n, blocked: false }));
+
+    if (nominalArray.length === 0) {
+      toast({ variant: "destructive", title: "Gagal", description: "Masukkan setidaknya satu nominal hadiah." });
+      return;
+    }
 
     const created = await createEvent({
       ...newEvent,
@@ -214,10 +220,10 @@ export default function AdminDashboard() {
               <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
                 <DialogTrigger asChild>
                   <Button className="mt-8 w-full h-16 bg-accent hover:bg-accent/90 text-xl font-black rounded-2xl shadow-lg shadow-accent/20">
-                    <PlusCircle className="w-6 h-6 mr-3" /> Buat Event Pertama
+                    <PlusCircle className="w-6 h-6 mr-3" /> Buat Event Sekarang
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px] rounded-[2.5rem]">
+                <DialogContent className="sm:max-w-[500px] rounded-[2.5rem]">
                   <DialogHeader>
                     <DialogTitle className="text-2xl font-black">Buat Event Baru 🧧</DialogTitle>
                   </DialogHeader>
@@ -227,17 +233,8 @@ export default function AdminDashboard() {
                       <Input placeholder="THR Keluarga Besar..." value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})} className="rounded-xl h-12" />
                     </div>
                     <div className="space-y-2">
-                      <Label>Model Permainan</Label>
+                      <Label>Model Permainan (Default: Angpao)</Label>
                       <div className="grid grid-cols-2 gap-3">
-                        <Button 
-                          type="button"
-                          variant={newEvent.interaction_type === 'wheel' ? 'default' : 'outline'}
-                          onClick={() => setNewEvent({...newEvent, interaction_type: 'wheel'})}
-                          className="h-20 rounded-2xl flex flex-col gap-1"
-                        >
-                          <RefreshCw className="w-5 h-5" />
-                          <span className="text-[10px] font-bold">Roda Putar</span>
-                        </Button>
                         <Button 
                           type="button"
                           variant={newEvent.interaction_type === 'angpao' ? 'default' : 'outline'}
@@ -245,13 +242,27 @@ export default function AdminDashboard() {
                           className="h-20 rounded-2xl flex flex-col gap-1"
                         >
                           <MousePointer2 className="w-5 h-5" />
-                          <span className="text-[10px] font-bold">Pilih Angpao</span>
+                          <span className="text-[10px] font-bold uppercase">Pilih Angpao</span>
+                        </Button>
+                        <Button 
+                          type="button"
+                          variant={newEvent.interaction_type === 'wheel' ? 'default' : 'outline'}
+                          onClick={() => setNewEvent({...newEvent, interaction_type: 'wheel'})}
+                          className="h-20 rounded-2xl flex flex-col gap-1"
+                        >
+                          <RefreshCw className="w-5 h-5" />
+                          <span className="text-[10px] font-bold uppercase">Roda Putar</span>
                         </Button>
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <Label>Pesan Pemenang</Label>
-                      <Input placeholder="Selamat $nama! Semoga berkah." value={newEvent.message} onChange={e => setNewEvent({...newEvent, message: e.target.value})} className="rounded-xl h-12" />
+                      <Label>Daftar Nominal (Pisahkan dengan koma)</Label>
+                      <Textarea 
+                        placeholder="1000, 5000, 10000, 50000..." 
+                        value={newEvent.nominals} 
+                        onChange={e => setNewEvent({...newEvent, nominals: e.target.value})} 
+                        className="rounded-xl min-h-[100px]" 
+                      />
                     </div>
                   </div>
                   <DialogFooter>
@@ -274,7 +285,7 @@ export default function AdminDashboard() {
                       <Plus className="w-4 h-4 mr-1" /> Buat Baru
                     </Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px] rounded-[2.5rem]">
+                  <DialogContent className="sm:max-w-[500px] rounded-[2.5rem]">
                     <DialogHeader>
                       <DialogTitle className="text-2xl font-black">Buat Event Baru 🧧</DialogTitle>
                     </DialogHeader>
@@ -284,8 +295,36 @@ export default function AdminDashboard() {
                         <Input placeholder="THR Keluarga Besar..." value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})} className="rounded-xl h-12" />
                       </div>
                       <div className="space-y-2">
-                        <Label>Pesan Pemenang</Label>
-                        <Input placeholder="Selamat $nama! Semoga berkah." value={newEvent.message} onChange={e => setNewEvent({...newEvent, message: e.target.value})} className="rounded-xl h-12" />
+                        <Label>Model Permainan</Label>
+                        <div className="grid grid-cols-2 gap-3">
+                          <Button 
+                            type="button"
+                            variant={newEvent.interaction_type === 'angpao' ? 'default' : 'outline'}
+                            onClick={() => setNewEvent({...newEvent, interaction_type: 'angpao'})}
+                            className="h-20 rounded-2xl flex flex-col gap-1"
+                          >
+                            <MousePointer2 className="w-5 h-5" />
+                            <span className="text-[10px] font-bold uppercase">Pilih Angpao</span>
+                          </Button>
+                          <Button 
+                            type="button"
+                            variant={newEvent.interaction_type === 'wheel' ? 'default' : 'outline'}
+                            onClick={() => setNewEvent({...newEvent, interaction_type: 'wheel'})}
+                            className="h-20 rounded-2xl flex flex-col gap-1"
+                          >
+                            <RefreshCw className="w-5 h-5" />
+                            <span className="text-[10px] font-bold uppercase">Roda Putar</span>
+                          </Button>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Daftar Nominal (Pisahkan dengan koma)</Label>
+                        <Textarea 
+                          placeholder="1000, 5000, 10000, 50000..." 
+                          value={newEvent.nominals} 
+                          onChange={e => setNewEvent({...newEvent, nominals: e.target.value})} 
+                          className="rounded-xl min-h-[100px]" 
+                        />
                       </div>
                     </div>
                     <DialogFooter>
@@ -354,18 +393,18 @@ export default function AdminDashboard() {
                        <Label className="text-xs font-black uppercase text-muted-foreground tracking-widest">Model Permainan</Label>
                        <div className="grid grid-cols-2 gap-2">
                           <Button 
-                            variant={currentEvent?.interaction_type === 'wheel' ? 'default' : 'outline'} 
-                            className="rounded-xl h-12 text-xs gap-2 font-bold"
-                            onClick={() => updateEventType('wheel')}
-                          >
-                            <RefreshCw className="w-4 h-4" /> Roda
-                          </Button>
-                          <Button 
                             variant={currentEvent?.interaction_type === 'angpao' ? 'default' : 'outline'} 
                             className="rounded-xl h-12 text-xs gap-2 font-bold"
                             onClick={() => updateEventType('angpao')}
                           >
                             <MousePointer2 className="w-4 h-4" /> Angpao
+                          </Button>
+                          <Button 
+                            variant={currentEvent?.interaction_type === 'wheel' ? 'default' : 'outline'} 
+                            className="rounded-xl h-12 text-xs gap-2 font-bold"
+                            onClick={() => updateEventType('wheel')}
+                          >
+                            <RefreshCw className="w-4 h-4" /> Roda
                           </Button>
                        </div>
                     </div>
@@ -383,14 +422,14 @@ export default function AdminDashboard() {
                   </div>
 
                   <div className="space-y-4 pt-6 border-t">
-                     <Label className="text-xs font-black uppercase text-muted-foreground tracking-widest">Daftar Nominal Hadiah</Label>
+                     <Label className="text-xs font-black uppercase text-muted-foreground tracking-widest">Isi Hadiah (Klik untuk Blokir)</Label>
                      <p className="text-[10px] text-muted-foreground italic leading-tight">
-                       *Nominal Merah = Tidak akan bisa didapatkan peserta (diblokir).
+                       *Nominal Merah = Tidak akan bisa didapatkan peserta.
                      </p>
                      
                      <div className="flex gap-2">
                         <Input 
-                          placeholder="Tambah nominal (contoh: 75000)" 
+                          placeholder="Contoh: 75000" 
                           type="number" 
                           value={newNominal} 
                           onChange={e => setNewNominal(e.target.value)} 
@@ -449,17 +488,17 @@ export default function AdminDashboard() {
                 <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between bg-slate-50/50 border-b px-6 py-5 gap-4">
                   <div>
                     <CardTitle className="text-lg font-black">Monitoring Pemenang</CardTitle>
-                    <p className="text-xs text-muted-foreground">Klik icon tong sampah untuk mengizinkan peserta main lagi.</p>
+                    <p className="text-xs text-muted-foreground">Kelola dan ekspor data pemenang ke Excel/CSV.</p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <Button onClick={exportToExcel} size="sm" variant="outline" className="rounded-xl border-green-600 text-green-600 hover:bg-green-50 h-10 font-bold">
-                      <Download className="w-4 h-4 mr-2" /> Excel
+                      <Download className="w-4 h-4 mr-2" /> Export Excel
                     </Button>
                     
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button size="sm" variant="outline" className="rounded-xl border-red-500 text-red-500 hover:bg-red-50 h-10 font-bold">
-                          <Trash2 className="w-4 h-4 mr-2" /> Bersihkan
+                          <Trash2 className="w-4 h-4 mr-2" /> Bersihkan Data
                         </Button>
                       </AlertDialogTrigger>
                       <AlertDialogContent className="rounded-[2rem]">

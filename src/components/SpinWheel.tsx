@@ -41,13 +41,13 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
     setIsSpinning(true);
     
     const segmentAngle = 360 / items.length;
-    // Berputar minimal 20x putaran penuh agar sangat cepat dan dramatis
+    // Berputar minimal 20x putaran penuh agar sangat kencang dan dramatis
     const extraSpins = 20 * 360; 
     
     // Posisi berhenti tepat di tengah segmen pemenang
     const stopAt = 360 - (winnerIndex * segmentAngle + segmentAngle / 2);
     
-    // Akumulasi rotasi agar selalu berputar maju
+    // Akumulasi rotasi agar selalu berputar maju ke depan
     const currentRotationBase = Math.floor(rotation / 360) * 360;
     const finalRotation = currentRotationBase + extraSpins + stopAt;
     
@@ -105,7 +105,7 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
   return (
     <div className="flex flex-col items-center gap-12">
       <div className="relative w-72 h-72 sm:w-80 sm:h-80 md:w-[420px] md:h-[420px]">
-        {/* Penunjuk Panah Profesional */}
+        {/* Penunjuk Panah Atas */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 -mt-6 z-30 drop-shadow-2xl">
           <div 
             className="w-12 h-16 bg-slate-900 shadow-2xl relative" 
@@ -123,7 +123,7 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
           <svg
             ref={wheelRef}
             viewBox="0 0 200 200"
-            className="w-full h-full transition-transform duration-[8000ms] ease-[cubic-bezier(0.1,0,0,1)]"
+            className="w-full h-full transition-transform duration-[8000ms] ease-[cubic-bezier(0.1,0,0.1,1)]"
             style={{ transform: `rotate(${rotation}deg)` }}
           >
             {renderSegments()}
@@ -132,7 +132,7 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
           </svg>
         </div>
 
-        {/* Pin Tengah Mewah */}
+        {/* Pin Tengah */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-white border-[8px] border-slate-900 rounded-full z-20 flex items-center justify-center shadow-2xl">
           <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
             <div className="w-4 h-4 bg-white/30 rounded-full"></div>

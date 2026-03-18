@@ -48,11 +48,14 @@ export async function deleteWinner(winnerId: string) {
 export async function clearWinnersByEvent(eventId: string) {
   const winners = await getData('winners');
   const filtered = winners.filter((w: any) => w.event_id !== eventId);
+  
   // This is a simplified bulk delete for local storage
   const dbPath = require('path').join(process.cwd(), 'src/data/db.json');
   const fs = require('fs');
-  const db = JSON.parse(fs.readFileSync(dbPath, 'utf-8'));
-  db.winners = filtered;
-  fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
+  if (fs.existsSync(dbPath)) {
+    const db = JSON.parse(fs.readFileSync(dbPath, 'utf-8'));
+    db.winners = filtered;
+    fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
+  }
   return { success: true };
 }
