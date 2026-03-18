@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { SpinWheel } from '@/components/SpinWheel';
 import { AngpaoGrid } from '@/components/AngpaoGrid';
 import { ResultCard } from '@/components/ResultCard';
-import { Camera, AlertCircle, Loader2, Gift, Heart } from 'lucide-react';
+import { Camera, AlertCircle, Loader2, Gift, Heart, Sparkles } from 'lucide-react';
 import { addWinner, getEvents, getSystemSettings } from '@/app/actions/db-actions';
 import Link from 'next/link';
 
@@ -49,7 +49,9 @@ export default function PlayEvent() {
         getSystemSettings()
       ]);
       
-      setSettings(sysSettings || { banks: ['Dana', 'OVO', 'GoPay', 'ShopeePay', 'BCA', 'Lainnya'], siteTitle: 'Lucky THR' });
+      const currentSettings = sysSettings || { banks: ['Dana', 'OVO', 'GoPay', 'ShopeePay', 'BCA', 'Lainnya'], siteTitle: 'Lucky THR' };
+      setSettings(currentSettings);
+
       const currentEvent = (events || []).find((e: any) => e.id === eventId);
       
       if (currentEvent) {
@@ -74,15 +76,16 @@ export default function PlayEvent() {
   }, [eventId]);
 
   useEffect(() => {
-    // Restore form from local storage
-    setFormData(prev => ({
-      ...prev,
-      name: localStorage.getItem('lucky_thr_name') || '',
-      wallet: localStorage.getItem('lucky_thr_wallet') || '',
-      customWalletName: localStorage.getItem('lucky_thr_custom_wallet') || '',
-      walletNumber: localStorage.getItem('lucky_thr_wallet_number') || ''
-    }));
-
+    // Restore form safely
+    if (typeof window !== 'undefined') {
+      setFormData(prev => ({
+        ...prev,
+        name: localStorage.getItem('lucky_thr_name') || '',
+        wallet: localStorage.getItem('lucky_thr_wallet') || '',
+        customWalletName: localStorage.getItem('lucky_thr_custom_wallet') || '',
+        walletNumber: localStorage.getItem('lucky_thr_wallet_number') || ''
+      }));
+    }
     loadData();
   }, [loadData]);
 
@@ -108,7 +111,7 @@ export default function PlayEvent() {
     setTimeout(() => {
       setIsLoading(false);
       setStep('spinning');
-    }, 800);
+    }, 1000);
   };
 
   const onFinishInteraction = async (amount: number) => {
@@ -125,11 +128,10 @@ export default function PlayEvent() {
       await addWinner(winnerData);
       setResult({ amount, timestamp: new Date().toISOString() });
       
-      // Create confetti
-      const newConfetti = Array.from({ length: 80 }).map((_, i) => ({
+      const newConfetti = Array.from({ length: 100 }).map((_, i) => ({
         id: i,
         left: Math.random() * 100,
-        color: ['#E6C24C', '#E1570E', '#F3A712', '#D33F49', '#77AF9C', '#3B82F6', '#10B981'][Math.floor(Math.random() * 7)],
+        color: ['#E6C24C', '#E1570E', '#F3A712', '#D33F49', '#3B82F6', '#10B981'][Math.floor(Math.random() * 6)],
         delay: Math.random() * 3,
         size: Math.random() * 12 + 4
       }));
@@ -146,36 +148,45 @@ export default function PlayEvent() {
 
   if (error) return (
     <div className="min-h-screen flex items-center justify-center p-4 text-center bg-slate-50">
-      <Card className="p-10 rounded-[2.5rem] shadow-2xl border-none max-w-sm">
-        <AlertCircle className="w-20 h-20 text-destructive mx-auto mb-4" />
-        <h2 className="text-2xl font-black">Event Berakhir 🧧</h2>
-        <p className="text-muted-foreground mt-2">Maaf, event ini sudah tidak tersedia atau link salah.</p>
+      <Card className="p-8 sm:p-12 rounded-[3rem] shadow-2xl border-none max-w-sm w-full">
+        <AlertCircle className="w-20 h-20 text-destructive mx-auto mb-6" />
+        <h2 className="text-3xl font-black tracking-tight">Event Berakhir 🧧</h2>
+        <p className="text-muted-foreground mt-3 leading-relaxed">Maaf, event ini sudah tidak tersedia atau link salah.</p>
         <Link href="/">
-          <Button className="mt-6 rounded-xl bg-accent font-bold px-8 h-12">Kembali ke Beranda</Button>
+          <Button className="mt-8 rounded-2xl bg-accent font-black px-10 h-14 w-full text-lg shadow-lg">Kembali ke Beranda</Button>
         </Link>
       </Card>
     </div>
   );
 
   if (!isDataLoaded || !eventData || !settings) return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 gap-6 p-4">
       <div className="relative">
-         <Loader2 className="animate-spin text-accent w-16 h-16" />
-         <Gift className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-accent/50 w-6 h-6" />
+         <div className="absolute -inset-8 bg-accent/10 blur-3xl rounded-full animate-pulse"></div>
+         <Loader2 className="animate-spin text-accent w-20 h-20" />
+         <Sparkles className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-accent/40 w-8 h-8" />
       </div>
-      <p className="font-black text-slate-400 uppercase tracking-widest text-xs animate-pulse">Menyiapkan Berkah...</p>
+      <div className="text-center space-y-2">
+        <p className="font-black text-slate-800 uppercase tracking-widest text-sm animate-pulse">Menyiapkan Berkah...</p>
+        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">by maudigi.com</p>
+      </div>
     </div>
   );
 
   if (hasPlayed) return (
     <div className="min-h-screen flex items-center justify-center p-4 text-center bg-slate-50">
-      <Card className="p-10 rounded-[2.5rem] shadow-2xl border-none max-w-sm">
-        <AlertCircle className="w-20 h-20 text-orange-600 mx-auto mb-4" />
-        <h2 className="text-2xl font-black">Jatah Habis!</h2>
-        <p className="text-muted-foreground mt-2">Anda sudah bermain di event ini. Biar yang lain kebagian berkah ya!</p>
-        <div className="mt-8 pt-6 border-t flex flex-col items-center gap-1">
-           <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">by maudigi.com</p>
-           <Heart className="w-3 h-3 text-accent fill-accent" />
+      <Card className="p-8 sm:p-12 rounded-[3rem] shadow-2xl border-none max-w-sm w-full">
+        <div className="bg-orange-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+          <AlertCircle className="w-14 h-14 text-orange-600" />
+        </div>
+        <h2 className="text-3xl font-black tracking-tight">Jatah Habis!</h2>
+        <p className="text-muted-foreground mt-3 leading-relaxed">Anda sudah bermain di event ini. Biar yang lain kebagian berkah ya!</p>
+        <div className="mt-10 pt-8 border-t flex flex-col items-center gap-2">
+           <div className="flex items-center gap-2 text-[10px] text-slate-400 font-black uppercase tracking-widest">
+             <span>by</span>
+             <span className="text-accent">maudigi.com</span>
+             <Heart className="w-3 h-3 text-accent fill-accent" />
+           </div>
         </div>
       </Card>
     </div>
@@ -188,60 +199,64 @@ export default function PlayEvent() {
       ))}
 
       {step === 'form' && (
-        <Card className="w-full max-w-md border-none shadow-2xl rounded-[2.5rem] overflow-hidden relative z-50">
-          <div className="bg-accent p-8 text-center text-white">
-             <Gift className="w-14 h-14 mx-auto mb-3" />
-             <h2 className="text-2xl font-black uppercase tracking-tighter leading-none">{eventData.title || settings.siteTitle}</h2>
+        <Card className="w-full max-w-md border-none shadow-2xl rounded-[3rem] overflow-hidden relative z-50 animate-in zoom-in duration-500">
+          <div className="bg-accent p-10 text-center text-white relative">
+             <div className="absolute top-4 right-4 animate-float"><Sparkles className="w-6 h-6 text-white/30" /></div>
+             <Gift className="w-16 h-16 mx-auto mb-4" />
+             <h2 className="text-3xl font-black uppercase tracking-tighter leading-none">{eventData.title || settings.siteTitle}</h2>
           </div>
-          <CardContent className="p-8">
+          <CardContent className="p-8 sm:p-10">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label className="font-bold">Nama Lengkap</Label>
-                <Input placeholder="Masukkan nama..." required value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} className="rounded-xl h-12" />
+                <Label className="font-black text-xs uppercase tracking-widest text-muted-foreground">Nama Lengkap</Label>
+                <Input placeholder="Masukkan nama..." required value={formData.name} onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))} className="rounded-2xl h-14 text-lg font-bold px-5" />
               </div>
               <div className="space-y-2">
-                <Label className="font-bold">Foto Selfie (Opsional)</Label>
-                <div className="relative w-24 h-24 rounded-2xl bg-slate-100 border-2 border-dashed flex items-center justify-center overflow-hidden hover:border-accent transition-colors">
-                  {formData.photo ? <img src={formData.photo} alt="Selfie" className="w-full h-full object-cover" /> : <Camera className="w-8 h-8 text-slate-400" />}
+                <Label className="font-black text-xs uppercase tracking-widest text-muted-foreground">Foto Selfie (Opsional)</Label>
+                <div className="relative w-24 h-24 rounded-[2rem] bg-slate-100 border-4 border-dashed flex items-center justify-center overflow-hidden hover:border-accent hover:bg-white transition-all">
+                  {formData.photo ? <img src={formData.photo} alt="Selfie" className="w-full h-full object-cover" /> : <Camera className="w-10 h-10 text-slate-300" />}
                   <input type="file" accept="image/*" capture="user" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handlePhotoUpload} />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="font-bold">Tujuan THR</Label>
+                  <Label className="font-black text-xs uppercase tracking-widest text-muted-foreground">Tujuan THR</Label>
                   <Select value={formData.wallet} onValueChange={v => setFormData(prev => ({ ...prev, wallet: v }))} required>
-                    <SelectTrigger className="h-12 rounded-xl"><SelectValue placeholder="Pilih..." /></SelectTrigger>
-                    <SelectContent>{settings.banks.map((opt: string) => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent>
+                    <SelectTrigger className="h-14 rounded-2xl font-bold px-5"><SelectValue placeholder="Pilih..." /></SelectTrigger>
+                    <SelectContent className="rounded-2xl">{settings.banks.map((opt: string) => <SelectItem key={opt} value={opt} className="rounded-xl">{opt}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="font-bold">No. Rekening/HP</Label>
-                  <Input placeholder="Contoh: 08..." required value={formData.walletNumber} onChange={e => setFormData(prev => ({ ...prev, walletNumber: e.target.value }))} className="h-12 rounded-xl" />
+                  <Label className="font-black text-xs uppercase tracking-widest text-muted-foreground">No. HP/Rekening</Label>
+                  <Input placeholder="08xxx..." required value={formData.walletNumber} onChange={e => setFormData(prev => ({ ...prev, walletNumber: e.target.value }))} className="h-14 rounded-2xl font-bold px-5" />
                 </div>
               </div>
-              {formData.wallet === 'Lainnya' && <Input placeholder="Nama Bank/Wallet..." required value={formData.customWalletName} onChange={e => setFormData(prev => ({ ...prev, customWalletName: e.target.value }))} className="h-12 rounded-xl" />}
-              <Button type="submit" className="w-full h-16 rounded-2xl bg-accent text-lg font-black shadow-lg shadow-accent/20" disabled={isLoading}>{isLoading ? <Loader2 className="animate-spin" /> : 'GAS SEKARANG! 🚀'}</Button>
+              {formData.wallet === 'Lainnya' && <Input placeholder="Nama Bank/E-Wallet..." required value={formData.customWalletName} onChange={e => setFormData(prev => ({ ...prev, customWalletName: e.target.value }))} className="h-14 rounded-2xl font-bold px-5 animate-in slide-in-from-top-2" />}
+              <Button type="submit" className="w-full h-16 rounded-2xl bg-accent text-xl font-black shadow-xl shadow-accent/30 hover:scale-[1.02] active:scale-95 transition-all" disabled={isLoading}>{isLoading ? <Loader2 className="animate-spin w-8 h-8" /> : 'GAS SEKARANG! 🚀'}</Button>
             </form>
           </CardContent>
         </Card>
       )}
 
       {step === 'spinning' && (
-        <div className="text-center space-y-12 animate-in fade-in duration-500 max-w-2xl w-full">
-          <h2 className="text-4xl font-black text-accent uppercase leading-none italic tracking-tighter">Bismillah Beruntung!</h2>
+        <div className="text-center space-y-12 animate-in fade-in duration-700 max-w-2xl w-full">
+          <div className="space-y-4">
+            <h2 className="text-5xl font-black text-accent uppercase leading-none italic tracking-tighter animate-float">Bismillah Beruntung!</h2>
+            <p className="text-muted-foreground font-black uppercase tracking-[0.3em] text-[10px]">Semoga Hari Raya Ini Berkah Untuk Anda</p>
+          </div>
           {eventData.interaction_type === 'angpao' ? <AngpaoGrid items={eventData.nominals} onFinish={onFinishInteraction} /> : <SpinWheel items={eventData.nominals} onFinish={onFinishInteraction} />}
         </div>
       )}
 
       {step === 'result' && (
-        <div className="animate-in slide-in-from-bottom-10 duration-700 w-full max-w-lg">
+        <div className="animate-in slide-in-from-bottom-20 duration-1000 w-full max-w-lg">
           <ResultCard name={formData.name} photoUrl={formData.photo || ''} amount={result.amount} message={eventData.message} wallet={`${formData.wallet} - ${formData.walletNumber}`} />
-          <div className="text-center mt-6"><Button variant="link" onClick={() => window.location.reload()} className="text-accent font-black">Tutup & Keluar</Button></div>
+          <div className="text-center mt-8"><Button variant="link" onClick={() => window.location.reload()} className="text-accent font-black uppercase tracking-widest text-xs">Tutup & Selesai</Button></div>
         </div>
       )}
 
-      <footer className="mt-12 text-center text-[10px] text-muted-foreground uppercase tracking-widest font-bold">
-        <p>by <Link href="https://maudigi.com" target="_blank" className="text-accent hover:underline">maudigi.com</Link></p>
+      <footer className="mt-16 text-center text-[10px] text-muted-foreground uppercase tracking-[0.3em] font-black">
+        <p>Experience at <Link href="https://maudigi.com" target="_blank" className="text-accent hover:underline">maudigi.com</Link></p>
       </footer>
     </div>
   );

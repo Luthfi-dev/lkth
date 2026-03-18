@@ -2,10 +2,10 @@
 {
   "name": "Lucky THR - Bagikan Kebahagiaan",
   "short_name": "LuckyTHR",
-  "description": "Bagi-bagi THR digital dengan cara yang seru dan interaktif.",
+  "description": "Platform bagi-bagi THR digital seru dan interaktif.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#fefce8",
+  "background_color": "#ffffff",
   "theme_color": "#e1570e",
   "icons": [
     {
