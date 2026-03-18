@@ -25,7 +25,6 @@ export default function AdminDashboard() {
   const [selectedEventId, setSelectedEventId] = useState<string>('');
   const [newNominal, setNewNominal] = useState('');
   
-  // State for New Event Dialog
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newEvent, setNewEvent] = useState({
     title: '',
@@ -108,14 +107,18 @@ export default function AdminDashboard() {
   };
 
   const toggleBlockNominal = async (index: number) => {
-    const updatedNominals = currentEvent.nominals.map((item: any, i: number) => 
-      i === index ? { ...item, blocked: !item.blocked } : item
-    );
+    const updatedNominals = currentEvent.nominals.map((item: any, i: number) => {
+      if (i !== index) return item;
+      const val = typeof item === 'number' ? item : item.value;
+      const isBlocked = typeof item === 'object' ? item.blocked : false;
+      return { value: val, blocked: !isBlocked };
+    });
+    
     await updateEvent(selectedEventId, { nominals: updatedNominals });
-    const isBlocked = updatedNominals[index].blocked;
+    const isNowBlocked = updatedNominals[index].blocked;
     toast({ 
-      title: isBlocked ? "Nominal Diblokir" : "Akses Dibuka", 
-      description: isBlocked ? "Peserta TIDAK AKAN bisa mendapatkan nominal ini." : "Peserta kini bisa mendapatkan nominal ini lagi."
+      title: isNowBlocked ? "Nominal Diblokir" : "Akses Dibuka", 
+      description: isNowBlocked ? "Peserta TIDAK AKAN bisa mendapatkan nominal ini." : "Peserta kini bisa mendapatkan nominal ini lagi."
     });
     fetchData();
   };
@@ -242,8 +245,8 @@ export default function AdminDashboard() {
                  
                  <div className="grid grid-cols-1 gap-2 mt-4">
                   {currentEvent?.nominals.map((item: any, idx: number) => {
-                    const val = typeof item === 'number' ? item : item.value;
-                    const blocked = typeof item === 'object' ? item.blocked : false;
+                    const val = typeof item === 'number' ? item : (item?.value ?? 0);
+                    const blocked = typeof item === 'object' ? !!item.blocked : false;
                     
                     return (
                       <div 
