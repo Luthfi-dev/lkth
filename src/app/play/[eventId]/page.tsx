@@ -39,7 +39,11 @@ export default function PlayEvent() {
         const events = await getEvents();
         const currentEvent = events.find((e: any) => e.id === eventId);
         if (currentEvent) {
-          setEventData(currentEvent);
+          // Normalisasi nominals (jika masih angka biasa, ubah ke object)
+          const normalizedNominals = currentEvent.nominals.map((item: any) => 
+            typeof item === 'number' ? { value: item, blocked: false } : item
+          );
+          setEventData({ ...currentEvent, nominals: normalizedNominals });
           
           if (!currentEvent.allow_multiple_plays) {
             const played = localStorage.getItem(`played_${eventId}`);
@@ -68,7 +72,6 @@ export default function PlayEvent() {
     e.preventDefault();
     if (!formData.name || !formData.wallet || !formData.walletNumber) return;
     setIsLoading(true);
-    // Simulasi loading sebentar agar terasa memproses
     setTimeout(() => {
       setIsLoading(false);
       setStep('spinning');
@@ -203,7 +206,7 @@ export default function PlayEvent() {
                 className="w-full h-14 rounded-2xl bg-accent text-lg font-bold hover:bg-accent/90 shadow-lg shadow-accent/20 transition-all hover:scale-[1.02] active:scale-95"
                 disabled={isLoading || !formData.name || !formData.wallet || !formData.walletNumber}
               >
-                {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Mulai Putar Roda! 🎡'}
+                {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Lanjut ke Roda! 🎡'}
               </Button>
             </form>
           </CardContent>
@@ -214,9 +217,9 @@ export default function PlayEvent() {
         <div className="text-center space-y-12 animate-in fade-in zoom-in duration-500 max-w-2xl w-full">
           <div className="space-y-2 px-4">
             <h2 className="text-4xl font-black text-accent tracking-tighter uppercase leading-none drop-shadow-sm">Bismillah Beruntung!</h2>
-            <p className="text-slate-600 font-medium">Jangan kedip, roda sedang mencari rezeki untukmu, {formData.name.split(' ')[0]}!</p>
+            <p className="text-slate-600 font-medium">Klik tombol PUTAR di bawah untuk mulai, {formData.name.split(' ')[0]}!</p>
           </div>
-          <SpinWheel items={eventData.nominals} onFinish={onSpinFinish} isSpinning={true} />
+          <SpinWheel items={eventData.nominals} onFinish={onSpinFinish} />
         </div>
       )}
 

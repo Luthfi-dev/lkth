@@ -7,13 +7,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { PlusCircle, Copy, LogOut, Users, Gift, Share2, Search, Database, Trash2, Settings2, Plus, Coins } from 'lucide-react';
+import { PlusCircle, Copy, LogOut, Users, Gift, Share2, Search, Database, Trash2, Settings2, Plus, Coins, Ban } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
 import { getWinners, getEvents, deleteWinner, createEvent, updateEvent } from '@/app/actions/db-actions';
 import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { cn } from '@/lib/utils';
 
 export default function AdminDashboard() {
   const { toast } = useToast();
@@ -67,7 +68,12 @@ export default function AdminDashboard() {
       toast({ variant: "destructive", title: "Gagal", description: "Judul event wajib diisi." });
       return;
     }
-    const nominalArray = newEvent.nominals.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+    // Ubah format nominal dari string ke array object { value, blocked }
+    const nominalArray = newEvent.nominals.split(',')
+      .map(n => parseInt(n.trim()))
+      .filter(n => !isNaN(n))
+      .map(n => ({ value: n, blocked: false }));
+
     await createEvent({
       ...newEvent,
       nominals: nominalArray,
@@ -87,7 +93,7 @@ export default function AdminDashboard() {
   const addNominal = async () => {
     const val = parseInt(newNominal);
     if (isNaN(val) || val <= 0) return;
-    const updatedNominals = [...(currentEvent?.nominals || []), val];
+    const updatedNominals = [...(currentEvent?.nominals || []), { value: val, blocked: false }];
     await updateEvent(selectedEventId, { nominals: updatedNominals });
     setNewNominal('');
     toast({ title: "Nominal Ditambahkan", description: `Rp ${val.toLocaleString('id-ID')} masuk ke roda.` });
@@ -97,7 +103,20 @@ export default function AdminDashboard() {
   const removeNominal = async (index: number) => {
     const updatedNominals = currentEvent.nominals.filter((_: any, i: number) => i !== index);
     await updateEvent(selectedEventId, { nominals: updatedNominals });
-    toast({ title: "Nominal Dihapus", description: "Pilihan tersebut tidak akan muncul lagi di roda." });
+    toast({ title: "Nominal Dihapus", description: "Pilihan tersebut dihapus dari roda." });
+    fetchData();
+  };
+
+  const toggleBlockNominal = async (index: number) => {
+    const updatedNominals = currentEvent.nominals.map((item: any, i: number) => 
+      i === index ? { ...item, blocked: !item.blocked } : item
+    );
+    await updateEvent(selectedEventId, { nominals: updatedNominals });
+    const isBlocked = updatedNominals[index].blocked;
+    toast({ 
+      title: isBlocked ? "Nominal Diblokir" : "Akses Dibuka", 
+      description: isBlocked ? "Peserta TIDAK AKAN bisa mendapatkan nominal ini." : "Peserta kini bisa mendapatkan nominal ini lagi."
+    });
     fetchData();
   };
 
@@ -206,7 +225,8 @@ export default function AdminDashboard() {
               </div>
 
               <div className="space-y-3 pt-4 border-t">
-                 <Label className="text-xs font-black uppercase text-muted-foreground">Isi Roda (Nominal)</Label>
+                 <Label className="text-xs font-black uppercase text-muted-foreground">Isi Roda & Blokir Rezeki</p>
+                 <p className="text-[10px] text-muted-foreground italic mb-2">*Klik nominal untuk blokir (Warna merah = tidak bisa didapat)</p>
                  <div className="flex gap-2">
                     <Input 
                       placeholder="Contoh: 75000" 
@@ -221,22 +241,42 @@ export default function AdminDashboard() {
                  </div>
                  
                  <div className="grid grid-cols-1 gap-2 mt-4">
-                  {currentEvent?.nominals.map((val: number, idx: number) => (
-                    <div key={idx} className="flex items-center justify-between p-3 bg-white rounded-xl border group hover:border-accent transition-colors">
-                      <div className="flex items-center gap-2">
-                        <Coins className="w-4 h-4 text-primary" />
-                        <span className="font-bold text-sm">Rp {val.toLocaleString('id-ID')}</span>
-                      </div>
-                      <Button 
-                        size="icon" 
-                        variant="ghost" 
-                        className="h-8 w-8 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => removeNominal(idx)}
+                  {currentEvent?.nominals.map((item: any, idx: number) => {
+                    const val = typeof item === 'number' ? item : item.value;
+                    const blocked = typeof item === 'object' ? item.blocked : false;
+                    
+                    return (
+                      <div 
+                        key={idx} 
+                        onClick={() => toggleBlockNominal(idx)}
+                        className={cn(
+                          "flex items-center justify-between p-3 rounded-xl border group transition-all cursor-pointer select-none",
+                          blocked 
+                            ? "bg-red-50 border-red-200 text-red-700" 
+                            : "bg-white border-slate-200 hover:border-accent"
+                        )}
                       >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  ))}
+                        <div className="flex items-center gap-2">
+                          {blocked ? <Ban className="w-4 h-4 text-red-500" /> : <Coins className="w-4 h-4 text-primary" />}
+                          <span className="font-bold text-sm">Rp {val.toLocaleString('id-ID')}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {blocked && <Badge variant="destructive" className="text-[9px] h-4">BLOCKED</Badge>}
+                          <Button 
+                            size="icon" 
+                            variant="ghost" 
+                            className="h-8 w-8 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              removeNominal(idx);
+                            }}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
                   {(!currentEvent?.nominals || currentEvent?.nominals.length === 0) && (
                     <p className="text-center py-4 text-xs text-muted-foreground italic">Roda masih kosong</p>
                   )}
