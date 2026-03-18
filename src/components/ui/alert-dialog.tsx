@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -37,7 +36,7 @@ const AlertDialogContent = React.forwardRef<
     <AlertDialogPrimitive.Content
       ref={ref}
       className={cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-[95%] max-w-lg translate-x-[-50%] translate-y-[-50%] gap-6 border bg-background p-6 sm:p-10 shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)] duration-300 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-[2.5rem] overflow-hidden",
+        "fixed left-[50%] top-[50%] z-50 grid w-[92%] max-w-[450px] translate-x-[-50%] translate-y-[-50%] gap-6 border bg-background p-6 sm:p-10 shadow-[0_35px_60px_-15px_rgba(0,0,0,0.3)] duration-300 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[state=closed]:slide-out-to-left-1/2 data-[state=closed]:slide-out-to-top-[48%] data-[state=open]:slide-in-from-left-1/2 data-[state=open]:slide-in-from-top-[48%] rounded-[2.5rem] overflow-hidden",
         className
       )}
       {...props}
@@ -80,7 +79,7 @@ const AlertDialogTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AlertDialogPrimitive.Title
     ref={ref}
-    className={cn("text-2xl sm:text-3xl font-black tracking-tight text-slate-900", className)}
+    className={cn("text-2xl sm:text-3xl font-black tracking-tight text-slate-900 text-center", className)}
     {...props}
   />
 ))
@@ -92,7 +91,7 @@ const AlertDialogDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AlertDialogPrimitive.Description
     ref={ref}
-    className={cn("text-sm sm:text-base text-muted-foreground leading-relaxed px-2", className)}
+    className={cn("text-sm sm:text-base text-muted-foreground leading-relaxed px-2 text-center", className)}
     {...props}
   />
 ))
@@ -105,7 +104,7 @@ const AlertDialogAction = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AlertDialogPrimitive.Action
     ref={ref}
-    className={cn(buttonVariants({ variant: "default" }), "h-14 w-full sm:w-auto rounded-2xl px-8 font-black text-base sm:text-lg shadow-lg", className)}
+    className={cn(buttonVariants({ variant: "default" }), "h-14 w-full sm:w-auto min-w-[140px] rounded-2xl px-6 font-black text-base sm:text-lg shadow-lg", className)}
     {...props}
   />
 ))
@@ -119,7 +118,7 @@ const AlertDialogCancel = React.forwardRef<
     ref={ref}
     className={cn(
       buttonVariants({ variant: "outline" }),
-      "h-14 w-full sm:w-auto rounded-2xl px-8 font-black text-base sm:text-lg border-2",
+      "h-14 w-full sm:w-auto min-w-[140px] rounded-2xl px-6 font-black text-base sm:text-lg border-2",
       className
     )}
     {...props}

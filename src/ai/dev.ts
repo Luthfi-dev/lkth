@@ -1,1 +1,1 @@
-// Flows will be imported for their side effects in this file.
+// AI modules removed to reduce bloat as requested

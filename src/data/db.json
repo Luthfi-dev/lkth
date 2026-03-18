@@ -25,8 +25,67 @@
       "timestamp": "2026-03-18T14:00:04.203Z"
     }
   ],
-  "events": [],
-  "winners": [],
+  "events": [
+    {
+      "title": "THR PIC 2A",
+      "message": "Selamat Hari Raya $nama! Semoga berkah selalu.",
+      "nominals": [
+        {
+          "value": 20000,
+          "blocked": false
+        },
+        {
+          "value": 25000,
+          "blocked": false
+        },
+        {
+          "value": 30000,
+          "blocked": false
+        },
+        {
+          "value": 35000,
+          "blocked": false
+        },
+        {
+          "value": 40000,
+          "blocked": false
+        },
+        {
+          "value": 45000,
+          "blocked": false
+        },
+        {
+          "value": 50000,
+          "blocked": false
+        },
+        {
+          "value": 75000,
+          "blocked": false
+        },
+        {
+          "value": 100000,
+          "blocked": false
+        }
+      ],
+      "allow_multiple_plays": false,
+      "interaction_type": "angpao",
+      "admin_id": "bordknu8m",
+      "is_active": true,
+      "id": "18uolr7je",
+      "timestamp": "2026-03-18T16:58:51.891Z"
+    }
+  ],
+  "winners": [
+    {
+      "event_id": "18uolr7je",
+      "name": "Tess",
+      "photo_url": "",
+      "amount": 75000,
+      "wallet_info": "BSI - 08383737",
+      "id": "cbyovzlgk",
+      "timestamp": "2026-03-18T17:00:20.143Z"
+    }
+  ],
   "settings": {
     "siteTitle": "Lucky THR",
     "banks": [
