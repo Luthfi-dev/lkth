@@ -33,11 +33,11 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
     if (!cardRef.current) return null;
     setIsExporting(true);
     try {
-      // Menambahkan filter untuk menghindari error SecurityError pada stylesheet eksternal
+      // Menggunakan filter untuk menghindari error SecurityError pada stylesheet eksternal
       const blob = await toBlob(cardRef.current, { 
         cacheBust: true,
         skipFonts: false,
-        fontEmbedCSS: '', // Biarkan kosong jika font lokal/system sudah cukup atau bermasalah
+        fontEmbedCSS: '', 
       });
       if (!blob) throw new Error('Failed to generate image');
       return blob;
@@ -71,7 +71,6 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
   const handleShare = async () => {
     const shareText = `OMG! 😱 Gue baru aja dapet THR Rp ${amount.toLocaleString('id-ID')} dari LuckyTHR! 🎉🧧\n\n"${message.replace('$nama', name)}"\n\nCek keberuntungan lo juga di: ${currentUrl}\n#LuckyTHR #BerkahDigital #maudigi`;
     
-    // Coba ekspor gambar dulu
     const blob = await handleExportImage();
     
     if (navigator.share && typeof window !== 'undefined') {
@@ -82,7 +81,6 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
           url: currentUrl,
         };
 
-        // Jika blob gambar berhasil dibuat, coba sertakan filenya
         if (blob) {
           try {
             const file = new File([blob], 'lucky-thr.png', { type: 'image/png' });
@@ -98,13 +96,11 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
         toast({ title: "Berhasil Berbagi!", description: "Terima kasih sudah menyebarkan kebahagiaan!" });
       } catch (err: any) {
         if (err.name !== 'AbortError') {
-          // Fallback manual ke WhatsApp jika Web Share gagal atau dibatalkan dengan error lain
           const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
           window.open(waUrl, '_blank');
         }
       }
     } else {
-      // Fallback untuk browser yang tidak mendukung Web Share API
       const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
       window.open(waUrl, '_blank');
       toast({ title: "Membuka WhatsApp", description: "Browser kamu tidak mendukung fitur share otomatis, dialihkan ke WhatsApp." });
@@ -147,7 +143,7 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
 
             <CardContent className="pt-10 pb-12 px-8 space-y-10 relative bg-white">
               <div className="text-center space-y-2">
-                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.3em]">Dompet Lo Nambah:</p>
+                <p className="text-[10px] text-muted-foreground uppercase font-black tracking-[0.3em]">Total Berkah Didapat:</p>
                 <div className="relative inline-block">
                   <div className="absolute -inset-x-6 bottom-2 h-6 bg-yellow-400/40 -rotate-2"></div>
                   <div className="relative text-7xl font-black text-slate-900 tracking-tighter">
@@ -165,24 +161,6 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
                   </p>
                 </div>
                 <div className="absolute -bottom-12 -right-3 text-5xl text-accent/20 font-serif rotate-180">“</div>
-              </div>
-
-              <div className="space-y-4 pt-6">
-                <div className="flex items-center justify-between text-[11px] font-black uppercase text-muted-foreground tracking-widest px-4">
-                  <span>Transfer Info</span>
-                  <span className="text-accent flex items-center gap-1 animate-pulse">
-                    <span className="w-2 h-2 rounded-full bg-accent"></span> On Progress
-                  </span>
-                </div>
-                <div className="bg-slate-900 text-white p-6 rounded-[2rem] flex items-center justify-between shadow-2xl transition-all hover:scale-[1.02]">
-                   <div className="flex flex-col">
-                     <span className="text-[10px] text-white/50 font-black uppercase tracking-widest">Account Target</span>
-                     <span className="font-mono text-sm mt-1">{wallet}</span>
-                   </div>
-                   <div className="bg-yellow-400 p-2 rounded-xl">
-                     <Smartphone className="w-6 h-6 text-slate-950" />
-                   </div>
-                </div>
               </div>
 
               <div className="text-center pt-8 border-t border-dashed">
