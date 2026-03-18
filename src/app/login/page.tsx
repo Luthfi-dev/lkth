@@ -18,10 +18,17 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  // Clear session on mount
   useEffect(() => {
-    localStorage.removeItem('lucky_thr_admin');
-  }, []);
+    const savedSession = localStorage.getItem('lucky_thr_session');
+    if (savedSession) {
+      const session = JSON.parse(savedSession);
+      if (session.expiry > Date.now()) {
+        router.push(session.user.role === 'superadmin' ? '/superadmin' : '/dashboard');
+      } else {
+        localStorage.removeItem('lucky_thr_session');
+      }
+    }
+  }, [router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,15 +36,18 @@ export default function LoginPage() {
     try {
       const result = await loginUser(email, password);
       
-      // Store session
-      localStorage.setItem('lucky_thr_admin', JSON.stringify(result.user));
+      // Sesi 30 hari (30 * 24 * 60 * 60 * 1000 ms)
+      const expiry = Date.now() + (30 * 24 * 60 * 60 * 1000);
+      localStorage.setItem('lucky_thr_session', JSON.stringify({
+        user: result.user,
+        expiry: expiry
+      }));
       
       toast({
         title: "Login Berhasil",
         description: `Selamat datang kembali, ${result.user.name}!`,
       });
       
-      // Redirect berdasarkan role
       if (result.user.role === 'superadmin') {
         router.push('/superadmin');
       } else {
@@ -111,7 +121,7 @@ export default function LoginPage() {
               className="w-full h-14 rounded-2xl bg-accent text-lg font-bold shadow-lg shadow-accent/20"
               disabled={isLoading}
             >
-              {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Masuk ke Dashboard'}
+              {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : 'Masuk Sekarang'}
             </Button>
           </form>
         </CardContent>

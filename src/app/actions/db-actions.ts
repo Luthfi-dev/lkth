@@ -1,4 +1,3 @@
-
 'use server';
 
 import { getData, saveData, deleteData, updateData, saveFile } from '@/lib/storage';
@@ -42,7 +41,6 @@ export async function updateEvent(id: string, data: any) {
 
 export async function deleteEvent(id: string) {
   await deleteData('events', id);
-  // Optional: clear winners of this event
   const winners = await getData('winners');
   const filtered = winners.filter((w: any) => w.event_id !== id);
   
@@ -61,7 +59,7 @@ export async function getWinners(adminId?: string, role?: string) {
   const events = await getData('events');
   
   if (role === 'superadmin') return winners;
-  if (!adminId) return [];
+  if (!adminId) return winners;
 
   const userEventIds = events
     .filter((e: any) => e.admin_id === adminId)
@@ -106,4 +104,9 @@ export async function getSystemSettings() {
 export async function updateSystemSettings(newSettings: any) {
   await updateData('settings', null, newSettings);
   return { success: true };
+}
+
+export async function checkIpPlayed(eventId: string, ip: string) {
+  const winners = await getData('winners');
+  return winners.some((w: any) => w.event_id === eventId && w.ip_address === ip);
 }

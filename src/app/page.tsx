@@ -15,7 +15,7 @@ export default function Home() {
           <span className="font-black text-2xl text-accent tracking-tighter">LuckyTHR</span>
         </div>
         <Link href="/login">
-          <Button variant="ghost" className="font-semibold">Login Admin</Button>
+          <Button variant="ghost" className="font-semibold">Login</Button>
         </Link>
       </header>
 
@@ -75,8 +75,8 @@ export default function Home() {
             />
             <FeatureCard 
               icon={<Shield className="w-8 h-8" />}
-              title="Anti-Cheat"
-              description="Sistem pengunci IP dan perangkat memastikan setiap orang hanya bisa memutar sekali."
+              title="Anti-Cheat Berbasis IP"
+              description="Sistem pengunci IP memastikan setiap orang hanya bisa memutar sekali meskipun ganti browser."
             />
             <FeatureCard 
               icon={<Gift className="w-8 h-8" />}
@@ -89,7 +89,7 @@ export default function Home() {
 
       <footer className="bg-background border-t py-12 text-center text-muted-foreground text-sm">
         <div className="flex flex-col items-center gap-4">
-           <p>© 2024 LuckyTHR Engine. Rayakan hari raya dengan sukacita.</p>
+           <p>© 2024 LuckyTHR. Rayakan hari raya dengan sukacita.</p>
            <div className="flex items-center gap-2 font-bold text-slate-800">
              <span>by</span>
              <Link href="https://maudigi.com" target="_blank" className="text-accent hover:underline flex items-center gap-1">
