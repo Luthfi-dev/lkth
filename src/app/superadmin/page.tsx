@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -269,7 +268,6 @@ export default function SuperAdminDashboard() {
                maudigi.com <Heart className="w-3 h-3 fill-accent" />
              </Link>
            </div>
-           <p className="text-[10px] text-slate-400 uppercase tracking-[0.2em] font-black">LuckyTHR Engine v15.2.4-PRO-Standalone</p>
         </div>
       </footer>
     </div>
