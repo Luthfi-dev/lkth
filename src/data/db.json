@@ -71,11 +71,11 @@
         },
         {
           "value": 50000,
-          "blocked": false
+          "blocked": true
         },
         {
           "value": 100000,
-          "blocked": false
+          "blocked": true
         }
       ],
       "allow_multiple_plays": true,

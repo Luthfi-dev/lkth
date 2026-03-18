@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useEffect, useState } from 'react';
@@ -21,9 +22,11 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
   const [domain, setDomain] = useState('');
 
   useEffect(() => {
-    const origin = window.location.origin;
-    setCurrentUrl(origin);
-    setDomain(window.location.hostname);
+    if (typeof window !== 'undefined') {
+      const origin = window.location.origin;
+      setCurrentUrl(origin);
+      setDomain(window.location.hostname);
+    }
   }, []);
 
   const handleShare = async () => {
@@ -130,7 +133,7 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
           </Button>
           <div className="text-center space-y-2">
             <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.3em] flex items-center justify-center gap-1">
-              Experience at <span className="text-accent">{domain || 'LuckyTHR.app'}</span>
+              Experience at <span className="text-accent">{domain || 'LuckyTHR'}</span>
             </p>
             <div className="flex items-center justify-center gap-1 text-[9px] text-slate-400 font-bold">
               <span>by</span>

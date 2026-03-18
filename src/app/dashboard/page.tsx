@@ -36,7 +36,7 @@ export default function AdminDashboard() {
     message: 'Selamat Hari Raya $nama! Semoga berkah selalu.',
     nominals: '1000, 2000, 5000, 10000, 20000, 50000, 100000',
     allow_multiple_plays: false,
-    interaction_type: 'angpao' // Default sekarang Angpao
+    interaction_type: 'angpao'
   });
 
   const fetchData = async () => {
@@ -109,7 +109,6 @@ export default function AdminDashboard() {
       return;
     }
     
-    // Split nominals by comma and clean them
     const nominalArray = newEvent.nominals.split(',')
       .map(n => parseInt(n.trim()))
       .filter(n => !isNaN(n))
@@ -149,7 +148,7 @@ export default function AdminDashboard() {
     const updatedNominals = [...(currentEvent?.nominals || []), { value: val, blocked: false }];
     await updateEvent(selectedEventId, { nominals: updatedNominals });
     setNewNominal('');
-    toast({ title: "Nominal Ditambahkan", description: `Rp {val.toLocaleString('id-ID')} masuk ke sistem.` });
+    toast({ title: "Nominal Ditambahkan", description: `Rp ${val.toLocaleString('id-ID')} masuk ke sistem.` });
     fetchData();
   };
 
@@ -163,16 +162,15 @@ export default function AdminDashboard() {
   const toggleBlockNominal = async (index: number) => {
     const updatedNominals = currentEvent.nominals.map((item: any, i: number) => {
       if (i !== index) return item;
-      const val = typeof item === 'number' ? item : item.value;
-      const isBlocked = typeof item === 'object' ? item.blocked : false;
-      return { value: val, blocked: !isBlocked };
+      const val = typeof item === 'object' ? item.value : item;
+      const currentBlocked = typeof item === 'object' ? !!item.blocked : false;
+      return { value: val, blocked: !currentBlocked };
     });
     
     await updateEvent(selectedEventId, { nominals: updatedNominals });
-    const isNowBlocked = updatedNominals[index].blocked;
     toast({ 
-      title: isNowBlocked ? "Nominal Diblokir" : "Akses Dibuka", 
-      description: isNowBlocked ? "Peserta TIDAK AKAN bisa mendapatkan nominal ini." : "Peserta kini bisa mendapatkan nominal ini lagi."
+      title: "Update Berhasil", 
+      description: "Status blokir nominal telah diperbarui."
     });
     fetchData();
   };
@@ -234,7 +232,7 @@ export default function AdminDashboard() {
                       <Input placeholder="THR Keluarga Besar..." value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})} className="rounded-xl h-12" />
                     </div>
                     <div className="space-y-2">
-                      <Label>Model Permainan (Default: Angpao)</Label>
+                      <Label>Model Permainan</Label>
                       <div className="grid grid-cols-2 gap-3">
                         <Button 
                           type="button"
@@ -443,7 +441,7 @@ export default function AdminDashboard() {
                      
                      <div className="grid grid-cols-1 gap-2 mt-4">
                       {currentEvent?.nominals.map((item: any, idx: number) => {
-                        const val = typeof item === 'number' ? item : (item?.value ?? 0);
+                        const val = typeof item === 'object' ? item.value : item;
                         const blocked = typeof item === 'object' ? !!item.blocked : false;
                         
                         return (
@@ -461,7 +459,7 @@ export default function AdminDashboard() {
                               <div className={cn("p-2 rounded-xl", blocked ? "bg-red-200" : "bg-primary/20")}>
                                 {blocked ? <Ban className="w-4 h-4 text-red-600" /> : <Coins className="w-4 h-4 text-accent" />}
                               </div>
-                              <span className="font-black">Rp {val.toLocaleString('id-ID')}</span>
+                              <span className="font-black">Rp {val?.toLocaleString('id-ID')}</span>
                             </div>
                             <div className="flex items-center gap-2">
                               {blocked && <Badge variant="destructive" className="text-[9px] h-4 font-black">BLOCKED</Badge>}
@@ -612,7 +610,7 @@ export default function AdminDashboard() {
       <footer className="py-8 bg-slate-100 border-t mt-12">
         <div className="max-w-7xl mx-auto px-6 flex flex-col items-center gap-2">
            <div className="flex items-center gap-2 text-slate-400 font-bold text-sm">
-             <span>Powered by</span>
+             <span>by</span>
              <Link href="https://maudigi.com" target="_blank" className="text-accent hover:underline flex items-center gap-1">
                maudigi.com <Heart className="w-3 h-3 fill-accent" />
              </Link>

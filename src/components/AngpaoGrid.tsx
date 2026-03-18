@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Gift, Loader2, CheckCircle2 } from 'lucide-react';
+import { Gift, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface NominalItem {
@@ -28,31 +28,42 @@ export function AngpaoGrid({ items, onFinish }: AngpaoGridProps) {
     setIsSelecting(true);
     setSelectedIndex(index);
 
-    // Tentukan pemenang (hanya dari yang tidak diblokir)
-    const allowedItems = items.filter(item => !item.blocked);
-    const pool = allowedItems.length > 0 ? allowedItems : items;
-    const winnerValue = pool[Math.floor(Math.random() * pool.length)].value;
+    // 1. Ambil semua nilai nominal asli
+    const allNominalValues = items.map(i => i.value);
+    
+    // 2. Acak urutannya untuk tampilan reveal
+    let shuffled = [...allNominalValues].sort(() => Math.random() - 0.5);
 
-    // Siapkan nilai untuk amplop lainnya (acak dari list nominal)
-    const allNominals = items.map(i => i.value);
-    const shuffledValues = Array.from({ length: 6 }).map(() => 
-      allNominals[Math.floor(Math.random() * allNominals.length)]
-    );
-    // Pastikan index yang dipilih mendapatkan nilai pemenang asli
-    shuffledValues[index] = winnerValue;
+    // 3. Pastikan index yang dipilih BUKAN nominal yang diblokir
+    const blockedValues = items.filter(i => i.blocked).map(i => i.value);
+    const allowedValues = items.filter(i => !i.blocked).map(i => i.value);
+    
+    // Jika nilai yang teracak di posisi klik adalah nilai terblokir
+    if (blockedValues.includes(shuffled[index])) {
+      // Cari index nilai yang 'allowed' di dalam array shuffled untuk ditukar
+      const allowedIdxInShuffled = shuffled.findIndex(v => allowedValues.includes(v));
+      
+      if (allowedIdxInShuffled !== -1) {
+        // Tukar posisinya
+        [shuffled[index], shuffled[allowedIdxInShuffled]] = [shuffled[allowedIdxInShuffled], shuffled[index]];
+      } else {
+        // Fallback jika semua nominal diblokir (pengaman sistem)
+        shuffled[index] = allowedValues[0] || 0;
+      }
+    }
 
-    // Animasi pemilihan
+    // Animasi pemilihan selama 1.5 detik
     setTimeout(() => {
-      setEnvelopesValues(shuffledValues);
+      setEnvelopesValues(shuffled);
       setIsRevealed(true);
       setIsSelecting(false);
     }, 1500);
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto space-y-10 px-4">
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
-        {[0, 1, 2, 3, 4, 5].map((idx) => {
+    <div className="w-full max-w-4xl mx-auto space-y-10 px-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
+        {items.map((_, idx) => {
           const isCurrentPick = selectedIndex === idx;
           const showValue = isRevealed;
 
@@ -67,25 +78,25 @@ export function AngpaoGrid({ items, onFinish }: AngpaoGridProps) {
               )}
             >
               <div className={cn(
-                "aspect-[3/4] rounded-[2rem] flex flex-col items-center justify-center shadow-2xl relative overflow-hidden transition-all duration-700 border-4",
-                isCurrentPick && isRevealed ? "bg-emerald-500 border-yellow-300 scale-110 z-30" : "bg-emerald-700 border-emerald-800",
+                "aspect-[3/4] rounded-[1.5rem] sm:rounded-[2rem] flex flex-col items-center justify-center shadow-2xl relative overflow-hidden transition-all duration-700 border-4",
+                isCurrentPick && isRevealed ? "bg-emerald-500 border-yellow-300 scale-110 z-30 shadow-yellow-400/20" : "bg-emerald-700 border-emerald-800",
                 !isRevealed && !isSelecting && "hover:shadow-emerald-500/40",
                 isSelecting && isCurrentPick && "animate-angpao-shake"
               )}>
-                {/* Pattern Amplop Hijau Universal */}
-                <div className="absolute top-0 left-0 w-full h-1/3 bg-emerald-800 rounded-b-[3rem] shadow-inner opacity-50"></div>
+                {/* Visual Pattern */}
+                <div className="absolute top-0 left-0 w-full h-1/3 bg-emerald-800 rounded-b-[2rem] sm:rounded-b-[3rem] shadow-inner opacity-50"></div>
                 
                 {!showValue ? (
                   <>
-                    <div className="w-16 h-16 rounded-full bg-yellow-400/20 border-2 border-yellow-400/50 flex items-center justify-center mb-4 z-10">
-                       <Gift className="text-yellow-400 w-8 h-8" />
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-yellow-400/20 border-2 border-yellow-400/50 flex items-center justify-center mb-4 z-10">
+                       <Gift className="text-yellow-400 w-6 h-6 sm:w-8 sm:h-8" />
                     </div>
-                    <span className="text-emerald-100/50 font-black text-xs uppercase tracking-widest z-10">PILIH ME!</span>
+                    <span className="text-emerald-100/50 font-black text-[10px] uppercase tracking-widest z-10">BERKAH</span>
                   </>
                 ) : (
-                  <div className="flex flex-col items-center animate-in zoom-in duration-500 z-10">
-                    <span className="text-[10px] text-emerald-200 font-bold uppercase mb-1">Isi Amplop:</span>
-                    <span className="text-xl font-black text-white">
+                  <div className="flex flex-col items-center animate-in zoom-in duration-500 z-10 px-2 text-center">
+                    <span className="text-[9px] text-emerald-200 font-bold uppercase mb-1">Isi:</span>
+                    <span className="text-sm sm:text-lg font-black text-white">
                       Rp {envelopesValues[idx]?.toLocaleString('id-ID')}
                     </span>
                     
@@ -95,9 +106,9 @@ export function AngpaoGrid({ items, onFinish }: AngpaoGridProps) {
                           e.stopPropagation();
                           onFinish(envelopesValues[idx]);
                         }}
-                        className="mt-4 bg-yellow-400 hover:bg-yellow-300 text-emerald-950 font-black rounded-xl h-10 px-6 shadow-lg animate-bounce"
+                        className="mt-4 bg-yellow-400 hover:bg-yellow-300 text-emerald-950 font-black rounded-xl h-8 sm:h-10 px-4 sm:px-6 shadow-lg animate-bounce text-xs sm:text-sm"
                       >
-                        AMBIL THR! 🧧
+                        AMBIL! 🧧
                       </Button>
                     )}
                   </div>
@@ -105,7 +116,7 @@ export function AngpaoGrid({ items, onFinish }: AngpaoGridProps) {
 
                 {isSelecting && isCurrentPick && (
                   <div className="absolute inset-0 bg-emerald-900/40 flex items-center justify-center z-20 backdrop-blur-[2px]">
-                    <Loader2 className="w-10 h-10 text-white animate-spin" />
+                    <Loader2 className="w-8 h-8 text-white animate-spin" />
                   </div>
                 )}
                 
@@ -120,7 +131,7 @@ export function AngpaoGrid({ items, onFinish }: AngpaoGridProps) {
       
       {!isRevealed && !isSelecting && (
         <div className="text-center space-y-2 animate-float">
-          <p className="font-black text-emerald-800 text-lg uppercase tracking-[0.2em]">
+          <p className="font-black text-emerald-800 text-sm sm:text-lg uppercase tracking-[0.2em]">
              Pilih Satu Amplop Berkah!
           </p>
           <div className="flex justify-center gap-1">
