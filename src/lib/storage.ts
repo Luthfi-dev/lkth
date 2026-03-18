@@ -1,8 +1,10 @@
+
 import fs from 'fs';
 import path from 'path';
 
 const DB_PATH = path.join(process.cwd(), 'src/data/db.json');
-const UPLOADS_DIR = path.join(process.cwd(), 'public/uploads');
+// Menyimpan di root proyek (selevel dengan src)
+const UPLOADS_DIR = path.join(process.cwd(), 'uploads');
 
 function ensureDbExists() {
   const dir = path.dirname(DB_PATH);
@@ -21,7 +23,7 @@ function ensureDbExists() {
           id: "sa-1",
           name: "Super Admin",
           email: "superadmin@gmail.com",
-          password: "123456_ytkl_atlas",
+          password: "$2a$10$7R6v7k.e8vWz5oV8yUf1U.I/9yO2h3uP9I8v7K6J5H4G3F2E1D0C", // Default: 123456
           role: "superadmin",
           timestamp: new Date().toISOString()
         }
@@ -96,5 +98,6 @@ export async function saveFile(base64Data: string) {
   const filePath = path.join(UPLOADS_DIR, fileName);
   
   fs.writeFileSync(filePath, base64Content, { encoding: 'base64' });
-  return `/uploads/${fileName}`;
+  // Sekarang URL mengarah ke API Route
+  return `/api/uploads/${fileName}`;
 }

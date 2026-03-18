@@ -1,9 +1,10 @@
+
 "use client"
 
 import React, { useEffect, useState, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Share2, Sparkles, Star, Smartphone, Zap, Heart, Download, Loader2 } from 'lucide-react';
+import { Share2, Star, Smartphone, Zap, Heart, Download, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { toBlob } from 'html-to-image';
 
@@ -35,6 +36,7 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
         cacheBust: true,
         skipFonts: false,
         pixelRatio: 2,
+        backgroundColor: '#ffffff'
       });
       if (!blob) throw new Error('Failed to generate image');
       return blob;
@@ -43,7 +45,7 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
       toast({ 
         variant: "destructive", 
         title: "Gagal Membuat Gambar", 
-        description: "Terjadi kendala saat memproses gambar hasil. Silakan coba lagi." 
+        description: "Terjadi kendala saat memproses gambar. Silakan coba lagi." 
       });
       return null;
     } finally {
@@ -61,102 +63,96 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      toast({ title: "Berhasil!", description: "Gambar hasil sudah diunduh ke perangkatmu." });
+      toast({ title: "Berhasil!", description: "Gambar telah diunduh ke galeri." });
     }
   };
 
   const handleShare = async () => {
     const formattedMessage = message.replace('$nama', name);
-    const shareText = `"${formattedMessage}"`;
-    
     const blob = await handleExportImage();
     
     if (navigator.share && typeof window !== 'undefined') {
       try {
         const shareData: any = {
           title: 'LuckyTHR Jackpot!',
-          text: shareText,
+          text: formattedMessage,
         };
 
         if (blob) {
-          try {
-            const file = new File([blob], 'lucky-thr.png', { type: 'image/png' });
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-              shareData.files = [file];
-            }
-          } catch (e) {
-            console.warn("File sharing not supported by this browser/OS", e);
+          const file = new File([blob], 'lucky-thr.png', { type: 'image/png' });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            shareData.files = [file];
           }
         }
 
         await navigator.share(shareData);
-        toast({ title: "Berhasil Berbagi!", description: "Terima kasih sudah menyebarkan kebahagiaan!" });
+        toast({ title: "Dibagikan!", description: "Terima kasih sudah berbagi!" });
       } catch (err: any) {
         if (err.name !== 'AbortError') {
-          const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+          // Fallback manual jika gagal
+          const waUrl = `https://wa.me/?text=${encodeURIComponent(formattedMessage)}`;
           window.open(waUrl, '_blank');
         }
       }
     } else {
-      const waUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
+      const waUrl = `https://wa.me/?text=${encodeURIComponent(formattedMessage)}`;
       window.open(waUrl, '_blank');
-      toast({ title: "Membuka WhatsApp", description: "Browser kamu tidak mendukung fitur share otomatis, dialihkan ke WhatsApp." });
+      toast({ title: "Membuka WhatsApp", description: "Browser tidak mendukung share native, beralih ke WhatsApp." });
     }
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="overflow-hidden p-2">
-        <div ref={cardRef} className="bg-white rounded-[2.5rem] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.1)]">
-          <Card className="w-full max-w-sm mx-auto overflow-hidden border-none rounded-[2.5rem] bg-white group">
-            {/* Header lebih pendek */}
-            <div className="relative h-48 w-full bg-gradient-to-br from-accent via-orange-600 to-yellow-400 overflow-hidden">
-              <div className="absolute top-4 left-4 animate-bounce delay-75">
+        <div ref={cardRef} className="bg-white rounded-[2.5rem] overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.15)] max-w-sm mx-auto">
+          <Card className="border-none rounded-[2.5rem] bg-white group">
+            <div className="relative h-44 w-full bg-gradient-to-br from-accent via-orange-600 to-yellow-400 overflow-hidden">
+              <div className="absolute top-4 left-4 animate-bounce">
                 <Star className="text-white/40 fill-white/20 w-6 h-6" />
               </div>
               <div className="absolute top-6 right-6 rotate-45 animate-pulse">
                 <Zap className="text-white/20 fill-white/10 w-12 h-12" />
               </div>
 
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
-                <div className="relative mb-3">
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
+                <div className="relative mb-2">
                   <div className="absolute -inset-2 bg-white/20 blur-xl rounded-full"></div>
-                  <div className="relative w-20 h-20 rounded-2xl border-4 border-white shadow-xl overflow-hidden bg-slate-100 rotate-3">
+                  <div className="relative w-16 h-16 rounded-2xl border-4 border-white shadow-xl overflow-hidden bg-slate-100 rotate-3">
                     {photoUrl ? (
                       <img src={photoUrl} alt={name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center bg-slate-200 text-slate-400">
-                        <Smartphone className="w-8 h-8" />
+                        <Smartphone className="w-6 h-6" />
                       </div>
                     )}
                   </div>
                 </div>
                 <h2 className="text-2xl font-black text-white tracking-tighter italic">JACKPOT!</h2>
-                <p className="text-white/90 text-[8px] font-black uppercase tracking-[0.3em]">#LUCKYTHR_WINNER</p>
+                <p className="text-white/90 text-[7px] font-black uppercase tracking-[0.3em]">#LUCKYTHR_WINNER</p>
               </div>
             </div>
 
-            <CardContent className="pt-6 pb-8 px-6 space-y-6 relative bg-white">
+            <CardContent className="pt-6 pb-8 px-6 space-y-5 relative bg-white">
               <div className="text-center space-y-1">
-                <p className="text-[8px] text-muted-foreground uppercase font-black tracking-[0.2em]">Total Berkah:</p>
+                <p className="text-[7px] text-muted-foreground uppercase font-black tracking-[0.2em]">Total Berkah:</p>
                 <div className="relative inline-block">
-                  <div className="absolute -inset-x-4 bottom-1 h-4 bg-yellow-400/40 -rotate-1"></div>
-                  <div className="relative text-5xl font-black text-slate-900 tracking-tighter">
-                    <span className="text-xl align-top mt-1 inline-block">Rp</span>
+                  <div className="absolute -inset-x-3 bottom-1 h-3 bg-yellow-400/30 -rotate-1"></div>
+                  <div className="relative text-4xl font-black text-slate-900 tracking-tighter">
+                    <span className="text-lg align-top mr-0.5">Rp</span>
                     {amount.toLocaleString('id-ID')}
                   </div>
                 </div>
               </div>
 
-              <div className="bg-slate-50/80 p-5 rounded-2xl border-2 border-slate-100/50">
-                <p className="text-slate-800 italic text-center font-bold text-sm leading-relaxed">
+              <div className="bg-slate-50/80 p-4 rounded-2xl border-2 border-slate-100/50">
+                <p className="text-slate-800 italic text-center font-bold text-xs leading-relaxed">
                   {message.replace('$nama', name)}
                 </p>
               </div>
 
               <div className="text-center pt-4 border-t border-dashed">
-                <p className="text-[8px] text-muted-foreground font-black uppercase tracking-[0.2em] flex items-center justify-center gap-1">
-                  Experience at <span className="text-accent">{domain || 'LuckyTHR'}</span>
+                <p className="text-[7px] text-muted-foreground font-black uppercase tracking-[0.2em] flex items-center justify-center gap-1">
+                  Lucky Experience at <span className="text-accent">{domain || 'LuckyTHR'}</span>
                 </p>
                 <div className="flex items-center justify-center gap-1 text-[8px] text-slate-400 font-bold mt-1">
                   <span>by</span>
@@ -170,23 +166,23 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
         </div>
       </div>
 
-      <div className="flex flex-col gap-3 px-2">
+      <div className="flex flex-col gap-3 px-4">
         <Button 
           onClick={handleDownload}
           disabled={isExporting}
           variant="outline"
-          className="w-full h-14 rounded-2xl border-2 border-slate-200 text-md font-black gap-3 transition-all hover:-translate-y-1 active:scale-95 bg-white"
+          className="w-full h-16 rounded-[1.5rem] border-2 border-slate-200 text-md font-black gap-3 bg-white hover:bg-slate-50 active:scale-95 transition-all"
         >
-          {isExporting ? <Loader2 className="animate-spin w-5 h-5" /> : <Download className="w-5 h-5" />}
+          {isExporting ? <Loader2 className="animate-spin" /> : <Download className="w-5 h-5" />}
           SIMPAN GAMBAR 📸
         </Button>
         
         <Button 
           onClick={handleShare} 
           disabled={isExporting}
-          className="w-full h-14 rounded-2xl bg-accent hover:bg-accent/90 text-md font-black gap-3 shadow-[0_10px_30px_rgba(225,87,14,0.3)] transition-all hover:-translate-y-1 active:scale-95"
+          className="w-full h-16 rounded-[1.5rem] bg-accent hover:bg-accent/90 text-md font-black gap-3 shadow-lg active:scale-95 transition-all"
         >
-          {isExporting ? <Loader2 className="animate-spin w-5 h-5" /> : <Share2 className="w-5 h-5" />}
+          {isExporting ? <Loader2 className="animate-spin" /> : <Share2 className="w-5 h-5" />}
           SHARE MEDSOS 🚀
         </Button>
       </div>
