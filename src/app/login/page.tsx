@@ -1,4 +1,3 @@
-
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -7,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Gift, Chrome, Loader2, UserPlus, ShieldCheck } from 'lucide-react';
+import { Gift, Chrome, Loader2, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import { loginUser } from '@/app/actions/db-actions';
 import { useToast } from '@/hooks/use-toast';
@@ -129,13 +128,16 @@ export default function LoginPage() {
             </Button>
           </Link>
         </div>
-        
-        <Link href="/enc" className="block">
-          <Button variant="link" size="sm" className="text-muted-foreground text-xs gap-1">
-            <ShieldCheck className="w-3 h-3" /> Dev Tools: Enkripsi Password
-          </Button>
-        </Link>
       </div>
+      
+      <footer className="mt-12 text-center">
+        <div className="flex items-center justify-center gap-2 text-slate-400 font-bold text-sm">
+          <span>by</span>
+          <Link href="https://maudigi.com" target="_blank" className="text-accent hover:underline flex items-center gap-1">
+            maudigi.com <Gift className="w-3 h-3" />
+          </Link>
+        </div>
+      </footer>
     </div>
   );
 }

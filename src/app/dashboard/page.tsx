@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { PlusCircle, Copy, LogOut, Users, Gift, Share2, Search, Database, Trash2, Settings2, Plus, Coins, Ban, Download, AlertTriangle, MousePointer2, RefreshCw, Sparkles, ChevronRight, LayoutGrid, Heart, Key } from 'lucide-react';
+import { PlusCircle, Share2, LogOut, Users, Gift, LayoutGrid, Trash2, Settings2, Plus, Coins, MousePointer2, RefreshCw, Sparkles, Heart, Download } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -18,7 +18,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import bcrypt from 'bcryptjs';
 
 export default function AdminDashboard() {
   const { toast } = useToast();
@@ -31,10 +30,6 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
   
-  // Encrypt Tool State
-  const [plain, setPlain] = useState('');
-  const [hashed, setHashed] = useState('');
-
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newEvent, setNewEvent] = useState({
     title: '',
@@ -76,13 +71,6 @@ export default function AdminDashboard() {
   const handleLogout = () => {
     localStorage.removeItem('lucky_thr_admin');
     router.push('/login');
-  };
-
-  const generateHash = () => {
-    if (!plain) return;
-    const salt = bcrypt.genSaltSync(10);
-    const hash = bcrypt.hashSync(plain, salt);
-    setHashed(hash);
   };
 
   const currentEvent = events.find(e => e.id === selectedEventId);
@@ -212,30 +200,6 @@ export default function AdminDashboard() {
           <span className="font-black text-xl tracking-tight">LuckyTHR <span className="text-accent">Admin</span></span>
         </div>
         <div className="flex items-center gap-4">
-          <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="outline" size="sm" className="hidden sm:flex border-accent text-accent">
-                <Key className="w-4 h-4 mr-2" /> Encrypt Tools
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="rounded-[2rem]">
-              <DialogHeader>
-                <DialogTitle>Admin Security Tools</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label>Password Plain Text</Label>
-                  <Input placeholder="Ketik password..." value={plain} onChange={e => setPlain(e.target.value)} className="rounded-xl h-12" />
-                </div>
-                <Button onClick={generateHash} className="w-full bg-slate-900 h-12 rounded-xl">Generate Safe Hash</Button>
-                {hashed && (
-                  <div className="p-4 bg-slate-100 rounded-xl font-mono text-xs break-all border border-dashed border-slate-300">
-                    {hashed}
-                  </div>
-                )}
-              </div>
-            </DialogContent>
-          </Dialog>
           <div className="text-right hidden sm:block">
             <p className="text-xs font-bold text-slate-900 leading-none">{currentUser.name}</p>
             <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{currentUser.role}</p>
@@ -313,7 +277,7 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <StatCard icon={<Users className="w-5 h-5" />} label="Total Pemenang" value={filteredWinners.length.toString()} trend="Orang" />
               <StatCard icon={<Gift className="w-5 h-5" />} label="THR Dikeluarkan" value={`Rp ${totalThr.toLocaleString('id-ID')}`} trend="Saldo" />
-              <StatCard icon={<Database className="w-5 h-5" />} label="Akses Main" value={currentEvent?.allow_multiple_plays ? "BEBAS" : "1X LIMIT"} trend="Status" />
+              <StatCard icon={<Coins className="w-5 h-5" />} label="Akses Main" value={currentEvent?.allow_multiple_plays ? "BEBAS" : "1X LIMIT"} trend="Status" />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -403,22 +367,6 @@ export default function AdminDashboard() {
            </div>
         </div>
       </footer>
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[500px] rounded-[2.5rem]">
-          <DialogHeader><DialogTitle className="text-2xl font-black">Buat Event Baru 🧧</DialogTitle></DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label>Nama Event</Label>
-              <Input placeholder="THR Keluarga..." value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})} className="rounded-xl h-12" />
-            </div>
-            <div className="space-y-2">
-              <Label>Daftar Nominal (Pisahkan dengan koma)</Label>
-              <Textarea placeholder="1000, 5000, 10000..." value={newEvent.nominals} onChange={e => setNewEvent({...newEvent, nominals: e.target.value})} className="rounded-xl min-h-[100px]" />
-            </div>
-          </div>
-          <DialogFooter><Button onClick={handleCreateEvent} className="bg-accent w-full h-14 font-black rounded-xl">GAS! 🚀</Button></DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

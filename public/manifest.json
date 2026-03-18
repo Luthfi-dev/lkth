@@ -1,11 +1,10 @@
-
 {
-  "name": "LuckyTHR - Bagi THR Jadi Seru",
+  "name": "LuckyTHR",
   "short_name": "LuckyTHR",
-  "description": "Bagikan kebahagiaan THR dengan roda keberuntungan interaktif.",
+  "description": "Bagikan kebahagiaan THR digital dengan roda keberuntungan.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#F9F7F2",
+  "background_color": "#ffffff",
   "theme_color": "#e1570e",
   "icons": [
     {
