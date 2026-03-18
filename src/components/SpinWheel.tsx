@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useRef } from 'react';
@@ -26,7 +27,7 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
   const spin = () => {
     if (isSpinning || items.length === 0) return;
     
-    // Logika pemilihan pemenang: hanya dari yang tidak diblokir
+    // Pemilihan pemenang: hanya dari yang tidak diblokir
     const allowedItems = items.filter(item => !item.blocked);
     const pool = allowedItems.length > 0 ? allowedItems : items;
     const winner = pool[Math.floor(Math.random() * pool.length)];
@@ -112,7 +113,7 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
           <svg
             ref={wheelRef}
             viewBox="0 0 200 200"
-            className="w-full h-full transition-transform duration-[8000ms] ease-[cubic-bezier(0.1,0,0,1)]"
+            className="w-full h-full transition-transform duration-[8000ms] ease-[cubic-bezier(0.1, 0, 0, 1)]"
             style={{ transform: `rotate(${rotation}deg)` }}
           >
             {renderSegments()}

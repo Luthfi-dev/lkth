@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -7,13 +8,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { PlusCircle, Copy, LogOut, Users, Gift, Share2, Search, Database, Trash2, Settings2, Plus, Coins, Ban } from 'lucide-react';
+import { PlusCircle, Copy, LogOut, Users, Gift, Share2, Search, Database, Trash2, Settings2, Plus, Coins, Ban, Download, AlertTriangle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
-import { getWinners, getEvents, deleteWinner, createEvent, updateEvent } from '@/app/actions/db-actions';
+import { getWinners, getEvents, deleteWinner, createEvent, updateEvent, clearWinnersByEvent } from '@/app/actions/db-actions';
 import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { cn } from '@/lib/utils';
 
 export default function AdminDashboard() {
@@ -56,10 +58,43 @@ export default function AdminDashboard() {
   const currentEvent = events.find(e => e.id === selectedEventId);
 
   const handleDeleteWinner = async (id: string) => {
-    if (!confirm('Hapus data pemenang ini? Peserta akan bisa memutar roda lagi.')) return;
     await deleteWinner(id);
     toast({ title: "Dihapus", description: "Peserta sekarang bisa ikut lagi." });
     fetchData();
+  };
+
+  const handleClearWinners = async () => {
+    await clearWinnersByEvent(selectedEventId);
+    toast({ title: "Data Dibersihkan", description: "Seluruh data pemenang untuk event ini telah dihapus." });
+    fetchData();
+  };
+
+  const exportToExcel = () => {
+    const filtered = winners.filter(w => w.event_id === selectedEventId);
+    if (filtered.length === 0) {
+      toast({ variant: "destructive", title: "Gagal", description: "Belum ada data untuk diekspor." });
+      return;
+    }
+
+    const headers = ["Nama", "Wallet Info", "Amount", "Timestamp"];
+    const rows = filtered.map(w => [
+      w.name,
+      w.wallet_info,
+      w.amount,
+      new Date(w.timestamp).toLocaleString('id-ID')
+    ]);
+
+    const csvContent = [headers, ...rows].map(e => e.join(",")).join("\n");
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Data_Pemenang_${currentEvent?.title || 'Event'}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast({ title: "Ekspor Berhasil", description: "Data telah diunduh dalam format CSV (Excel compatible)." });
   };
 
   const handleCreateEvent = async () => {
@@ -289,19 +324,47 @@ export default function AdminDashboard() {
           </Card>
 
           <Card className="lg:col-span-2 border-none shadow-sm rounded-3xl overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between bg-white border-b px-6 py-5">
+            <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between bg-white border-b px-6 py-5 gap-4">
               <div>
                 <CardTitle className="text-lg font-black">Monitoring Pemenang</CardTitle>
                 <p className="text-xs text-muted-foreground">Daftar peserta yang sudah memutar roda</p>
               </div>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                <Input 
-                  placeholder="Cari nama..." 
-                  className="pl-9 w-[180px] sm:w-[240px] rounded-xl h-10" 
-                  value={searchTerm}
-                  onChange={e => setSearchTerm(e.target.value)}
-                />
+              <div className="flex flex-wrap items-center gap-2">
+                <Button onClick={exportToExcel} size="sm" variant="outline" className="rounded-xl border-green-600 text-green-600 hover:bg-green-50 h-10">
+                  <Download className="w-4 h-4 mr-2" /> Excel
+                </Button>
+                
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="sm" variant="outline" className="rounded-xl border-red-500 text-red-500 hover:bg-red-50 h-10">
+                      <Trash2 className="w-4 h-4 mr-2" /> Bersihkan
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent className="rounded-3xl">
+                    <AlertDialogHeader>
+                      <AlertDialogTitle className="flex items-center gap-2 text-red-600">
+                        <AlertTriangle className="w-6 h-6" /> Hapus Semua Data?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Tindakan ini akan menghapus SELURUH daftar pemenang untuk event ini. Peserta akan bisa memutar roda kembali. Tindakan ini tidak dapat dibatalkan.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel className="rounded-xl">Batal</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleClearWinners} className="bg-red-600 hover:bg-red-700 rounded-xl">Ya, Hapus Semua!</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input 
+                    placeholder="Cari nama..." 
+                    className="pl-9 w-[180px] sm:w-[200px] rounded-xl h-10" 
+                    value={searchTerm}
+                    onChange={e => setSearchTerm(e.target.value)}
+                  />
+                </div>
               </div>
             </CardHeader>
             <CardContent className="p-0">
@@ -350,9 +413,26 @@ export default function AdminDashboard() {
                             }}>
                               <Copy className="w-4 h-4" />
                             </Button>
-                            <Button size="icon" variant="ghost" className="rounded-xl text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => handleDeleteWinner(winner.id)}>
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
+                            
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="icon" variant="ghost" className="rounded-xl text-red-500 hover:text-red-600 hover:bg-red-50">
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent className="rounded-3xl">
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Hapus Pemenang?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    Peserta ini akan dihapus dari daftar dan bisa memutar roda lagi.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel className="rounded-xl">Batal</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleDeleteWinner(winner.id)} className="bg-red-600 rounded-xl">Ya, Hapus</AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </div>
                         </TableCell>
                       </TableRow>

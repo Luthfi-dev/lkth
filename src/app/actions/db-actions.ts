@@ -1,6 +1,7 @@
+
 'use server';
 
-import { getData, saveData, deleteData, updateData } from '@/lib/storage';
+import { getData, saveData, deleteData, updateData, clearCollection } from '@/lib/storage';
 
 export async function registerUser(formData: any) {
   const users = await getData('users');
@@ -41,5 +42,17 @@ export async function addWinner(winnerData: any) {
 
 export async function deleteWinner(winnerId: string) {
   await deleteData('winners', winnerId);
+  return { success: true };
+}
+
+export async function clearWinnersByEvent(eventId: string) {
+  const winners = await getData('winners');
+  const filtered = winners.filter((w: any) => w.event_id !== eventId);
+  // This is a simplified bulk delete for local storage
+  const dbPath = require('path').join(process.cwd(), 'src/data/db.json');
+  const fs = require('fs');
+  const db = JSON.parse(fs.readFileSync(dbPath, 'utf-8'));
+  db.winners = filtered;
+  fs.writeFileSync(dbPath, JSON.stringify(db, null, 2));
   return { success: true };
 }
