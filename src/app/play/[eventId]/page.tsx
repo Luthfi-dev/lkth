@@ -20,6 +20,7 @@ export default function PlayEvent() {
   const [step, setStep] = useState<'form' | 'spinning' | 'result'>('form');
   const [isLoading, setIsLoading] = useState(false);
   const [hasPlayed, setHasPlayed] = useState(false);
+  const [confetti, setConfetti] = useState<any[]>([]);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -34,7 +35,7 @@ export default function PlayEvent() {
     timestamp: ''
   });
 
-  // Memuat identitas yang tersimpan di browser (Hydration Safe)
+  // Memuat identitas yang tersimpan di browser
   useEffect(() => {
     const savedName = localStorage.getItem('lucky_thr_name');
     const savedWallet = localStorage.getItem('lucky_thr_wallet');
@@ -89,7 +90,7 @@ export default function PlayEvent() {
     if (!formData.name || !formData.wallet || !formData.walletNumber) return;
     if (formData.wallet === 'Lainnya' && !formData.customWalletName) return;
     
-    // Simpan identitas ke localStorage untuk masa depan
+    // Simpan identitas ke localStorage
     localStorage.setItem('lucky_thr_name', formData.name);
     localStorage.setItem('lucky_thr_wallet', formData.wallet);
     localStorage.setItem('lucky_thr_custom_wallet', formData.customWalletName);
@@ -100,6 +101,16 @@ export default function PlayEvent() {
       setIsLoading(false);
       setStep('spinning');
     }, 800);
+  };
+
+  const createConfetti = () => {
+    const newConfetti = Array.from({ length: 40 }).map((_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      color: ['#E6C24C', '#E1570E', '#F3A712', '#D33F49', '#77AF9C'][Math.floor(Math.random() * 5)],
+      delay: Math.random() * 2
+    }));
+    setConfetti(newConfetti);
   };
 
   const onSpinFinish = async (amount: number) => {
@@ -116,6 +127,7 @@ export default function PlayEvent() {
     try {
       await addWinner(winnerData);
       setResult({ amount, timestamp: new Date().toISOString() });
+      createConfetti();
       setStep('result');
       if (!eventData.allow_multiple_plays) {
         localStorage.setItem(`played_${eventId}`, 'true');
@@ -148,6 +160,21 @@ export default function PlayEvent() {
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 sm:p-8 flex flex-col items-center justify-center relative overflow-hidden">
+      {/* Confetti Particles */}
+      {confetti.map(c => (
+        <div 
+          key={c.id} 
+          className="confetti-particle" 
+          style={{ 
+            left: `${c.left}%`, 
+            backgroundColor: c.color, 
+            animationDelay: `${c.delay}s`,
+            width: Math.random() * 8 + 4 + 'px',
+            height: Math.random() * 8 + 4 + 'px'
+          }} 
+        />
+      ))}
+
       <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
       <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl"></div>
 
@@ -193,7 +220,7 @@ export default function PlayEvent() {
                   </div>
                   <div className="flex-1 text-[11px] text-muted-foreground leading-tight">
                     <p className="font-bold text-slate-800 mb-1">Ambil Foto Wajah</p>
-                    <p>Foto ini akan muncul di kartu pemenang setelah roda berhenti. Boleh dikosongkan jika tidak mau.</p>
+                    <p>Foto ini akan muncul di kartu pemenang. Boleh dikosongkan.</p>
                   </div>
                 </div>
               </div>
@@ -237,7 +264,7 @@ export default function PlayEvent() {
                     <Label htmlFor="custom-bank" className="text-slate-700">Nama Bank / E-Wallet</Label>
                     <Input 
                       id="custom-bank"
-                      placeholder="Masukkan nama bank tujuan (SeaBank, Jago...)" 
+                      placeholder="Masukkan nama bank tujuan..." 
                       required 
                       value={formData.customWalletName}
                       onChange={e => setFormData(prev => ({ ...prev, customWalletName: e.target.value }))}
@@ -263,14 +290,14 @@ export default function PlayEvent() {
         <div className="text-center space-y-12 animate-in fade-in zoom-in duration-500 max-w-2xl w-full">
           <div className="space-y-2 px-4">
             <h2 className="text-4xl font-black text-accent tracking-tighter uppercase leading-none drop-shadow-sm">Bismillah Beruntung!</h2>
-            <p className="text-slate-600 font-medium">Klik tombol PUTAR di bawah untuk mulai, {formData.name.split(' ')[0]}!</p>
+            <p className="text-slate-600 font-medium">Klik tombol PUTAR untuk mulai, {formData.name.split(' ')[0]}!</p>
           </div>
           <SpinWheel items={eventData.nominals} onFinish={onSpinFinish} />
         </div>
       )}
 
       {step === 'result' && (
-        <div className="animate-in slide-in-from-bottom-10 duration-700 w-full max-w-lg">
+        <div className="animate-in slide-in-from-bottom-10 duration-700 w-full max-w-lg relative z-20">
           <ResultCard 
             name={formData.name}
             photoUrl={formData.photo || ''}

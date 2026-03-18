@@ -35,13 +35,14 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
     setIsSpinning(true);
     
     const segmentAngle = 360 / items.length;
-    const extraSpins = 10 * 360; // Berputar 10 kali putaran penuh
+    // Berputar minimal 12 kali putaran penuh (4320 derajat) agar terlihat sangat cepat di awal
+    const extraSpins = 12 * 360; 
     
     // Hitung posisi berhenti agar tepat di panah atas (arah jam 12)
-    // 0 derajat di SVG kita adalah arah jam 3, jadi kita sesuaikan offsetnya
+    // SVG dimulai dari 0 derajat (arah jam 3), panah ada di jam 12 (-90 derajat).
     const stopAt = 360 - (winnerIndex * segmentAngle + segmentAngle / 2);
     
-    // Kalkulasi rotasi kumulatif agar animasi tidak 'jump' atau berputar balik
+    // Kalkulasi rotasi kumulatif agar animasi tidak reset atau berputar balik
     const currentRotationOffset = rotation % 360;
     let delta = stopAt - currentRotationOffset;
     if (delta <= 0) delta += 360;
@@ -49,11 +50,11 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
     const finalRotation = rotation + extraSpins + delta;
     setRotation(finalRotation);
 
-    // Durasi animasi diset 8 detik di CSS, kita beri jeda sedikit sebelum memunculkan hasil
+    // Durasi animasi 8 detik dengan easing dramatis
     setTimeout(() => {
       setIsSpinning(false);
       onFinish(winner.value);
-    }, 8500); 
+    }, 8200); 
   };
 
   const renderSegments = () => {
@@ -118,7 +119,7 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
           </svg>
         </div>
 
-        {/* Pin Tengah (Bling-bling) */}
+        {/* Pin Tengah */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-white border-[6px] border-slate-900 rounded-full z-20 flex items-center justify-center shadow-2xl">
           <div className={`w-8 h-8 bg-accent rounded-full ${isSpinning ? 'animate-pulse' : ''}`}></div>
         </div>
