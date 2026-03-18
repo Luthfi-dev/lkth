@@ -1,3 +1,16 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero",
+      "description": "Happy people celebrating with money envelopes",
+      "imageUrl": "https://picsum.photos/seed/lucky-thr/800/600",
+      "imageHint": "celebration money"
+    },
+    {
+      "id": "avatar-placeholder",
+      "description": "User avatar placeholder",
+      "imageUrl": "https://picsum.photos/seed/user/200/200",
+      "imageHint": "person portrait"
+    }
+  ]
 }
