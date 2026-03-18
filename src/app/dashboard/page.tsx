@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { PlusCircle, Share2, LogOut, Users, Gift, LayoutGrid, Trash2, Settings2, Plus, Coins, MousePointer2, RefreshCw, Sparkles, Heart, CreditCard, Key, Search, XCircle } from 'lucide-react';
+import { PlusCircle, Share2, LogOut, Users, Gift, LayoutGrid, Trash2, Settings2, Plus, Coins, MousePointer2, RefreshCw, Sparkles, Heart, CreditCard, Search, XCircle, Save, Type, MessageCircle } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -31,6 +31,11 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentUser, setCurrentUser] = useState<any>(null);
   
+  // States for editing current event
+  const [editTitle, setEditTitle] = useState('');
+  const [editMessage, setEditMessage] = useState('');
+  const [editNominals, setEditNominals] = useState('');
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newEvent, setNewEvent] = useState({
     title: '',
@@ -61,8 +66,15 @@ export default function AdminDashboard() {
       setWinners(winnersData);
       setEvents(eventsData);
       setSettings(sysSettings || { banks: ['Dana', 'OVO', 'GoPay', 'ShopeePay', 'BCA', 'Lainnya'] });
-      if (eventsData.length > 0 && !selectedEventId) {
-        setSelectedEventId(eventsData[0].id);
+      
+      if (eventsData.length > 0) {
+        const initialEvent = selectedEventId ? eventsData.find((e: any) => e.id === selectedEventId) : eventsData[0];
+        if (initialEvent) {
+          setSelectedEventId(initialEvent.id);
+          setEditTitle(initialEvent.title);
+          setEditMessage(initialEvent.message);
+          setEditNominals(initialEvent.nominals.map((n: any) => n.value).join(', '));
+        }
       }
     } catch (err) {
       console.error("Error loading data", err);
@@ -71,12 +83,44 @@ export default function AdminDashboard() {
     }
   };
 
+  useEffect(() => {
+    if (selectedEventId && events.length > 0) {
+      const current = events.find(e => e.id === selectedEventId);
+      if (current) {
+        setEditTitle(current.title);
+        setEditMessage(current.message);
+        setEditNominals(current.nominals.map((n: any) => n.value).join(', '));
+      }
+    }
+  }, [selectedEventId, events]);
+
   const handleLogout = () => {
     localStorage.removeItem('lucky_thr_admin');
     router.push('/login');
   };
 
   const currentEvent = events.find(e => e.id === selectedEventId);
+
+  const handleSaveEventDetails = async () => {
+    if (!selectedEventId) return;
+    
+    const nominalArray = editNominals.split(',')
+      .map(n => parseInt(n.trim()))
+      .filter(n => !isNaN(n))
+      .map(n => ({ value: n, blocked: false }));
+
+    try {
+      await updateEvent(selectedEventId, {
+        title: editTitle,
+        message: editMessage,
+        nominals: nominalArray
+      });
+      toast({ title: "Berhasil", description: "Detail event telah diperbarui." });
+      fetchData(currentUser);
+    } catch (err) {
+      toast({ variant: "destructive", title: "Gagal", description: "Terjadi kesalahan saat menyimpan." });
+    }
+  };
 
   const handleDeleteWinner = async (id: string) => {
     await deleteWinner(id);
@@ -261,12 +305,29 @@ export default function AdminDashboard() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-              <div className="lg:col-span-4 space-y-6">
+              <div className="lg:col-span-5 space-y-6">
                 <Card className="border-none shadow-sm rounded-[2.5rem] overflow-hidden bg-white">
                   <CardHeader className="bg-slate-50 border-b px-6 py-5">
                     <CardTitle className="text-base font-black flex items-center gap-2"><Settings2 className="w-4 h-4" /> Pengaturan Game</CardTitle>
                   </CardHeader>
                   <CardContent className="p-6 space-y-6">
+                    {/* Basic Info */}
+                    <div className="space-y-4 pt-2">
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-2"><Type className="w-3 h-3" /> Judul Event</Label>
+                        <Input value={editTitle} onChange={e => setEditTitle(e.target.value)} className="rounded-xl h-11 text-xs font-bold" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-2"><MessageCircle className="w-3 h-3" /> Ucapan Custom</Label>
+                        <Textarea value={editMessage} onChange={e => setEditMessage(e.target.value)} className="rounded-xl text-xs font-bold min-h-[80px]" placeholder="Selamat $nama! Semoga berkah." />
+                        <p className="text-[8px] text-muted-foreground italic">*Gunakan $nama untuk memanggil nama pemenang.</p>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest flex items-center gap-2"><Coins className="w-3 h-3" /> Daftar Nominal (Koma)</Label>
+                        <Textarea value={editNominals} onChange={e => setEditNominals(e.target.value)} className="rounded-xl text-xs font-bold min-h-[80px]" placeholder="1000, 2000, 5000..." />
+                      </div>
+                    </div>
+
                     <div className="space-y-3">
                       <Label className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Interaksi Peserta</Label>
                       <div className="grid grid-cols-2 gap-2">
@@ -282,6 +343,10 @@ export default function AdminDashboard() {
                       <div className="text-xs font-black uppercase tracking-widest text-slate-600">Main Berkali-kali</div>
                       <Switch checked={currentEvent?.allow_multiple_plays} onCheckedChange={async (v) => { await updateEvent(selectedEventId, { allow_multiple_plays: v }); fetchData(currentUser); }} />
                     </div>
+
+                    <Button onClick={handleSaveEventDetails} className="w-full h-12 rounded-xl bg-accent text-white font-black hover:scale-[1.02] transition-transform shadow-lg shadow-accent/20">
+                      <Save className="w-4 h-4 mr-2" /> SIMPAN PERUBAHAN
+                    </Button>
                     
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
@@ -296,9 +361,9 @@ export default function AdminDashboard() {
                             Event "{currentEvent?.title}" akan dihapus permanen. Link play tidak akan bisa diakses lagi.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
-                        <AlertDialogFooter className="mt-6 gap-3 flex flex-col sm:flex-row">
-                          <AlertDialogCancel className="h-14 rounded-2xl font-black text-lg border-2 w-full sm:w-auto">Batal</AlertDialogCancel>
-                          <AlertDialogAction onClick={() => handleDeleteEvent(selectedEventId)} className="h-14 rounded-2xl bg-red-600 font-black text-lg text-white shadow-lg w-full sm:w-auto">Hapus Permanen! 🔥</AlertDialogAction>
+                        <AlertDialogFooter className="mt-6 gap-3 flex flex-col sm:flex-row sm:justify-center">
+                          <AlertDialogCancel className="h-14 rounded-2xl font-black text-lg border-2 w-full sm:w-auto min-w-[140px]">Batal</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDeleteEvent(selectedEventId)} className="h-14 rounded-2xl bg-red-600 font-black text-lg text-white shadow-lg w-full sm:w-auto min-w-[140px]">Hapus Permanen! 🔥</AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>
                     </AlertDialog>
@@ -334,7 +399,7 @@ export default function AdminDashboard() {
                 </Card>
               </div>
 
-              <div className="lg:col-span-8">
+              <div className="lg:col-span-7">
                 <Card className="border-none shadow-sm rounded-[2.5rem] overflow-hidden bg-white h-full">
                   <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between bg-slate-50 border-b px-6 py-5 gap-4">
                     <CardTitle className="text-base font-black">Monitoring Peserta</CardTitle>
@@ -350,9 +415,9 @@ export default function AdminDashboard() {
                             <AlertDialogTitle className="text-2xl sm:text-3xl font-black">Yakin Reset Data? ⚠️</AlertDialogTitle>
                             <AlertDialogDescription className="text-sm sm:text-base mt-2 leading-relaxed italic">Seluruh riwayat pemenang akan dihapus permanen. Peserta bisa ikut memutar lagi.</AlertDialogDescription>
                           </AlertDialogHeader>
-                          <AlertDialogFooter className="mt-6 gap-3 flex flex-col sm:flex-row">
-                            <AlertDialogCancel className="h-14 rounded-2xl font-black text-lg border-2 w-full sm:w-auto">Batal</AlertDialogCancel>
-                            <AlertDialogAction onClick={handleClearWinners} className="h-14 rounded-2xl bg-red-600 font-black text-lg text-white shadow-lg w-full sm:w-auto">Reset Sekarang! 🔥</AlertDialogAction>
+                          <AlertDialogFooter className="mt-6 gap-3 flex flex-col sm:flex-row sm:justify-center">
+                            <AlertDialogCancel className="h-14 rounded-2xl font-black text-lg border-2 w-full sm:w-auto min-w-[140px]">Batal</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleClearWinners} className="h-14 rounded-2xl bg-red-600 font-black text-lg text-white shadow-lg w-full sm:w-auto min-w-[140px]">Reset Sekarang! 🔥</AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
