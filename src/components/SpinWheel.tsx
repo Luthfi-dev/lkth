@@ -1,8 +1,9 @@
+
 "use client"
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Play } from 'lucide-react';
+import { Play, RefreshCw } from 'lucide-react';
 
 interface NominalItem {
   value: number;
@@ -31,7 +32,7 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
   const spin = () => {
     if (isSpinning || items.length === 0) return;
     
-    // Pemilihan pemenang: hanya dari yang tidak diblokir
+    // Pilih pemenang secara adil dari daftar yang TIDAK diblokir
     const allowedItems = items.filter(item => !item.blocked);
     const pool = allowedItems.length > 0 ? allowedItems : items;
     const winner = pool[Math.floor(Math.random() * pool.length)];
@@ -40,22 +41,19 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
     setIsSpinning(true);
     
     const segmentAngle = 360 / items.length;
-    // Berputar minimal 20 kali putaran penuh (7200 derajat) agar terlihat sangat cepat
+    // Berputar minimal 20x putaran penuh agar sangat cepat dan dramatis
     const extraSpins = 20 * 360; 
     
-    // SVG dimulai dari 0 derajat (arah jam 3). Panah ada di arah jam 12 (-90 derajat).
-    // Posisi berhenti = (360 - offset_winner) - offset_panah
+    // Posisi berhenti tepat di tengah segmen pemenang
     const stopAt = 360 - (winnerIndex * segmentAngle + segmentAngle / 2);
     
-    // Kalkulasi rotasi kumulatif agar animasi selalu berputar maju dengan cantik
-    // Kita tambahkan rotasi saat ini dengan extraSpins dan sisa sudut target
+    // Akumulasi rotasi agar selalu berputar maju
     const currentRotationBase = Math.floor(rotation / 360) * 360;
     const finalRotation = currentRotationBase + extraSpins + stopAt;
     
     setRotation(finalRotation);
 
-    // Durasi animasi 8 detik dengan easing dramatis yang sangat halus di akhir
-    // cubic-bezier(0.1, 0, 0, 1) memberikan efek melambat yang sangat elegan
+    // Durasi 8 detik dengan easing melambat yang sangat elegan
     setTimeout(() => {
       setIsSpinning(false);
       onFinish(winner.value);
@@ -81,17 +79,18 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
 
       return (
         <g key={i}>
-          <path d={d} fill={colors[i % colors.length]} stroke="#000" strokeWidth="0.2" />
+          <path d={d} fill={colors[i % colors.length]} stroke="#000" strokeWidth="0.5" />
           <g transform={`rotate(${startAngle + angleStep / 2}, ${radius}, ${radius})`}>
             <text
               x={radius}
               y={radius - 65}
               fill="white"
-              fontSize={totalItems > 12 ? "4" : totalItems > 8 ? "5" : "7"}
+              fontSize={totalItems > 12 ? "4.5" : totalItems > 8 ? "6" : "8"}
               fontWeight="900"
               textAnchor="middle"
               transform={`rotate(-90, ${radius}, ${radius - 65})`}
               className="pointer-events-none select-none font-sans"
+              style={{ textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}
             >
               {item.value.toLocaleString('id-ID')}
             </text>
@@ -105,17 +104,22 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
 
   return (
     <div className="flex flex-col items-center gap-12">
-      <div className="relative w-72 h-72 sm:w-80 sm:h-80 md:w-96 md:h-96">
-        {/* Penunjuk Panah Atas */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 -mt-4 z-30 drop-shadow-xl">
+      <div className="relative w-72 h-72 sm:w-80 sm:h-80 md:w-[420px] md:h-[420px]">
+        {/* Penunjuk Panah Profesional */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 -mt-6 z-30 drop-shadow-2xl">
           <div 
-            className="w-10 h-12 bg-slate-900 shadow-xl" 
+            className="w-12 h-16 bg-slate-900 shadow-2xl relative" 
             style={{ clipPath: 'polygon(50% 100%, 0 0, 100% 0)' }}
-          ></div>
+          >
+            <div className="absolute top-1 left-1/2 -translate-x-1/2 w-4 h-4 rounded-full bg-accent/50 animate-pulse"></div>
+          </div>
         </div>
 
+        {/* Outer Glow Ring */}
+        <div className="absolute inset-[-15px] rounded-full bg-accent/10 blur-xl"></div>
+
         {/* Roda Utama */}
-        <div className="w-full h-full rounded-full border-[12px] border-slate-900 bg-slate-900 shadow-[0_0_60px_rgba(0,0,0,0.4)] overflow-hidden">
+        <div className="w-full h-full rounded-full border-[15px] border-slate-900 bg-slate-900 shadow-[0_0_80px_rgba(0,0,0,0.5)] overflow-hidden">
           <svg
             ref={wheelRef}
             viewBox="0 0 200 200"
@@ -123,21 +127,29 @@ export function SpinWheel({ items, onFinish }: SpinWheelProps) {
             style={{ transform: `rotate(${rotation}deg)` }}
           >
             {renderSegments()}
+            {/* Inner Decoration Ring */}
+            <circle cx="100" cy="100" r="10" fill="transparent" stroke="white" strokeWidth="0.5" opacity="0.3" />
           </svg>
         </div>
 
-        {/* Pin Tengah */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-white border-[6px] border-slate-900 rounded-full z-20 flex items-center justify-center shadow-2xl">
-          <div className="w-8 h-8 bg-accent rounded-full"></div>
+        {/* Pin Tengah Mewah */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 bg-white border-[8px] border-slate-900 rounded-full z-20 flex items-center justify-center shadow-2xl">
+          <div className="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
+            <div className="w-4 h-4 bg-white/30 rounded-full"></div>
+          </div>
         </div>
       </div>
 
       <Button 
         onClick={spin} 
         disabled={isSpinning}
-        className="h-20 w-20 rounded-full bg-accent hover:bg-accent/90 shadow-2xl shadow-accent/40 border-8 border-white group transition-all hover:scale-110 active:scale-95 z-40"
+        className="h-24 w-24 rounded-full bg-accent hover:bg-accent/90 shadow-2xl shadow-accent/40 border-[10px] border-white group transition-all hover:scale-110 active:scale-95 z-40"
       >
-        <Play className={`w-8 h-8 fill-white ${isSpinning ? 'opacity-50' : ''}`} />
+        {isSpinning ? (
+          <RefreshCw className="w-10 h-10 text-white animate-spin" />
+        ) : (
+          <Play className="w-10 h-10 fill-white" />
+        )}
       </Button>
     </div>
   );
