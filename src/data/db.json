@@ -31,6 +31,23 @@
         2000
       ],
       "is_active": true
+    },
+    {
+      "title": "Tess",
+      "message": "Selamat Hari Raya $nama! Semoga berkah selalu.",
+      "nominals": [
+        1000,
+        2000,
+        5000,
+        10000,
+        20000,
+        50000,
+        100000
+      ],
+      "allow_multiple_plays": true,
+      "is_active": true,
+      "id": "p1mp7dgpj",
+      "timestamp": "2026-03-18T11:38:59.567Z"
     }
   ],
   "winners": []

@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -5,12 +6,11 @@ import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SpinWheel } from '@/components/SpinWheel';
 import { ResultCard } from '@/components/ResultCard';
-import { Camera, AlertCircle, Loader2 } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Camera, AlertCircle, Loader2, Gift } from 'lucide-react';
 import { addWinner, getEvents } from '@/app/actions/db-actions';
 
 const BANK_OPTIONS = ['Dana', 'OVO', 'GoPay', 'ShopeePay', 'BCA', 'Mandiri', 'BNI', 'BRI'];
@@ -41,7 +41,6 @@ export default function PlayEvent() {
       if (currentEvent) {
         setEventData(currentEvent);
         
-        // Cek apakah user sudah pernah main dan apakah event melarang main berkali-kali
         if (!currentEvent.allow_multiple_plays) {
           const played = localStorage.getItem(`played_${eventId}`);
           if (played) {

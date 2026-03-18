@@ -1,8 +1,9 @@
--- Skema Database LuckyTHR
--- Gunakan skema ini untuk migrasi ke database online (MySQL/PostgreSQL)
 
--- Tabel Users (Admin & Superadmin)
-CREATE TABLE users (
+-- Skema Database Lucky THR Multi-User
+-- Gunakan file ini untuk migrasi ke MySQL/PostgreSQL di database online
+
+-- 1. Tabel Users (Admin & Superadmin)
+CREATE TABLE IF NOT EXISTS users (
     id VARCHAR(50) PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
@@ -11,34 +12,32 @@ CREATE TABLE users (
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Tabel Events
-CREATE TABLE events (
+-- 2. Tabel Events
+CREATE TABLE IF NOT EXISTS events (
     id VARCHAR(50) PRIMARY KEY,
-    admin_id VARCHAR(50) NOT NULL,
+    admin_id VARCHAR(50),
     title VARCHAR(255) NOT NULL,
     message TEXT,
-    nominals TEXT NOT NULL, -- Disimpan sebagai JSON array atau string dipisahkan koma
-    allow_multiple_plays BOOLEAN DEFAULT FALSE,
+    nominals TEXT, -- Disimpan sebagai JSON string atau comma-separated values
     is_active BOOLEAN DEFAULT TRUE,
+    allow_multiple_plays BOOLEAN DEFAULT FALSE,
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (admin_id) REFERENCES users(id)
 );
 
--- Tabel Winners (Pemenang)
-CREATE TABLE winners (
+-- 3. Tabel Winners (Monitoring Pemenang)
+CREATE TABLE IF NOT EXISTS winners (
     id VARCHAR(50) PRIMARY KEY,
-    event_id VARCHAR(50) NOT NULL,
+    event_id VARCHAR(50),
     name VARCHAR(100) NOT NULL,
-    photo_url TEXT,
+    photo_url LONGTEXT, -- Base64 atau URL Image
     amount INT NOT NULL,
-    wallet_info VARCHAR(255) NOT NULL,
+    wallet_info VARCHAR(255),
     timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (event_id) REFERENCES events(id)
 );
 
--- Seeder Awal
+-- SEEDER AWAL (Superadmin)
 INSERT INTO users (id, name, email, password, role) 
-VALUES ('sa-1', 'Super Admin', 'superadmin@gmail.com', '123456', 'superadmin');
-
-INSERT INTO events (id, admin_id, title, message, nominals, is_active)
-VALUES ('event-123', 'sa-1', 'THR Keluarga Besar Haji Sulaiman', 'Selamat Hari Raya $nama! Semoga berkah.', '[10000, 20000, 50000, 100000, 5000, 2000]', TRUE);
+VALUES ('sa-1', 'Super Admin', 'superadmin@gmail.com', '123456', 'superadmin')
+ON DUPLICATE KEY UPDATE id=id;
