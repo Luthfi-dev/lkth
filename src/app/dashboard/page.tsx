@@ -7,62 +7,88 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { PlusCircle, Copy, LogOut, Users, Gift, Share2, Search, Database } from 'lucide-react';
+import { PlusCircle, Copy, LogOut, Users, Gift, Share2, Search, Database, Trash2, Settings2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import Image from 'next/image';
-import { getWinners, getEvents } from '@/app/actions/db-actions';
+import { getWinners, getEvents, deleteWinner, createEvent, updateEvent } from '@/app/actions/db-actions';
 import { useRouter } from 'next/navigation';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 
 export default function AdminDashboard() {
   const { toast } = useToast();
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [winners, setWinners] = useState<any[]>([]);
-  const [eventCount, setEventCount] = useState(0);
-  const [dbStatus, setDbStatus] = useState(process.env.NEXT_PUBLIC_DB_STATUS || 'offline');
+  const [events, setEvents] = useState<any[]>([]);
+  const [selectedEventId, setSelectedEventId] = useState<string>('');
+  
+  // State for New Event Dialog
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newEvent, setNewEvent] = useState({
+    title: '',
+    message: 'Selamat Hari Raya $nama! Semoga berkah selalu.',
+    nominals: '10000,20000,50000,100000',
+    allow_multiple_plays: false
+  });
+
+  const fetchData = async () => {
+    try {
+      const [winnersData, eventsData] = await Promise.all([
+        getWinners(),
+        getEvents()
+      ]);
+      setWinners(winnersData);
+      setEvents(eventsData);
+      if (eventsData.length > 0 && !selectedEventId) {
+        setSelectedEventId(eventsData[0].id);
+      }
+    } catch (err) {
+      console.error("Error loading data", err);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [winnersData, eventsData] = await Promise.all([
-          getWinners(),
-          getEvents()
-        ]);
-        setWinners(winnersData);
-        setEventCount(eventsData.length);
-      } catch (err) {
-        console.error("Error loading data", err);
-      }
-    };
     fetchData();
   }, []);
 
-  const copyLink = () => {
-    navigator.clipboard.writeText(`${window.location.origin}/play/event-123`);
-    toast({
-      title: "Link Tersalin!",
-      description: "Bagikan link ini ke grup WhatsApp keluarga atau teman.",
-    });
+  const currentEvent = events.find(e => e.id === selectedEventId);
+
+  const handleDeleteWinner = async (id: string) => {
+    if (!confirm('Hapus data pemenang ini? Peserta akan bisa memutar roda lagi.')) return;
+    await deleteWinner(id);
+    toast({ title: "Dihapus", description: "Peserta sekarang bisa ikut lagi." });
+    fetchData();
   };
 
-  const copyWallet = (wallet: string) => {
-    navigator.clipboard.writeText(wallet);
-    toast({
-      title: "Rekening Tersalin!",
-      description: "Silakan lanjutkan transfer melalui aplikasi bank kamu.",
+  const handleCreateEvent = async () => {
+    const nominalArray = newEvent.nominals.split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+    await createEvent({
+      ...newEvent,
+      nominals: nominalArray,
+      is_active: true
     });
+    setIsDialogOpen(false);
+    toast({ title: "Berhasil", description: "Event baru telah dibuat." });
+    fetchData();
   };
 
-  const handleLogout = () => {
-    router.push('/login');
+  const toggleMultiPlay = async (eventId: string, currentVal: boolean) => {
+    await updateEvent(eventId, { allow_multiple_plays: !currentVal });
+    toast({ title: "Updated", description: "Pengaturan akses telah diubah." });
+    fetchData();
+  };
+
+  const copyLink = (id: string) => {
+    navigator.clipboard.writeText(`${window.location.origin}/play/${id}`);
+    toast({ title: "Link Tersalin!", description: "Bagikan link ini ke grup WhatsApp." });
   };
 
   const filteredWinners = winners.filter(w => 
-    w.name.toLowerCase().includes(searchTerm.toLowerCase())
+    w.event_id === selectedEventId && w.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const totalThr = winners.reduce((acc, curr) => acc + curr.amount, 0);
+  const totalThr = filteredWinners.reduce((acc, curr) => acc + curr.amount, 0);
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
@@ -72,49 +98,94 @@ export default function AdminDashboard() {
             <Gift className="text-white w-5 h-5" />
           </div>
           <span className="font-black text-xl tracking-tight">LuckyTHR <span className="text-accent">Admin</span></span>
-          <Badge variant="outline" className="ml-2 gap-1 bg-blue-50 text-blue-700 border-blue-200">
-            <Database className="w-3 h-3" /> {dbStatus === 'online' ? 'Cloud' : 'Local JSON'}
-          </Badge>
         </div>
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" className="text-muted-foreground" onClick={handleLogout}><LogOut className="w-4 h-4 mr-2" /> Logout</Button>
-        </div>
+        <Button variant="ghost" className="text-muted-foreground" onClick={() => router.push('/login')}>
+          <LogOut className="w-4 h-4 mr-2" /> Logout
+        </Button>
       </nav>
 
       <main className="flex-1 p-4 sm:p-8 max-w-7xl mx-auto w-full space-y-8">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h1 className="text-3xl font-black">Dashboard Event</h1>
-            <p className="text-muted-foreground">Kelola event THR kamu secara real-time</p>
+            <div className="flex items-center gap-2 mt-1">
+              <select 
+                value={selectedEventId} 
+                onChange={(e) => setSelectedEventId(e.target.value)}
+                className="bg-transparent font-semibold text-accent border-none focus:ring-0 cursor-pointer"
+              >
+                {events.map(e => (
+                  <option key={e.id} value={e.id}>{e.title}</option>
+                ))}
+              </select>
+            </div>
           </div>
           <div className="flex gap-2 w-full sm:w-auto">
-            <Button onClick={copyLink} variant="outline" className="flex-1 sm:flex-none border-primary text-primary">
+            <Button onClick={() => copyLink(selectedEventId)} variant="outline" className="flex-1 sm:flex-none border-primary text-primary">
               <Share2 className="w-4 h-4 mr-2" /> Salin Link
             </Button>
-            <Button className="flex-1 sm:flex-none bg-accent hover:bg-accent/90">
-              <PlusCircle className="w-4 h-4 mr-2" /> Event Baru
-            </Button>
+            
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogTrigger asChild>
+                <Button className="flex-1 sm:flex-none bg-accent hover:bg-accent/90">
+                  <PlusCircle className="w-4 h-4 mr-2" /> Event Baru
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[425px]">
+                <DialogHeader>
+                  <DialogTitle>Buat Event Baru</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="space-y-2">
+                    <Label>Judul Event</Label>
+                    <Input placeholder="THR Keluarga..." value={newEvent.title} onChange={e => setNewEvent({...newEvent, title: e.target.value})} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Pesan Kartu Pemenang</Label>
+                    <Input placeholder="Selamat Hari Raya $nama..." value={newEvent.message} onChange={e => setNewEvent({...newEvent, message: e.target.value})} />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Nominal THR (pisahkan dengan koma)</Label>
+                    <Input placeholder="5000, 10000, 20000" value={newEvent.nominals} onChange={e => setNewEvent({...newEvent, nominals: e.target.value})} />
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button onClick={handleCreateEvent} className="bg-accent">Simpan Event</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <StatCard icon={<Users className="w-5 h-5" />} label="Total Pemenang" value={winners.length.toString()} trend="Aktif" />
-          <StatCard icon={<Gift className="w-5 h-5" />} label="Total THR Keluar" value={`Rp ${totalThr.toLocaleString('id-ID')}`} trend="Kuota Aman" />
-          <StatCard icon={<Search className="w-5 h-5" />} label="Total Event" value={eventCount.toString()} trend="Tersedia" />
+          <StatCard icon={<Users className="w-5 h-5" />} label="Total Pemenang" value={filteredWinners.length.toString()} trend="Event Ini" />
+          <StatCard icon={<Gift className="w-5 h-5" />} label="Total THR Keluar" value={`Rp ${totalThr.toLocaleString('id-ID')}`} trend="Saldo Keluar" />
+          <StatCard icon={<Database className="w-5 h-5" />} label="Status Link" value={currentEvent?.is_active ? "Aktif" : "Nonaktif"} trend="Live" />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <Card className="lg:col-span-1 border-none shadow-sm">
+          <Card className="lg:col-span-1 border-none shadow-sm h-fit">
             <CardHeader>
-              <CardTitle className="text-lg">Pengaturan THR</CardTitle>
+              <CardTitle className="text-lg flex items-center gap-2"><Settings2 className="w-4 h-4" /> Pengaturan Akses</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-xl border">
+                <div>
+                  <p className="font-bold text-sm">Izinkan Main Berkali-kali</p>
+                  <p className="text-[10px] text-muted-foreground">Matikan sistem cek IP/Device lock</p>
+                </div>
+                <Switch 
+                  checked={currentEvent?.allow_multiple_plays} 
+                  onCheckedChange={() => toggleMultiPlay(selectedEventId, currentEvent?.allow_multiple_plays)} 
+                />
+              </div>
+              
               <div className="space-y-2">
-                 <Label className="text-xs">Nominal Tersedia</Label>
-                {[100000, 50000, 20000, 10000, 5000].map(val => (
+                 <Label className="text-xs">Nominal Dalam Roda</Label>
+                {currentEvent?.nominals.map((val: number) => (
                   <div key={val} className="flex items-center justify-between p-2 bg-slate-50 rounded-lg border text-sm">
                     <span className="font-bold">Rp {val.toLocaleString('id-ID')}</span>
-                    <Switch defaultChecked />
+                    <Badge variant="outline" className="bg-white">Aktif</Badge>
                   </div>
                 ))}
               </div>
@@ -141,14 +212,13 @@ export default function AdminDashboard() {
                     <TableHead className="w-[80px]">Foto</TableHead>
                     <TableHead>Nama Peserta</TableHead>
                     <TableHead>Nominal</TableHead>
-                    <TableHead>Wallet/Bank</TableHead>
                     <TableHead className="text-right">Aksi</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredWinners.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">Belum ada pemenang saat ini</TableCell>
+                      <TableCell colSpan={4} className="text-center py-10 text-muted-foreground">Belum ada pemenang di event ini</TableCell>
                     </TableRow>
                   ) : filteredWinners.map((winner, idx) => (
                     <TableRow key={idx}>
@@ -163,20 +233,27 @@ export default function AdminDashboard() {
                       </TableCell>
                       <TableCell>
                         <div className="font-bold">{winner.name}</div>
-                        <div className="text-[10px] text-muted-foreground uppercase font-semibold">
-                          {new Date(winner.timestamp).toLocaleTimeString('id-ID')} WIB
+                        <div className="text-[10px] text-muted-foreground font-mono">
+                          {winner.wallet_info}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="secondary" className="bg-green-100 text-green-700 hover:bg-green-100 font-bold">
+                        <Badge variant="secondary" className="bg-green-100 text-green-700 font-bold">
                           Rp {winner.amount.toLocaleString('id-ID')}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-xs font-mono">{winner.wallet_info}</TableCell>
                       <TableCell className="text-right">
-                        <Button size="icon" variant="ghost" onClick={() => copyWallet(winner.wallet_info)}>
-                          <Copy className="w-4 h-4" />
-                        </Button>
+                        <div className="flex justify-end gap-1">
+                          <Button size="icon" variant="ghost" onClick={() => {
+                            navigator.clipboard.writeText(winner.wallet_info);
+                            toast({ title: "Tersalin", description: "Nomor rekening telah disalin." });
+                          }}>
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                          <Button size="icon" variant="ghost" className="text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => handleDeleteWinner(winner.id)}>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
