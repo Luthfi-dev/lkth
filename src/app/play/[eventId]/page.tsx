@@ -117,7 +117,7 @@ export default function PlayEvent() {
   return (
     <div className="min-h-screen bg-slate-50 p-4 sm:p-8 flex flex-col items-center justify-center">
       {step === 'form' && (
-        <Card className="w-full max-w-md border-none shadow-2xl rounded-3xl overflow-hidden">
+        <Card className="w-full max-w-md border-none shadow-2xl rounded-3xl overflow-hidden relative z-10">
           <div className="bg-accent p-6 text-center text-white">
              <Gift className="w-12 h-12 mx-auto mb-2" />
              <h2 className="text-2xl font-black uppercase tracking-tighter">{eventData.title}</h2>
@@ -125,9 +125,10 @@ export default function PlayEvent() {
           <CardContent className="p-6">
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="name">Nama Lengkap</Label>
+                <Label htmlFor="fullname">Nama Lengkap</Label>
                 <Input 
-                  id="name" 
+                  id="fullname" 
+                  name="fullname"
                   placeholder="Masukkan nama kamu" 
                   required 
                   value={formData.name}
@@ -163,9 +164,9 @@ export default function PlayEvent() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Tujuan Transfer</Label>
+                  <Label htmlFor="wallet-select">Tujuan Transfer</Label>
                   <Select onValueChange={v => setFormData(prev => ({ ...prev, wallet: v }))} required>
-                    <SelectTrigger className="h-12 rounded-xl border-2">
+                    <SelectTrigger id="wallet-select" className="h-12 rounded-xl border-2">
                       <SelectValue placeholder="Pilih..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -176,8 +177,10 @@ export default function PlayEvent() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>No. Rekening/HP</Label>
+                  <Label htmlFor="account-number">No. Rekening/HP</Label>
                   <Input 
+                    id="account-number"
+                    name="account-number"
                     placeholder="0812..." 
                     required 
                     value={formData.walletNumber}
