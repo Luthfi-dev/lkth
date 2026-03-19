@@ -326,7 +326,6 @@ export default function AdminDashboard() {
                           </div>
                         ))}
                       </div>
-                      <p className="text-[9px] font-bold text-slate-400 italic">Klik item di atas untuk mengizinkan (hijau) atau memblokir (merah) nominal tertentu.</p>
                     </div>
                     
                     <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
