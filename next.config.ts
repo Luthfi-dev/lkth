@@ -4,7 +4,7 @@ import type {NextConfig} from 'next';
 const nextConfig: NextConfig = {
   /* Standalone output for efficient production builds in Next.js 15 */
   output: 'standalone',
-  /* Security: Hide Next.js identity from DevTools headers */
+  /* Security: Hide Next.js identity from DevTools headers for privacy */
   poweredByHeader: false,
   typescript: {
     ignoreBuildErrors: true,
@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
-    /* Optimization: Disable image optimization/caching to prevent memory/disk bloat as requested */
+    /* Optimization: Disable image optimization to prevent memory bloat as requested */
     unoptimized: true,
     remotePatterns: [
       {

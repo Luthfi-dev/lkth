@@ -44,7 +44,7 @@ export default async function Home() {
           <span className="font-black text-2xl text-accent tracking-tighter">{settings?.siteTitle || 'LuckyTHR'}</span>
         </div>
         <Link href="/login">
-          <Button variant="ghost" className="font-semibold">Login</Button>
+          <Button variant="ghost" className="font-bold text-slate-600">Login</Button>
         </Link>
       </header>
 
@@ -52,7 +52,7 @@ export default async function Home() {
       <main className="flex-1 max-w-7xl mx-auto w-full px-4 py-12 sm:py-20 flex flex-col items-center text-center space-y-8">
         <div className="inline-flex items-center gap-2 bg-primary/20 text-accent px-4 py-2 rounded-full font-bold text-sm animate-float">
           <Sparkles className="w-4 h-4" />
-          <span>Baru! Bagi-bagi THR makin seru</span>
+          <span>Bagi-bagi THR makin seru & transparan</span>
         </div>
         
         <h1 className="text-4xl sm:text-7xl font-black text-foreground tracking-tight leading-tight max-w-5xl whitespace-pre-line">
@@ -66,12 +66,12 @@ export default async function Home() {
         <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto pt-4">
           <Link href="/login">
             <Button className="w-full sm:w-auto h-14 px-10 text-lg font-black bg-accent hover:bg-accent/90 shadow-lg shadow-accent/20 rounded-2xl">
-              Buat Event THR Sekarang
+              Buat Event Sekarang
             </Button>
           </Link>
           <Link href="#features">
-            <Button variant="outline" className="w-full sm:w-auto h-14 px-10 text-lg font-black border-2 border-slate-200 rounded-2xl gap-2 hover:bg-slate-50">
-              Kenapa harus pakai aplikasi ini? <ChevronDown className="w-5 h-5" />
+            <Button variant="outline" className="w-full sm:w-auto h-14 px-8 text-md font-black border-2 border-slate-200 rounded-2xl gap-2 text-slate-800 hover:bg-slate-50">
+              Kenapa LuckyTHR? <ChevronDown className="w-5 h-5" />
             </Button>
           </Link>
         </div>
@@ -91,8 +91,8 @@ export default async function Home() {
       <section id="features" className="bg-white py-24 px-4 scroll-mt-20">
         <div className="max-w-7xl mx-auto space-y-16">
           <div className="text-center space-y-4">
-            <h2 className="text-4xl font-black">Kenapa Pakai {settings?.siteTitle || 'LuckyTHR'}?</h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">Kami menyediakan tools lengkap agar event bagi-bagi THR kamu berjalan lancar dan seru.</p>
+            <h2 className="text-4xl font-black">Fitur Unggulan {settings?.siteTitle || 'LuckyTHR'}</h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">Kami menyediakan tools lengkap agar event bagi-bagi THR kamu berjalan lancar, aman, dan berkesan.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
