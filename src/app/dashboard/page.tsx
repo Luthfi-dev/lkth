@@ -118,7 +118,9 @@ export default function AdminDashboard() {
   };
 
   const removeNominal = (idx: number) => {
-    setEditNominalList(editNominalList.filter((_, i) => i !== idx));
+    if (window.confirm('Hapus nominal ini dari daftar?')) {
+      setEditNominalList(editNominalList.filter((_, i) => i !== idx));
+    }
   };
 
   const handleSaveEventDetails = async () => {
@@ -138,9 +140,11 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteWinner = async (id: string) => {
-    await deleteWinner(id);
-    toast({ title: "Dihapus", description: "Pemenang dihapus. IP tersebut kini bisa main lagi." });
-    fetchData(currentUser);
+    if (window.confirm('Hapus data pemenang ini? Akses IP mereka akan di-reset.')) {
+      await deleteWinner(id);
+      toast({ title: "Dihapus", description: "Pemenang dihapus. IP tersebut kini bisa main lagi." });
+      fetchData(currentUser);
+    }
   };
 
   const handleCreateEvent = async () => {
@@ -180,6 +184,10 @@ export default function AdminDashboard() {
     const remaining = events.filter(e => e.id !== selectedEventId);
     if (remaining.length > 0) {
       setSelectedEventId(remaining[0].id);
+      const first = remaining[0];
+      setEditTitle(first.title);
+      setEditMessage(first.message);
+      setEditNominalList(first.nominals || []);
     } else {
       setSelectedEventId('');
     }
@@ -191,7 +199,7 @@ export default function AdminDashboard() {
     const updatedBanks = [...(settings?.banks || []), newBank.trim()];
     setSettings({...settings, banks: updatedBanks});
     setNewBank('');
-    toast({ title: "Bank Ditambahkan", description: "Silakan klik tombol simpan di bawah untuk menerapkan perubahan." });
+    toast({ title: "Bank Ditambahkan", description: "Klik tombol simpan di bawah untuk menerapkan perubahan." });
   };
 
   const handleSaveBanks = async () => {
@@ -202,8 +210,10 @@ export default function AdminDashboard() {
 
   const handleRemoveBank = (idx: number) => {
     if (settings.banks[idx] === 'Lainnya') return;
-    const updatedBanks = settings.banks.filter((_: any, i: number) => i !== idx);
-    setSettings({...settings, banks: updatedBanks});
+    if (window.confirm('Hapus bank ini dari daftar master?')) {
+      const updatedBanks = settings.banks.filter((_: any, i: number) => i !== idx);
+      setSettings({...settings, banks: updatedBanks});
+    }
   };
 
   const copyLink = (id: string) => {
@@ -295,7 +305,7 @@ export default function AdminDashboard() {
                       <Label className="text-[10px] font-black uppercase text-slate-400">Daftar Nominal THR</Label>
                       <div className="flex gap-2">
                         <Input 
-                          placeholder="Tambah (pisah koma)..." 
+                          placeholder="Tambah nominal..." 
                           value={editNominalInput} 
                           onChange={e => setEditNominalInput(e.target.value)} 
                           className="rounded-xl h-10 text-xs"
@@ -303,6 +313,7 @@ export default function AdminDashboard() {
                         />
                         <Button size="icon" onClick={handleAddNominals} className="bg-accent shrink-0 h-10 w-10 rounded-xl"><Plus className="w-4 h-4" /></Button>
                       </div>
+                      <p className="text-[9px] font-bold text-slate-400">Ketik nominal (jika lebih dari satu nominal pisahkan dengan koma)</p>
                       
                       <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto no-scrollbar p-1">
                         {editNominalList.map((item, idx) => (
