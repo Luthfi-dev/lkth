@@ -118,23 +118,13 @@
   "winners": [
     {
       "event_id": "18uolr7je",
-      "name": "Tess",
+      "name": "Fifi",
       "photo_url": "",
       "amount": 30000,
-      "wallet_info": "BSI - 08383737",
+      "wallet_info": "BSI - 37447",
       "ip_address": "182.9.161.50",
-      "id": "mt6gn3f7p",
-      "timestamp": "2026-03-19T01:37:00.898Z"
-    },
-    {
-      "event_id": "18uolr7je",
-      "name": "Tess",
-      "photo_url": "",
-      "amount": 40000,
-      "wallet_info": "BSI - 08383737",
-      "ip_address": "182.9.161.50",
-      "id": "003wv6i4p",
-      "timestamp": "2026-03-19T01:37:26.328Z"
+      "id": "08qn968sz",
+      "timestamp": "2026-03-19T03:12:32.406Z"
     }
   ],
   "settings": {

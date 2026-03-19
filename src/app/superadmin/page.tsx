@@ -1,12 +1,12 @@
 
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ShieldAlert, LogOut, Users, Database, Server, Settings, Heart, Save, Plus, Trash2, Key, RefreshCw, Globe, CreditCard, Layout, ImageIcon, Type, LinkIcon, LayoutGrid, Zap, Shield, Gift, Sparkles, Download, Copy, Check, Search } from 'lucide-react';
+import { ShieldAlert, LogOut, Users, Database, Server, Settings, Heart, Save, Plus, Trash2, Key, RefreshCw, Globe, CreditCard, Layout, ImageIcon, Type, LinkIcon, LayoutGrid, Zap, Shield, Gift, Sparkles, Download, Copy, Check, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { getEvents, getWinners, getAllUsers, getSystemSettings, updateSystemSettings, generateSqlExport } from '@/app/actions/db-actions';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -32,6 +32,8 @@ export default function SuperAdminDashboard() {
   const [sqlContent, setSqlContent] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   
   const [plain, setPlain] = useState('');
   const [hashed, setHashed] = useState('');
@@ -94,6 +96,11 @@ export default function SuperAdminDashboard() {
     }
     fetchAllData();
   }, [router]);
+
+  // Reset page on search
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   const handleUpdateSettings = async () => {
     await updateSystemSettings(settings);
@@ -222,10 +229,15 @@ export default function SuperAdminDashboard() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const filteredWinners = winners.filter(w => 
-    w.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    w.wallet_info.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredWinners = useMemo(() => {
+    return winners.filter(w => 
+      w.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+      w.wallet_info.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [winners, searchTerm]);
+
+  const totalPages = Math.ceil(filteredWinners.length / itemsPerPage);
+  const paginatedWinners = filteredWinners.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   if (isLoading) return <div className="min-h-screen flex items-center justify-center"><RefreshCw className="animate-spin text-accent w-10 h-10" /></div>;
 
@@ -317,7 +329,7 @@ export default function SuperAdminDashboard() {
           </TabsContent>
 
           <TabsContent value="winners">
-            <Card className="rounded-[2rem] sm:rounded-[2.5rem] border-none shadow-sm overflow-hidden bg-white">
+            <Card className="rounded-[2rem] sm:rounded-[2.5rem] border-none shadow-sm overflow-hidden bg-white flex flex-col">
               <CardHeader className="bg-slate-50 border-b px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <CardTitle className="text-lg font-black flex items-center gap-2"><Server className="w-5 h-5" /> Monitoring Global</CardTitle>
                 <div className="relative w-full sm:w-64">
@@ -330,7 +342,7 @@ export default function SuperAdminDashboard() {
                   />
                 </div>
               </CardHeader>
-              <CardContent className="p-0 overflow-x-auto">
+              <CardContent className="p-0 overflow-x-auto flex-1">
                 <Table>
                   <TableHeader>
                     <TableRow>
@@ -341,10 +353,10 @@ export default function SuperAdminDashboard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredWinners.length === 0 ? (
+                    {paginatedWinners.length === 0 ? (
                       <TableRow><TableCell colSpan={4} className="text-center py-20 text-slate-400 font-bold">Data tidak ditemukan.</TableCell></TableRow>
                     ) : (
-                      filteredWinners.map((w, i) => (
+                      paginatedWinners.map((w, i) => (
                         <TableRow key={i}>
                           <TableCell className="pl-6 py-4">
                             <div className="font-black text-sm">{w.name}</div>
@@ -364,6 +376,49 @@ export default function SuperAdminDashboard() {
                   </TableBody>
                 </Table>
               </CardContent>
+
+              {totalPages > 1 && (
+                <div className="px-6 py-4 bg-white border-t flex items-center justify-between">
+                  <div className="text-[10px] font-bold text-slate-400 uppercase">
+                    Halaman {currentPage} dari {totalPages}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      onClick={() => setCurrentPage(p => Math.max(1, p - 1))} 
+                      disabled={currentPage === 1}
+                      className="h-8 w-8 rounded-lg"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                    </Button>
+                    
+                    {Array.from({ length: totalPages }).map((_, i) => (
+                      <Button 
+                        key={i} 
+                        variant={currentPage === i + 1 ? "default" : "outline"} 
+                        onClick={() => setCurrentPage(i + 1)}
+                        className={cn(
+                          "h-8 w-8 rounded-lg text-xs font-black",
+                          currentPage === i + 1 ? "bg-accent border-accent" : "border-slate-200"
+                        )}
+                      >
+                        {i + 1}
+                      </Button>
+                    ))}
+                    
+                    <Button 
+                      variant="outline" 
+                      size="icon" 
+                      onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} 
+                      disabled={currentPage === totalPages}
+                      className="h-8 w-8 rounded-lg"
+                    >
+                      <ChevronRight className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              )}
             </Card>
           </TabsContent>
 

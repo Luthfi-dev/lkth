@@ -1,14 +1,14 @@
 
 "use client"
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { PlusCircle, Share2, LogOut, Users, Gift, LayoutGrid, Trash2, Settings2, Plus, Coins, MousePointer2, RefreshCw, Sparkles, Heart, CreditCard, Search, XCircle, Save, Type, MessageCircle, Link as LinkIcon, Ban, CheckCircle2, Loader2, Copy, Check } from 'lucide-react';
+import { PlusCircle, Share2, LogOut, Users, Gift, LayoutGrid, Trash2, Settings2, Plus, Coins, MousePointer2, RefreshCw, Sparkles, Heart, CreditCard, Search, XCircle, Save, Type, MessageCircle, Link as LinkIcon, Ban, CheckCircle2, Loader2, Copy, Check, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -33,6 +33,8 @@ export default function AdminDashboard() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   
   const [editTitle, setEditTitle] = useState('');
   const [editMessage, setEditMessage] = useState('');
@@ -69,6 +71,11 @@ export default function AdminDashboard() {
     setCurrentUser(session.user);
     fetchData(session.user, lastEventId || undefined);
   }, [router]);
+
+  // Reset page on search or event change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedEventId]);
 
   const fetchData = async (user: any, forceId?: string) => {
     try {
@@ -279,7 +286,6 @@ export default function AdminDashboard() {
   };
 
   const copyToClipboard = (text: string, id: string) => {
-    // Ekstrak angka saja jika memungkinkan (setelah tanda "-")
     const parts = text.split('-');
     const contentToCopy = parts.length > 1 ? parts[1].trim() : text.trim();
     
@@ -289,11 +295,16 @@ export default function AdminDashboard() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const filteredWinners = winners.filter(w => 
-    w.event_id === selectedEventId && w.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredWinners = useMemo(() => {
+    return winners.filter(w => 
+      w.event_id === selectedEventId && w.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [winners, selectedEventId, searchTerm]);
 
-  const totalThr = filteredWinners.reduce((acc, curr) => acc + curr.amount, 0);
+  const totalThr = useMemo(() => filteredWinners.reduce((acc, curr) => acc + curr.amount, 0), [filteredWinners]);
+
+  const totalPages = Math.ceil(filteredWinners.length / itemsPerPage);
+  const paginatedWinners = filteredWinners.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   if (isLoading || !currentUser) return <div className="min-h-screen flex items-center justify-center"><RefreshCw className="animate-spin text-accent w-10 h-10" /></div>;
 
@@ -481,7 +492,7 @@ export default function AdminDashboard() {
               </div>
 
               <div className="lg:col-span-8">
-                <Card className="rounded-[2.5rem] border-none shadow-sm h-full overflow-hidden">
+                <Card className="rounded-[2.5rem] border-none shadow-sm h-full overflow-hidden flex flex-col">
                   <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <CardTitle className="text-lg font-black flex items-center gap-2"><Users className="w-5 h-5" /> Monitoring Pemenang</CardTitle>
                     <div className="flex flex-wrap gap-2">
@@ -506,7 +517,7 @@ export default function AdminDashboard() {
                       <Badge className="bg-emerald-100 text-emerald-600 border-none font-bold px-4 h-10 flex items-center">Rp {totalThr.toLocaleString('id-ID')}</Badge>
                     </div>
                   </CardHeader>
-                  <CardContent className="p-0 overflow-x-auto">
+                  <CardContent className="p-0 overflow-x-auto flex-1">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -517,12 +528,12 @@ export default function AdminDashboard() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {filteredWinners.length === 0 ? (
+                        {paginatedWinners.length === 0 ? (
                           <TableRow>
                             <TableCell colSpan={4} className="text-center py-20 text-slate-400 font-bold">Belum ada pemenang di event ini.</TableCell>
                           </TableRow>
                         ) : (
-                          filteredWinners.map((w, i) => (
+                          paginatedWinners.map((w, i) => (
                             <TableRow key={i}>
                               <TableCell className="pl-6">
                                 <div className="font-black text-sm">{w.name}</div>
@@ -561,6 +572,49 @@ export default function AdminDashboard() {
                       </TableBody>
                     </Table>
                   </CardContent>
+                  
+                  {totalPages > 1 && (
+                    <div className="px-6 py-4 bg-white border-t flex items-center justify-between">
+                      <div className="text-[10px] font-bold text-slate-400 uppercase">
+                        Menampilkan {paginatedWinners.length} dari {filteredWinners.length} pemenang
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Button 
+                          variant="outline" 
+                          size="icon" 
+                          onClick={() => setCurrentPage(p => Math.max(1, p - 1))} 
+                          disabled={currentPage === 1}
+                          className="h-8 w-8 rounded-lg border-slate-200"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </Button>
+                        
+                        {Array.from({ length: totalPages }).map((_, i) => (
+                          <Button 
+                            key={i} 
+                            variant={currentPage === i + 1 ? "default" : "outline"} 
+                            onClick={() => setCurrentPage(i + 1)}
+                            className={cn(
+                              "h-8 w-8 rounded-lg text-xs font-black",
+                              currentPage === i + 1 ? "bg-accent border-accent" : "border-slate-200 text-slate-600 hover:bg-slate-50"
+                            )}
+                          >
+                            {i + 1}
+                          </Button>
+                        ))}
+                        
+                        <Button 
+                          variant="outline" 
+                          size="icon" 
+                          onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} 
+                          disabled={currentPage === totalPages}
+                          className="h-8 w-8 rounded-lg border-slate-200"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </Card>
               </div>
             </div>
