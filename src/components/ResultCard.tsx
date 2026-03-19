@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useEffect, useState, useRef } from 'react';
@@ -26,6 +27,21 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
       setDomain(window.location.hostname);
     }
   }, []);
+
+  const formatMessage = (text: string) => {
+    const formatted = text.replace('$nama', name);
+    const parts = formatted.split(/(\*.*?\*|_.*?_)/g);
+    
+    return parts.map((part, i) => {
+      if (part.startsWith('*') && part.endsWith('*')) {
+        return <strong key={i} className="font-black">{part.slice(1, -1)}</strong>;
+      }
+      if (part.startsWith('_') && part.endsWith('_')) {
+        return <em key={i} className="italic">{part.slice(1, -1)}</em>;
+      }
+      return part;
+    });
+  };
 
   const handleExportImage = async () => {
     if (!cardRef.current) return null;
@@ -139,10 +155,10 @@ export function ResultCard({ name, photoUrl, amount, message, wallet }: ResultCa
                 </div>
               </div>
 
-              <div className="bg-slate-50/80 p-3 rounded-2xl border-2 border-slate-100/50">
-                <p className="text-slate-800 italic font-bold text-xs leading-relaxed">
-                  {message.replace('$nama', name)}
-                </p>
+              <div className="bg-slate-50/80 p-3 rounded-2xl border-2 border-slate-100/50 min-h-[60px] flex items-center justify-center">
+                <div className="text-slate-800 font-medium text-xs leading-relaxed whitespace-pre-wrap">
+                  {formatMessage(message)}
+                </div>
               </div>
 
               <div className="pt-3 border-t border-dashed">

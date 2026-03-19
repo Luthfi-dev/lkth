@@ -28,7 +28,7 @@
   "events": [
     {
       "title": "THR PIC 2A",
-      "message": "​\"Selamat Hari Raya $nama! Terima kasih atas kerja kerasnya di PIC 2A. Keep elevating your performance and stay consistent! Tetap semangat!\"",
+      "message": "​\"Selamat Hari Raya $nama! Terima kasih atas kerja keras kerasnya di PIC 2A. Keep elevating your performance and stay consistent! Tetap semangat!\"",
       "nominals": [
         {
           "value": 20000,
@@ -67,7 +67,7 @@
           "blocked": true
         }
       ],
-      "allow_multiple_plays": true,
+      "allow_multiple_plays": false,
       "interaction_type": "angpao",
       "admin_id": "bordknu8m",
       "is_active": true,
