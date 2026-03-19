@@ -1,7 +1,7 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Gift, Zap, Shield, Sparkles, Heart } from 'lucide-react';
+import { Gift, Zap, Shield, Sparkles, Heart, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import { getData } from '@/lib/storage';
 
@@ -19,7 +19,7 @@ export default async function Home() {
       { id: "3", title: "Custom Nominal", description: "Atur sendiri nominal THR yang tersedia, mulai dari receh sampai jutaan!", icon: "Gift" }
     ],
     footer: {
-      copyright: "© 2024 LuckyTHR. Rayakan hari raya dengan sukacita.",
+      copyright: "© 2026 LuckyTHR. Rayakan hari raya dengan sukacita.",
       linkText: "maudigi.com",
       linkUrl: "https://maudigi.com"
     }
@@ -34,7 +34,7 @@ export default async function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="min-h-screen flex flex-col bg-background scroll-smooth">
       {/* Header */}
       <header className="p-4 sm:p-6 flex justify-between items-center max-w-7xl mx-auto w-full">
         <div className="flex items-center gap-2">
@@ -59,19 +59,24 @@ export default async function Home() {
           {homepage.hero.title}
         </h1>
         
-        <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl">
+        <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl font-medium">
           {homepage.hero.description}
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto pt-4">
           <Link href="/login">
             <Button className="w-full sm:w-auto h-14 px-10 text-lg font-black bg-accent hover:bg-accent/90 shadow-lg shadow-accent/20 rounded-2xl">
-              Buat Event THR Sekarang 🧧
+              Buat Event THR Sekarang
+            </Button>
+          </Link>
+          <Link href="#features">
+            <Button variant="outline" className="w-full sm:w-auto h-14 px-10 text-lg font-black border-2 border-slate-200 rounded-2xl gap-2 hover:bg-slate-50">
+              Kenapa harus pakai aplikasi ini? <ChevronDown className="w-5 h-5" />
             </Button>
           </Link>
         </div>
 
-        <div className="relative w-full max-w-4xl aspect-video rounded-3xl overflow-hidden shadow-2xl mt-12 border-8 border-white">
+        <div className="relative w-full max-w-4xl aspect-video rounded-3xl overflow-hidden shadow-2xl mt-12 border-8 border-white bg-slate-100">
           <Image 
             src={homepage.hero.imageUrl} 
             alt="Dashboard Preview" 
@@ -83,7 +88,7 @@ export default async function Home() {
       </main>
 
       {/* Features */}
-      <section id="features" className="bg-white py-24 px-4">
+      <section id="features" className="bg-white py-24 px-4 scroll-mt-20">
         <div className="max-w-7xl mx-auto space-y-16">
           <div className="text-center space-y-4">
             <h2 className="text-4xl font-black">Kenapa Pakai {settings?.siteTitle || 'LuckyTHR'}?</h2>
