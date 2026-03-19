@@ -5,9 +5,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ShieldAlert, LogOut, Users, Database, Server, Settings, Heart, Save, Plus, Trash2, Key, RefreshCw, Globe, CreditCard, Layout, ImageIcon, Type, LinkIcon, LayoutGrid, Zap, Shield, Gift, Sparkles } from 'lucide-react';
+import { ShieldAlert, LogOut, Users, Database, Server, Settings, Heart, Save, Plus, Trash2, Key, RefreshCw, Globe, CreditCard, Layout, ImageIcon, Type, LinkIcon, LayoutGrid, Zap, Shield, Gift, Sparkles, Download, Copy, Check } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { getEvents, getWinners, getAllUsers, getSystemSettings, updateSystemSettings } from '@/app/actions/db-actions';
+import { getEvents, getWinners, getAllUsers, getSystemSettings, updateSystemSettings, generateSqlExport } from '@/app/actions/db-actions';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +26,8 @@ export default function SuperAdminDashboard() {
   const [winners, setWinners] = useState<any[]>([]);
   const [settings, setSettings] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isExporting, setIsExporting] = useState(false);
+  const [sqlContent, setSqlContent] = useState('');
   
   const [plain, setPlain] = useState('');
   const [hashed, setHashed] = useState('');
@@ -189,6 +191,24 @@ export default function SuperAdminDashboard() {
     setHashed(hash);
   };
 
+  const handleExportSql = async () => {
+    setIsExporting(true);
+    try {
+      const sql = await generateSqlExport();
+      setSqlContent(sql);
+      toast({ title: "SQL Generated", description: "Database SQL siap di-import." });
+    } catch (err) {
+      toast({ variant: "destructive", title: "Export Gagal", description: "Tidak dapat men-generate SQL." });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const copySqlToClipboard = () => {
+    navigator.clipboard.writeText(sqlContent);
+    toast({ title: "Berhasil Salin", description: "Kode SQL telah disalin ke clipboard." });
+  };
+
   if (isLoading) return <div className="min-h-screen flex items-center justify-center"><RefreshCw className="animate-spin text-accent w-10 h-10" /></div>;
 
   return (
@@ -199,6 +219,38 @@ export default function SuperAdminDashboard() {
           <span className="font-black text-lg sm:text-xl uppercase tracking-tight">Super<span className="text-red-600">Admin</span></span>
         </div>
         <div className="flex items-center gap-2 sm:gap-4">
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button onClick={handleExportSql} variant="outline" size="sm" className="rounded-xl font-bold h-9 px-3 border-emerald-500 text-emerald-600 hover:bg-emerald-50"><Database className="w-3.5 h-3.5 mr-1.5" /> Export SQL</Button>
+            </DialogTrigger>
+            <DialogContent className="rounded-[2.5rem] max-w-4xl max-h-[80vh] flex flex-col p-8">
+              <DialogHeader>
+                <DialogTitle className="font-black text-2xl flex items-center gap-2">
+                  <Database className="w-6 h-6 text-emerald-600" /> Export Database Offline
+                </DialogTitle>
+              </DialogHeader>
+              <div className="flex-1 overflow-hidden flex flex-col gap-4 py-4">
+                <p className="text-xs font-medium text-slate-500 bg-emerald-50 p-3 rounded-xl border border-emerald-100 italic">
+                  Salin kode SQL di bawah ini untuk mengimpor data dari LuckyTHR offline ke database SQL online Anda.
+                </p>
+                <div className="flex-1 bg-slate-900 rounded-2xl p-6 overflow-auto relative group">
+                  <pre className="text-[10px] font-mono text-emerald-400 whitespace-pre-wrap leading-relaxed">
+                    {isExporting ? 'Generating SQL...' : sqlContent || '-- Klik tombol generate di atas untuk memulai.'}
+                  </pre>
+                  {sqlContent && (
+                    <Button 
+                      onClick={copySqlToClipboard} 
+                      size="sm" 
+                      className="absolute top-4 right-4 bg-emerald-600 hover:bg-emerald-500 rounded-lg gap-2"
+                    >
+                      <Copy className="w-3 h-3" /> Salin SQL
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+          
           <Dialog>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm" className="rounded-xl font-bold h-9 px-3"><Key className="w-3.5 h-3.5 mr-1.5" /> Enkripsi</Button>

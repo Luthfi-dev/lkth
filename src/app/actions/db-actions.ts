@@ -98,3 +98,36 @@ export async function checkIpPlayed(eventId: string, ip: string) {
   // Mencocokkan IP dan Event ID untuk validasi anti-curang
   return winners.some((w: any) => w.event_id === eventId && w.ip_address === ip);
 }
+
+export async function generateSqlExport() {
+  const users = await getData('users');
+  const events = await getData('events');
+  const winners = await getData('winners');
+  const settings = await getData('settings');
+
+  let sql = `-- Lucky THR Database Export\n-- Generated on ${new Date().toISOString()}\n\n`;
+
+  // Users Table
+  sql += `CREATE TABLE IF NOT EXISTS users (\n  id VARCHAR(50) PRIMARY KEY,\n  name VARCHAR(255),\n  email VARCHAR(255) UNIQUE,\n  password VARCHAR(255),\n  role VARCHAR(50),\n  timestamp DATETIME\n);\n\n`;
+  users.forEach((u: any) => {
+    sql += `INSERT INTO users (id, name, email, password, role, timestamp) VALUES ('${u.id}', '${u.name.replace(/'/g, "''")}', '${u.email}', '${u.password}', '${u.role}', '${u.timestamp}');\n`;
+  });
+
+  // Events Table
+  sql += `\nCREATE TABLE IF NOT EXISTS events (\n  id VARCHAR(50) PRIMARY KEY,\n  title VARCHAR(255),\n  message TEXT,\n  nominals TEXT,\n  allow_multiple_plays BOOLEAN,\n  interaction_type VARCHAR(50),\n  admin_id VARCHAR(50),\n  is_active BOOLEAN,\n  timestamp DATETIME\n);\n\n`;
+  events.forEach((e: any) => {
+    sql += `INSERT INTO events (id, title, message, nominals, allow_multiple_plays, interaction_type, admin_id, is_active, timestamp) VALUES ('${e.id}', '${e.title.replace(/'/g, "''")}', '${e.message.replace(/'/g, "''")}', '${JSON.stringify(e.nominals).replace(/'/g, "''")}', ${e.allow_multiple_plays ? 1 : 0}, '${e.interaction_type}', '${e.admin_id}', ${e.is_active ? 1 : 0}, '${e.timestamp}');\n`;
+  });
+
+  // Winners Table
+  sql += `\nCREATE TABLE IF NOT EXISTS winners (\n  id VARCHAR(50) PRIMARY KEY,\n  event_id VARCHAR(50),\n  name VARCHAR(255),\n  photo_url TEXT,\n  amount INT,\n  wallet_info TEXT,\n  ip_address VARCHAR(50),\n  timestamp DATETIME\n);\n\n`;
+  winners.forEach((w: any) => {
+    sql += `INSERT INTO winners (id, event_id, name, photo_url, amount, wallet_info, ip_address, timestamp) VALUES ('${w.id}', '${w.event_id}', '${w.name.replace(/'/g, "''")}', '${w.photo_url}', ${w.amount}, '${w.wallet_info.replace(/'/g, "''")}', '${w.ip_address}', '${w.timestamp}');\n`;
+  });
+
+  // Settings Table
+  sql += `\nCREATE TABLE IF NOT EXISTS settings (\n  id INT PRIMARY KEY AUTO_INCREMENT,\n  config_json TEXT\n);\n\n`;
+  sql += `INSERT INTO settings (config_json) VALUES ('${JSON.stringify(settings).replace(/'/g, "''")}');\n`;
+
+  return sql;
+}
