@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { PlusCircle, Share2, LogOut, Users, Gift, LayoutGrid, Trash2, Settings2, Plus, Coins, MousePointer2, RefreshCw, Sparkles, Heart, CreditCard, Search, XCircle, Save, Type, MessageCircle, Link as LinkIcon } from 'lucide-react';
+import { PlusCircle, Share2, LogOut, Users, Gift, LayoutGrid, Trash2, Settings2, Plus, Coins, MousePointer2, RefreshCw, Sparkles, Heart, CreditCard, Search, XCircle, Save, Type, MessageCircle, Link as LinkIcon, Ban, CheckCircle2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -32,7 +32,8 @@ export default function AdminDashboard() {
   
   const [editTitle, setEditTitle] = useState('');
   const [editMessage, setEditMessage] = useState('');
-  const [editNominals, setEditNominals] = useState('');
+  const [editNominalInput, setEditNominalInput] = useState('');
+  const [editNominalList, setEditNominalList] = useState<{value: number, blocked: boolean}[]>([]);
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [newEvent, setNewEvent] = useState({
@@ -77,7 +78,7 @@ export default function AdminDashboard() {
           setSelectedEventId(initialEvent.id);
           setEditTitle(initialEvent.title);
           setEditMessage(initialEvent.message);
-          setEditNominals(initialEvent.nominals.map((n: any) => n.value).join(', '));
+          setEditNominalList(initialEvent.nominals || []);
         }
       }
     } catch (err) {
@@ -92,19 +93,41 @@ export default function AdminDashboard() {
     router.push('/login');
   };
 
+  const handleAddNominals = () => {
+    if (!editNominalInput.trim()) return;
+    const values = editNominalInput.split(',')
+      .map(n => parseInt(n.replace(/\./g, '').trim()))
+      .filter(n => !isNaN(n));
+    
+    const newList = [...editNominalList];
+    values.forEach(val => {
+      if (!newList.find(item => item.value === val)) {
+        newList.push({ value: val, blocked: false });
+      }
+    });
+    
+    setEditNominalList(newList);
+    setEditNominalInput('');
+  };
+
+  const toggleBlockNominal = (idx: number) => {
+    const newList = [...editNominalList];
+    newList[idx].blocked = !newList[idx].blocked;
+    setEditNominalList(newList);
+  };
+
+  const removeNominal = (idx: number) => {
+    setEditNominalList(editNominalList.filter((_, i) => i !== idx));
+  };
+
   const handleSaveEventDetails = async () => {
     if (!selectedEventId) return;
     
-    const nominalArray = editNominals.split(',')
-      .map(n => parseInt(n.replace(/\./g, '').trim()))
-      .filter(n => !isNaN(n))
-      .map(n => ({ value: n, blocked: false }));
-
     try {
       await updateEvent(selectedEventId, {
         title: editTitle,
         message: editMessage,
-        nominals: nominalArray
+        nominals: editNominalList
       });
       toast({ title: "Berhasil", description: "Detail event telah diperbarui." });
       fetchData(currentUser);
@@ -240,7 +263,7 @@ export default function AdminDashboard() {
                     setSelectedEventId(e.id);
                     setEditTitle(e.title);
                     setEditMessage(e.message);
-                    setEditNominals(e.nominals.map((n: any) => n.value).join(', '));
+                    setEditNominalList(e.nominals || []);
                   }} 
                   className={cn(
                     "flex-shrink-0 w-64 h-24 p-5 rounded-[2rem] text-left transition-all border-2", 
@@ -265,15 +288,51 @@ export default function AdminDashboard() {
                     <div className="space-y-2">
                       <Label className="text-[10px] font-black uppercase text-slate-400">Pesan Ucapan</Label>
                       <Textarea value={editMessage} onChange={e => setEditMessage(e.target.value)} className="rounded-xl min-h-[80px]" />
+                      <p className="text-[9px] font-bold text-accent italic">Gunakan "$nama" untuk menyebutkan nama pemenang secara otomatis.</p>
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase text-slate-400">Nominal (Pemisah Koma)</Label>
-                      <Textarea value={editNominals} onChange={e => setEditNominals(e.target.value)} className="rounded-xl h-20" />
+                    <div className="space-y-3">
+                      <Label className="text-[10px] font-black uppercase text-slate-400">Daftar Nominal THR</Label>
+                      <div className="flex gap-2">
+                        <Input 
+                          placeholder="Tambah (pisah koma)..." 
+                          value={editNominalInput} 
+                          onChange={e => setEditNominalInput(e.target.value)} 
+                          className="rounded-xl h-10 text-xs"
+                          onKeyDown={(e) => e.key === 'Enter' && handleAddNominals()}
+                        />
+                        <Button size="icon" onClick={handleAddNominals} className="bg-accent shrink-0 h-10 w-10 rounded-xl"><Plus className="w-4 h-4" /></Button>
+                      </div>
+                      
+                      <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto no-scrollbar p-1">
+                        {editNominalList.map((item, idx) => (
+                          <div 
+                            key={idx} 
+                            onClick={() => toggleBlockNominal(idx)}
+                            className={cn(
+                              "flex items-center gap-2 px-3 py-1.5 rounded-full border cursor-pointer transition-all select-none group relative",
+                              item.blocked ? "bg-red-50 border-red-200 text-red-600" : "bg-emerald-50 border-emerald-200 text-emerald-600"
+                            )}
+                          >
+                            {item.blocked ? <Ban className="w-3 h-3" /> : <CheckCircle2 className="w-3 h-3" />}
+                            <span className="text-xs font-black">Rp {item.value.toLocaleString('id-ID')}</span>
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); removeNominal(idx); }} 
+                              className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <XCircle className="w-3 h-3" />
+                            </button>
+                            {item.blocked && <div className="absolute -top-1 -right-1 bg-red-600 w-2 h-2 rounded-full animate-pulse" />}
+                          </div>
+                        ))}
+                      </div>
+                      <p className="text-[9px] font-bold text-slate-400 italic">Klik item di atas untuk mengizinkan (hijau) atau memblokir (merah) nominal tertentu.</p>
                     </div>
+                    
                     <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
                       <span className="text-xs font-black uppercase">Main Berkali-kali</span>
                       <Switch checked={currentEvent?.allow_multiple_plays} onCheckedChange={async (v) => { await updateEvent(selectedEventId, { allow_multiple_plays: v }); fetchData(currentUser); }} />
                     </div>
+                    
                     <div className="grid grid-cols-1 gap-2">
                       <Button onClick={handleSaveEventDetails} className="w-full h-12 rounded-xl bg-accent font-black gap-2">
                         <Save className="w-4 h-4" /> SIMPAN PERUBAHAN
@@ -318,7 +377,7 @@ export default function AdminDashboard() {
                         </div>
                       ))}
                     </div>
-                    <Button onClick={handleSaveBanks} className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black gap-2">
+                    <Button onClick={handleSaveBanks} className="w-full h-12 rounded-xl bg-accent font-black gap-2 text-white shadow-lg shadow-accent/20">
                       <Save className="w-4 h-4" /> SIMPAN DAFTAR BANK
                     </Button>
                   </CardContent>
@@ -382,6 +441,13 @@ export default function AdminDashboard() {
         )}
       </main>
 
+      <footer className="py-8 bg-white border-t mt-12">
+        <div className="max-w-7xl mx-auto px-6 text-center text-slate-400 font-bold text-xs flex items-center justify-center gap-2">
+          <span>developed by</span>
+          <Link href="https://maudigi.com" target="_blank" className="text-accent hover:underline flex items-center gap-1">maudigi.com <Heart className="w-3 h-3 fill-accent" /></Link>
+        </div>
+      </footer>
+
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="rounded-[2.5rem] p-10 max-w-lg border-none shadow-2xl">
           <DialogHeader><DialogTitle className="text-2xl font-black">Buat Event Baru</DialogTitle></DialogHeader>
@@ -402,13 +468,6 @@ export default function AdminDashboard() {
           <DialogFooter><Button onClick={handleCreateEvent} className="w-full h-14 bg-accent font-black rounded-xl text-lg shadow-lg">BUAT SEKARANG</Button></DialogFooter>
         </DialogContent>
       </Dialog>
-
-      <footer className="py-8 bg-white border-t mt-12">
-        <div className="max-w-7xl mx-auto px-6 text-center text-slate-400 font-bold text-xs flex items-center justify-center gap-2">
-          <span>developed by</span>
-          <Link href="https://maudigi.com" target="_blank" className="text-accent hover:underline flex items-center gap-1">maudigi.com <Heart className="w-3 h-3 fill-accent" /></Link>
-        </div>
-      </footer>
     </div>
   );
 }

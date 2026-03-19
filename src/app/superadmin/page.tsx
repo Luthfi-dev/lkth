@@ -374,7 +374,7 @@ export default function SuperAdminDashboard() {
                     </div>
                   ))}
                 </div>
-                <Button onClick={handleUpdateSettings} className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-2xl mt-4 gap-2 shadow-lg shadow-blue-600/20">
+                <Button onClick={handleUpdateSettings} className="w-full h-14 bg-accent text-white font-black rounded-2xl mt-4 gap-2 shadow-lg shadow-accent/20">
                   <Save className="w-5 h-5" /> SIMPAN DAFTAR BANK
                 </Button>
               </CardContent>
