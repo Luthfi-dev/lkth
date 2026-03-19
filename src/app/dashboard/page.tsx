@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { PlusCircle, Share2, LogOut, Users, Gift, LayoutGrid, Trash2, Settings2, Plus, Coins, MousePointer2, RefreshCw, Sparkles, Heart, CreditCard, Search, XCircle, Save, Type, MessageCircle, Link as LinkIcon, Ban, CheckCircle2, Loader2 } from 'lucide-react';
+import { PlusCircle, Share2, LogOut, Users, Gift, LayoutGrid, Trash2, Settings2, Plus, Coins, MousePointer2, RefreshCw, Sparkles, Heart, CreditCard, Search, XCircle, Save, Type, MessageCircle, Link as LinkIcon, Ban, CheckCircle2, Loader2, Copy, Check } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -32,6 +32,7 @@ export default function AdminDashboard() {
   const [isSaving, setIsSaving] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   
   const [editTitle, setEditTitle] = useState('');
   const [editMessage, setEditMessage] = useState('');
@@ -109,7 +110,7 @@ export default function AdminDashboard() {
     try {
       const winnersData = await getWinners(currentUser.id, currentUser.role);
       setWinners(winnersData);
-      toast({ title: "Data Diperbarui", description: "Daftar pemenang telah diperbarui ke versi terbaru." });
+      toast({ title: "Data Diperbarui", description: "Daftar pemenang telah diperbarui." });
     } catch (err) {
       toast({ variant: "destructive", title: "Gagal Refresh", description: "Tidak dapat mengambil data terbaru." });
     } finally {
@@ -139,7 +140,7 @@ export default function AdminDashboard() {
       await updateEvent(selectedEventId, dataToUpdate);
       setEvents(prev => prev.map(e => e.id === selectedEventId ? { ...e, ...dataToUpdate } : e));
     } catch (err) {
-      toast({ variant: "destructive", title: "Gagal Simpan Otomatis", description: "Perubahan mungkin tidak tersimpan." });
+      console.error("Gagal Simpan", err);
     } finally {
       setIsSaving(false);
     }
@@ -223,13 +224,6 @@ export default function AdminDashboard() {
     localStorage.setItem('lucky_thr_last_event', created.id);
     toast({ title: "Berhasil", description: "Event baru telah dibuat." });
     fetchData(currentUser, created.id);
-    setNewEvent({
-      title: '',
-      message: 'Selamat Hari Raya $nama! Semoga berkah selalu.',
-      nominals: '1000, 2000, 5000, 10000, 20000, 50000, 100000',
-      allow_multiple_plays: false,
-      interaction_type: 'angpao'
-    });
   };
 
   const handleDeleteEvent = async () => {
@@ -257,7 +251,7 @@ export default function AdminDashboard() {
       await updateSystemSettings({ banks: updatedBanks });
       toast({ title: "Tersimpan", description: "Daftar bank master diperbarui." });
     } catch (e) {
-      toast({ variant: "destructive", title: "Gagal", description: "Gagal simpan bank." });
+      console.error(e);
     } finally {
       setIsSaving(false);
     }
@@ -272,7 +266,7 @@ export default function AdminDashboard() {
       await updateSystemSettings({ banks: updatedBanks });
       toast({ title: "Tersimpan", description: "Bank berhasil dihapus." });
     } catch (e) {
-      toast({ variant: "destructive", title: "Gagal", description: "Gagal hapus bank." });
+      console.error(e);
     } finally {
       setIsSaving(false);
     }
@@ -282,6 +276,17 @@ export default function AdminDashboard() {
     const link = `${window.location.origin}/play/${id}`;
     navigator.clipboard.writeText(link);
     toast({ title: "Link Tersalin", description: "Tautan event telah disalin ke clipboard." });
+  };
+
+  const copyToClipboard = (text: string, id: string) => {
+    // Ekstrak angka saja jika memungkinkan (setelah tanda "-")
+    const parts = text.split('-');
+    const contentToCopy = parts.length > 1 ? parts[1].trim() : text.trim();
+    
+    navigator.clipboard.writeText(contentToCopy);
+    setCopiedId(id);
+    toast({ title: "Berhasil Salin", description: `Nomor ${contentToCopy} telah disalin.` });
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   const filteredWinners = winners.filter(w => 
@@ -404,8 +409,6 @@ export default function AdminDashboard() {
                                 </AlertDialogFooter>
                               </AlertDialogContent>
                             </AlertDialog>
-
-                            {item.blocked && <div className="absolute -top-1 -right-1 bg-red-600 w-2 h-2 rounded-full animate-pulse" />}
                           </div>
                         ))}
                       </div>
@@ -478,7 +481,7 @@ export default function AdminDashboard() {
               </div>
 
               <div className="lg:col-span-8">
-                <Card className="rounded-[2.5rem] border-none shadow-sm h-full">
+                <Card className="rounded-[2.5rem] border-none shadow-sm h-full overflow-hidden">
                   <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <CardTitle className="text-lg font-black flex items-center gap-2"><Users className="w-5 h-5" /> Monitoring Pemenang</CardTitle>
                     <div className="flex flex-wrap gap-2">
@@ -523,10 +526,18 @@ export default function AdminDashboard() {
                             <TableRow key={i}>
                               <TableCell className="pl-6">
                                 <div className="font-black text-sm">{w.name}</div>
-                                <div className="text-[10px] text-muted-foreground">{w.wallet_info}</div>
+                                <div className="flex items-center gap-2 group/copy">
+                                  <div className="text-[10px] text-muted-foreground truncate max-w-[150px]">{w.wallet_info}</div>
+                                  <button 
+                                    onClick={() => copyToClipboard(w.wallet_info, w.id)} 
+                                    className="p-1.5 bg-slate-100 hover:bg-accent hover:text-white rounded-md transition-all sm:opacity-0 group-hover/copy:opacity-100"
+                                  >
+                                    {copiedId === w.id ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                                  </button>
+                                </div>
                               </TableCell>
-                              <TableCell className="font-black text-emerald-600">Rp {w.amount.toLocaleString('id-ID')}</TableCell>
-                              <TableCell className="text-[10px] font-mono text-muted-foreground">{w.ip_address || '-'}</TableCell>
+                              <TableCell className="font-black text-emerald-600 whitespace-nowrap">Rp {w.amount.toLocaleString('id-ID')}</TableCell>
+                              <TableCell className="text-[10px] font-mono text-muted-foreground whitespace-nowrap">{w.ip_address || '-'}</TableCell>
                               <TableCell className="text-right pr-6">
                                 <AlertDialog>
                                   <AlertDialogTrigger asChild>
