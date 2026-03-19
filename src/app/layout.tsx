@@ -1,13 +1,17 @@
-
-import type {Metadata} from 'next';
+import type {Metadata, Viewport} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
+
+export const viewport: Viewport = {
+  themeColor: '#e1570e',
+  width: 'device-width',
+  initialScale: 1,
+};
 
 export const metadata: Metadata = {
   title: 'Lucky THR - Bagikan Kebahagiaan',
   description: 'Buat event bagi-bagi THR digital dengan roda keberuntungan yang seru dan interaktif.',
   manifest: '/manifest.json',
-  themeColor: '#e1570e',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',

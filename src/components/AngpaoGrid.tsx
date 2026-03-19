@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState } from 'react';
@@ -12,10 +13,11 @@ interface NominalItem {
 
 interface AngpaoGridProps {
   items: NominalItem[];
+  onPick: (value: number) => void;
   onFinish: (value: number) => void;
 }
 
-export function AngpaoGrid({ items, onFinish }: AngpaoGridProps) {
+export function AngpaoGrid({ items, onPick, onFinish }: AngpaoGridProps) {
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [isRevealed, setIsRevealed] = useState(false);
@@ -46,6 +48,8 @@ export function AngpaoGrid({ items, onFinish }: AngpaoGridProps) {
       setEnvelopesValues(shuffled);
       setIsRevealed(true);
       setIsSelecting(false);
+      // Lock result immediately after reveal to prevent reload cheating
+      onPick(shuffled[index]);
     }, 1500);
   };
 

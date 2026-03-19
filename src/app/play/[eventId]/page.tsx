@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect, useCallback } from 'react';
@@ -10,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { SpinWheel } from '@/components/SpinWheel';
 import { AngpaoGrid } from '@/components/AngpaoGrid';
 import { ResultCard } from '@/components/ResultCard';
-import { Camera, AlertCircle, Loader2, Gift, Heart, Sparkles, Home, XCircle, Play } from 'lucide-react';
+import { Gift, AlertCircle, Loader2, Play, Heart, XCircle } from 'lucide-react';
 import { addWinner, getEvents, getSystemSettings, checkIpPlayed } from '@/app/actions/db-actions';
 import Link from 'next/link';
 
@@ -44,7 +45,6 @@ export default function PlayEvent() {
   const loadData = useCallback(async () => {
     if (!eventId) return;
     try {
-      // Mendapatkan IP publik user secara real-time
       const ipRes = await fetch('https://api.ipify.org?format=json');
       const ipData = await ipRes.json();
       const ip = ipData.ip;
@@ -66,8 +66,13 @@ export default function PlayEvent() {
         );
         setEventData({ ...currentEvent, nominals: normalizedNominals });
         
-        // Cek penguncian IP jika main berkali-kali tidak diaktifkan
-        if (!currentEvent.allow_multiple_plays) {
+        // Cek Anti-Reload Cheating: Apakah ada THR yang sedang diproses tapi belum selesai?
+        const pendingThr = localStorage.getItem(`pending_thr_${eventId}`);
+        if (pendingThr) {
+          setResult({ amount: parseInt(pendingThr), timestamp: new Date().toISOString() });
+          setStep('result');
+        } else if (!currentEvent.allow_multiple_plays) {
+          // Cek penguncian IP jika main berkali-kali tidak diaktifkan
           const playedLocally = localStorage.getItem(`played_${eventId}`);
           const playedByIp = await checkIpPlayed(eventId, ip);
           if (playedLocally || playedByIp) {
@@ -114,7 +119,10 @@ export default function PlayEvent() {
     }, 1000);
   };
 
-  const onFinishInteraction = async (amount: number) => {
+  const handleInstantLock = async (amount: number) => {
+    // Kunci nominal di localStorage segera saat pilihan dibuat/terungkap
+    localStorage.setItem(`pending_thr_${eventId}`, amount.toString());
+    
     const walletDisplay = formData.wallet === 'Lainnya' ? formData.customWalletName : formData.wallet;
     const winnerData = {
       event_id: eventId,
@@ -125,26 +133,33 @@ export default function PlayEvent() {
       ip_address: userIp
     };
 
+    // Kirim ke database segera untuk mengunci IP agar tidak bisa re-spin meski reload
     try {
       await addWinner(winnerData);
-      setResult({ amount, timestamp: new Date().toISOString() });
-      
-      const newConfetti = Array.from({ length: 100 }).map((_, i) => ({
-        id: i,
-        left: Math.random() * 100,
-        color: ['#E6C24C', '#E1570E', '#F3A712', '#D33F49', '#3B82F6', '#10B981'][Math.floor(Math.random() * 6)],
-        delay: Math.random() * 3,
-        size: Math.random() * 12 + 4
-      }));
-      setConfetti(newConfetti);
-      
-      setStep('result');
-      if (!eventData.allow_multiple_plays) {
-        localStorage.setItem(`played_${eventId}`, 'true');
-      }
     } catch (err) {
-      console.error("Gagal menyimpan pemenang:", err);
+      console.error("Gagal mengunci pemenang:", err);
     }
+  };
+
+  const onFinishInteraction = (amount: number) => {
+    // Selesai klaim, hapus status pending
+    localStorage.removeItem(`pending_thr_${eventId}`);
+    
+    if (!eventData.allow_multiple_plays) {
+      localStorage.setItem(`played_${eventId}`, 'true');
+    }
+    
+    setResult({ amount, timestamp: new Date().toISOString() });
+    
+    const newConfetti = Array.from({ length: 100 }).map((_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      color: ['#E6C24C', '#E1570E', '#F3A712', '#D33F49', '#3B82F6', '#10B981'][Math.floor(Math.random() * 6)],
+      delay: Math.random() * 3,
+      size: Math.random() * 12 + 4
+    }));
+    setConfetti(newConfetti);
+    setStep('result');
   };
 
   if (error) return (
@@ -235,15 +250,19 @@ export default function PlayEvent() {
             <h2 className="text-5xl font-black text-accent uppercase leading-none italic tracking-tighter">Bismillah Beruntung</h2>
             <p className="text-muted-foreground font-black uppercase tracking-[0.3em] text-[10px]">Semoga Hari Raya Ini Membawa Keberkahan</p>
           </div>
-          {eventData.interaction_type === 'angpao' ? <AngpaoGrid items={eventData.nominals} onFinish={onFinishInteraction} /> : <SpinWheel items={eventData.nominals} onFinish={onFinishInteraction} />}
+          {eventData.interaction_type === 'angpao' ? (
+            <AngpaoGrid items={eventData.nominals} onPick={handleInstantLock} onFinish={onFinishInteraction} />
+          ) : (
+            <SpinWheel items={eventData.nominals} onPick={handleInstantLock} onFinish={onFinishInteraction} />
+          )}
         </div>
       )}
 
       {step === 'result' && (
         <div className="animate-in slide-in-from-bottom-20 duration-1000 w-full max-w-lg">
-          <ResultCard name={formData.name} photoUrl={formData.photo || ''} amount={result.amount} message={eventData.message} wallet={`${formData.wallet} - ${formData.walletNumber}`} />
+          <ResultCard name={formData.name || localStorage.getItem('lucky_thr_name') || 'Pemenang'} photoUrl={formData.photo || ''} amount={result.amount} message={eventData?.message || 'Selamat! Berkah THR untuk Anda.'} wallet={`${formData.wallet || localStorage.getItem('lucky_thr_wallet')} - ${formData.walletNumber || localStorage.getItem('lucky_thr_wallet_number')}`} />
           <div className="text-center mt-8">
-            <Button variant="link" onClick={() => window.location.reload()} className="text-accent font-black uppercase tracking-widest text-xs">
+            <Button variant="link" onClick={() => { localStorage.removeItem(`pending_thr_${eventId}`); window.location.reload(); }} className="text-accent font-black uppercase tracking-widest text-xs">
               Selesai dan Tutup
             </Button>
           </div>
