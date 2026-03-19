@@ -28,7 +28,7 @@
   "events": [
     {
       "title": "THR PIC 2A",
-      "message": "​\"Selamat Hari Raya $nama! Terima kasih atas kerja keras kerasnya di PIC 2A. Keep elevating your performance and stay consistent! Tetap semangat!\"",
+      "message": "​\"Selamat Hari Raya $nama! Terima kasih atas kerja keras kerasnya di PIC 2A. _Keep elevating your performance and stay consistent!_ Tetap semangat!\"",
       "nominals": [
         {
           "value": 20000,
@@ -115,7 +115,28 @@
       "timestamp": "2026-03-18T18:52:49.705Z"
     }
   ],
-  "winners": [],
+  "winners": [
+    {
+      "event_id": "18uolr7je",
+      "name": "Tess",
+      "photo_url": "",
+      "amount": 30000,
+      "wallet_info": "BSI - 08383737",
+      "ip_address": "182.9.161.50",
+      "id": "mt6gn3f7p",
+      "timestamp": "2026-03-19T01:37:00.898Z"
+    },
+    {
+      "event_id": "18uolr7je",
+      "name": "Tess",
+      "photo_url": "",
+      "amount": 40000,
+      "wallet_info": "BSI - 08383737",
+      "ip_address": "182.9.161.50",
+      "id": "003wv6i4p",
+      "timestamp": "2026-03-19T01:37:26.328Z"
+    }
+  ],
   "settings": {
     "siteTitle": "Lucky THR",
     "banks": [

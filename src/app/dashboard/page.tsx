@@ -30,6 +30,7 @@ export default function AdminDashboard() {
   const [newBank, setNewBank] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   
   const [editTitle, setEditTitle] = useState('');
@@ -102,6 +103,20 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleManualRefresh = async () => {
+    if (!currentUser) return;
+    setIsRefreshing(true);
+    try {
+      const winnersData = await getWinners(currentUser.id, currentUser.role);
+      setWinners(winnersData);
+      toast({ title: "Data Diperbarui", description: "Daftar pemenang telah diperbarui ke versi terbaru." });
+    } catch (err) {
+      toast({ variant: "destructive", title: "Gagal Refresh", description: "Tidak dapat mengambil data terbaru." });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   const handleLogout = () => {
     localStorage.removeItem('lucky_thr_session');
     localStorage.removeItem('lucky_thr_last_event');
@@ -117,13 +132,11 @@ export default function AdminDashboard() {
     setEditNominalList(norm);
   };
 
-  // Fungsi Auto Save Pusat
   const autoSaveEvent = async (dataToUpdate: any) => {
     if (!selectedEventId) return;
     setIsSaving(true);
     try {
       await updateEvent(selectedEventId, dataToUpdate);
-      // Update local state event list agar UI konsisten
       setEvents(prev => prev.map(e => e.id === selectedEventId ? { ...e, ...dataToUpdate } : e));
     } catch (err) {
       toast({ variant: "destructive", title: "Gagal Simpan Otomatis", description: "Perubahan mungkin tidak tersimpan." });
@@ -184,7 +197,7 @@ export default function AdminDashboard() {
   const handleDeleteWinner = async (id: string) => {
     await deleteWinner(id);
     toast({ title: "Dihapus", description: "Pemenang dihapus. IP tersebut kini bisa main lagi." });
-    fetchData(currentUser, selectedEventId);
+    handleManualRefresh();
   };
 
   const handleCreateEvent = async () => {
@@ -239,7 +252,6 @@ export default function AdminDashboard() {
     const updatedBanks = [...(settings?.banks || []), newBank.trim()];
     setSettings({...settings, banks: updatedBanks});
     setNewBank('');
-    // Simpan otomatis master bank
     setIsSaving(true);
     try {
       await updateSystemSettings({ banks: updatedBanks });
@@ -278,7 +290,7 @@ export default function AdminDashboard() {
 
   const totalThr = filteredWinners.reduce((acc, curr) => acc + curr.amount, 0);
 
-  if (isLoading || !currentUser) return <div className="min-h-screen flex items-center justify-center"><RefreshCw className="animate-spin text-accent" /></div>;
+  if (isLoading || !currentUser) return <div className="min-h-screen flex items-center justify-center"><RefreshCw className="animate-spin text-accent w-10 h-10" /></div>;
 
   const currentEvent = events.find(e => e.id === selectedEventId);
 
@@ -479,7 +491,16 @@ export default function AdminDashboard() {
                           className="pl-9 h-10 w-48 rounded-xl bg-slate-50 border-none"
                         />
                       </div>
-                      <Badge className="bg-emerald-100 text-emerald-600 border-none font-bold px-4 h-10">Rp {totalThr.toLocaleString('id-ID')}</Badge>
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        onClick={handleManualRefresh} 
+                        className="h-10 w-10 rounded-xl border-slate-200 hover:bg-slate-50"
+                        disabled={isRefreshing}
+                      >
+                        <RefreshCw className={cn("w-4 h-4 text-slate-500", isRefreshing && "animate-spin")} />
+                      </Button>
+                      <Badge className="bg-emerald-100 text-emerald-600 border-none font-bold px-4 h-10 flex items-center">Rp {totalThr.toLocaleString('id-ID')}</Badge>
                     </div>
                   </CardHeader>
                   <CardContent className="p-0 overflow-x-auto">
