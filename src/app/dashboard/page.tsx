@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
-import { PlusCircle, Share2, LogOut, Users, Gift, LayoutGrid, Trash2, Settings2, Plus, Coins, MousePointer2, RefreshCw, Sparkles, Heart, CreditCard, Search, XCircle, Save, Type, MessageCircle, Link as LinkIcon, Ban, CheckCircle2 } from 'lucide-react';
+import { PlusCircle, Share2, LogOut, Users, Gift, LayoutGrid, Trash2, Settings2, Plus, Coins, MousePointer2, RefreshCw, Sparkles, Heart, CreditCard, Search, XCircle, Save, Type, MessageCircle, Link as LinkIcon, Ban, CheckCircle2, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
@@ -29,6 +29,7 @@ export default function AdminDashboard() {
   const [selectedEventId, setSelectedEventId] = useState<string>('');
   const [newBank, setNewBank] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [currentUser, setCurrentUser] = useState<any>(null);
   
   const [editTitle, setEditTitle] = useState('');
@@ -57,11 +58,17 @@ export default function AdminDashboard() {
       router.push('/login');
       return;
     }
+    
+    const lastEventId = localStorage.getItem('lucky_thr_last_event');
+    if (lastEventId) {
+      setSelectedEventId(lastEventId);
+    }
+
     setCurrentUser(session.user);
-    fetchData(session.user);
+    fetchData(session.user, lastEventId || undefined);
   }, [router]);
 
-  const fetchData = async (user: any) => {
+  const fetchData = async (user: any, forceId?: string) => {
     try {
       const [winnersData, eventsData, sysSettings] = await Promise.all([
         getWinners(user.id, user.role),
@@ -73,13 +80,15 @@ export default function AdminDashboard() {
       setSettings(sysSettings || { banks: ['Dana', 'OVO', 'GoPay', 'ShopeePay', 'BCA', 'Lainnya'] });
       
       if (eventsData.length > 0) {
-        const currentId = selectedEventId || eventsData[0].id;
-        const initialEvent = eventsData.find((e: any) => e.id === currentId);
+        const currentId = forceId || selectedEventId || eventsData[0].id;
+        const initialEvent = eventsData.find((e: any) => e.id === currentId) || eventsData[0];
+        
         if (initialEvent) {
           setSelectedEventId(initialEvent.id);
+          localStorage.setItem('lucky_thr_last_event', initialEvent.id);
           setEditTitle(initialEvent.title);
           setEditMessage(initialEvent.message);
-          // Normalisasi data nominal (jika masih angka biasa, ubah ke objek)
+          
           const normalized = (initialEvent.nominals || []).map((n: any) => 
             typeof n === 'number' ? { value: n, blocked: false } : n
           );
@@ -95,7 +104,17 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem('lucky_thr_session');
+    localStorage.removeItem('lucky_thr_last_event');
     router.push('/login');
+  };
+
+  const handleSelectEvent = (event: any) => {
+    setSelectedEventId(event.id);
+    localStorage.setItem('lucky_thr_last_event', event.id);
+    setEditTitle(event.title);
+    setEditMessage(event.message);
+    const norm = (event.nominals || []).map((n: any) => typeof n === 'number' ? { value: n, blocked: false } : n);
+    setEditNominalList(norm);
   };
 
   const handleAddNominals = () => {
@@ -129,6 +148,7 @@ export default function AdminDashboard() {
 
   const handleSaveEventDetails = async () => {
     if (!selectedEventId) return;
+    setIsSaving(true);
     
     try {
       await updateEvent(selectedEventId, {
@@ -136,17 +156,19 @@ export default function AdminDashboard() {
         message: editMessage,
         nominals: editNominalList
       });
-      toast({ title: "Berhasil", description: "Detail event dan status blokir telah diperbarui." });
-      fetchData(currentUser);
+      toast({ title: "Berhasil", description: "Detail event dan daftar nominal telah disimpan permanen." });
+      await fetchData(currentUser, selectedEventId);
     } catch (err) {
       toast({ variant: "destructive", title: "Gagal", description: "Terjadi kesalahan saat menyimpan." });
+    } finally {
+      setIsSaving(false);
     }
   };
 
   const handleDeleteWinner = async (id: string) => {
     await deleteWinner(id);
     toast({ title: "Dihapus", description: "Pemenang dihapus. IP tersebut kini bisa main lagi." });
-    fetchData(currentUser);
+    fetchData(currentUser, selectedEventId);
   };
 
   const handleCreateEvent = async () => {
@@ -166,10 +188,12 @@ export default function AdminDashboard() {
       nominals: nominalArray,
       is_active: true
     });
+    
     setIsDialogOpen(false);
     setSelectedEventId(created.id);
+    localStorage.setItem('lucky_thr_last_event', created.id);
     toast({ title: "Berhasil", description: "Event baru telah dibuat." });
-    fetchData(currentUser);
+    fetchData(currentUser, created.id);
     setNewEvent({
       title: '',
       message: 'Selamat Hari Raya $nama! Semoga berkah selalu.',
@@ -183,16 +207,13 @@ export default function AdminDashboard() {
     if (!selectedEventId) return;
     await deleteEvent(selectedEventId);
     toast({ title: "Dihapus", description: "Event telah dihapus permanen." });
+    
     const remaining = events.filter(e => e.id !== selectedEventId);
     if (remaining.length > 0) {
-      setSelectedEventId(remaining[0].id);
-      const first = remaining[0];
-      setEditTitle(first.title);
-      setEditMessage(first.message);
-      const norm = (first.nominals || []).map((n: any) => typeof n === 'number' ? { value: n, blocked: false } : n);
-      setEditNominalList(norm);
+      handleSelectEvent(remaining[0]);
     } else {
       setSelectedEventId('');
+      localStorage.removeItem('lucky_thr_last_event');
     }
     fetchData(currentUser);
   };
@@ -206,9 +227,16 @@ export default function AdminDashboard() {
   };
 
   const handleSaveBanks = async () => {
-    await updateSystemSettings({ banks: settings.banks });
-    toast({ title: "Tersimpan", description: "Daftar bank sistem telah diperbarui." });
-    fetchData(currentUser);
+    setIsSaving(true);
+    try {
+      await updateSystemSettings({ banks: settings.banks });
+      toast({ title: "Tersimpan", description: "Daftar bank sistem telah diperbarui." });
+      fetchData(currentUser, selectedEventId);
+    } catch (error) {
+      toast({ variant: "destructive", title: "Gagal", description: "Gagal menyimpan daftar bank." });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleRemoveBank = (idx: number) => {
@@ -271,13 +299,7 @@ export default function AdminDashboard() {
               {events.map((e) => (
                 <button 
                   key={e.id} 
-                  onClick={() => {
-                    setSelectedEventId(e.id);
-                    setEditTitle(e.title);
-                    setEditMessage(e.message);
-                    const norm = (e.nominals || []).map((n: any) => typeof n === 'number' ? { value: n, blocked: false } : n);
-                    setEditNominalList(norm);
-                  }} 
+                  onClick={() => handleSelectEvent(e)} 
                   className={cn(
                     "flex-shrink-0 w-64 h-24 p-5 rounded-[2rem] text-left transition-all border-2", 
                     selectedEventId === e.id ? "bg-white border-accent shadow-xl" : "bg-white border-transparent"
@@ -357,12 +379,13 @@ export default function AdminDashboard() {
                     
                     <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
                       <span className="text-xs font-black uppercase">Main Berkali-kali</span>
-                      <Switch checked={currentEvent?.allow_multiple_plays} onCheckedChange={async (v) => { await updateEvent(selectedEventId, { allow_multiple_plays: v }); fetchData(currentUser); }} />
+                      <Switch checked={currentEvent?.allow_multiple_plays} onCheckedChange={async (v) => { await updateEvent(selectedEventId, { allow_multiple_plays: v }); fetchData(currentUser, selectedEventId); }} />
                     </div>
                     
                     <div className="grid grid-cols-1 gap-2">
-                      <Button onClick={handleSaveEventDetails} className="w-full h-12 rounded-xl bg-accent font-black gap-2">
-                        <Save className="w-4 h-4" /> SIMPAN PERUBAHAN
+                      <Button onClick={handleSaveEventDetails} disabled={isSaving} className="w-full h-12 rounded-xl bg-accent font-black gap-2">
+                        {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                        SIMPAN PERUBAHAN
                       </Button>
                       <Button onClick={() => copyLink(selectedEventId)} variant="outline" className="w-full h-12 rounded-xl border-accent text-accent font-black gap-2">
                         <LinkIcon className="w-4 h-4" /> BAGIKAN TAUTAN
@@ -420,8 +443,9 @@ export default function AdminDashboard() {
                         </div>
                       ))}
                     </div>
-                    <Button onClick={handleSaveBanks} className="w-full h-12 rounded-xl bg-accent font-black gap-2 text-white shadow-lg shadow-accent/20">
-                      <Save className="w-4 h-4" /> SIMPAN DAFTAR BANK
+                    <Button onClick={handleSaveBanks} disabled={isSaving} className="w-full h-12 rounded-xl bg-accent font-black gap-2 text-white shadow-lg shadow-accent/20">
+                      {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                      SIMPAN DAFTAR BANK
                     </Button>
                   </CardContent>
                 </Card>
