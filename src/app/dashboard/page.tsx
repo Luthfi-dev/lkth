@@ -79,7 +79,11 @@ export default function AdminDashboard() {
           setSelectedEventId(initialEvent.id);
           setEditTitle(initialEvent.title);
           setEditMessage(initialEvent.message);
-          setEditNominalList(initialEvent.nominals || []);
+          // Normalisasi data nominal (jika masih angka biasa, ubah ke objek)
+          const normalized = (initialEvent.nominals || []).map((n: any) => 
+            typeof n === 'number' ? { value: n, blocked: false } : n
+          );
+          setEditNominalList(normalized);
         }
       }
     } catch (err) {
@@ -118,9 +122,9 @@ export default function AdminDashboard() {
   };
 
   const removeNominal = (idx: number) => {
-    if (window.confirm('Hapus nominal ini dari daftar?')) {
-      setEditNominalList(editNominalList.filter((_, i) => i !== idx));
-    }
+    const newList = editNominalList.filter((_, i) => i !== idx);
+    setEditNominalList(newList);
+    toast({ title: "Terhapus", description: "Nominal dihapus dari list sementara. Klik simpan untuk permanen." });
   };
 
   const handleSaveEventDetails = async () => {
@@ -132,7 +136,7 @@ export default function AdminDashboard() {
         message: editMessage,
         nominals: editNominalList
       });
-      toast({ title: "Berhasil", description: "Detail event telah diperbarui." });
+      toast({ title: "Berhasil", description: "Detail event dan status blokir telah diperbarui." });
       fetchData(currentUser);
     } catch (err) {
       toast({ variant: "destructive", title: "Gagal", description: "Terjadi kesalahan saat menyimpan." });
@@ -140,11 +144,9 @@ export default function AdminDashboard() {
   };
 
   const handleDeleteWinner = async (id: string) => {
-    if (window.confirm('Hapus data pemenang ini? Akses IP mereka akan di-reset.')) {
-      await deleteWinner(id);
-      toast({ title: "Dihapus", description: "Pemenang dihapus. IP tersebut kini bisa main lagi." });
-      fetchData(currentUser);
-    }
+    await deleteWinner(id);
+    toast({ title: "Dihapus", description: "Pemenang dihapus. IP tersebut kini bisa main lagi." });
+    fetchData(currentUser);
   };
 
   const handleCreateEvent = async () => {
@@ -187,7 +189,8 @@ export default function AdminDashboard() {
       const first = remaining[0];
       setEditTitle(first.title);
       setEditMessage(first.message);
-      setEditNominalList(first.nominals || []);
+      const norm = (first.nominals || []).map((n: any) => typeof n === 'number' ? { value: n, blocked: false } : n);
+      setEditNominalList(norm);
     } else {
       setSelectedEventId('');
     }
@@ -210,10 +213,8 @@ export default function AdminDashboard() {
 
   const handleRemoveBank = (idx: number) => {
     if (settings.banks[idx] === 'Lainnya') return;
-    if (window.confirm('Hapus bank ini dari daftar master?')) {
-      const updatedBanks = settings.banks.filter((_: any, i: number) => i !== idx);
-      setSettings({...settings, banks: updatedBanks});
-    }
+    const updatedBanks = settings.banks.filter((_: any, i: number) => i !== idx);
+    setSettings({...settings, banks: updatedBanks});
   };
 
   const copyLink = (id: string) => {
@@ -274,7 +275,8 @@ export default function AdminDashboard() {
                     setSelectedEventId(e.id);
                     setEditTitle(e.title);
                     setEditMessage(e.message);
-                    setEditNominalList(e.nominals || []);
+                    const norm = (e.nominals || []).map((n: any) => typeof n === 'number' ? { value: n, blocked: false } : n);
+                    setEditNominalList(norm);
                   }} 
                   className={cn(
                     "flex-shrink-0 w-64 h-24 p-5 rounded-[2rem] text-left transition-all border-2", 
@@ -319,20 +321,34 @@ export default function AdminDashboard() {
                         {editNominalList.map((item, idx) => (
                           <div 
                             key={idx} 
-                            onClick={() => toggleBlockNominal(idx)}
                             className={cn(
                               "flex items-center gap-2 px-3 py-1.5 rounded-full border cursor-pointer transition-all select-none group relative",
                               item.blocked ? "bg-red-50 border-red-200 text-red-600" : "bg-emerald-50 border-emerald-200 text-emerald-600"
                             )}
                           >
-                            {item.blocked ? <Ban className="w-3 h-3" /> : <CheckCircle2 className="w-3 h-3" />}
-                            <span className="text-xs font-black">Rp {item.value.toLocaleString('id-ID')}</span>
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); removeNominal(idx); }} 
-                              className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <XCircle className="w-3 h-3" />
-                            </button>
+                            <div className="flex items-center gap-2" onClick={() => toggleBlockNominal(idx)}>
+                               {item.blocked ? <Ban className="w-3 h-3" /> : <CheckCircle2 className="w-3 h-3" />}
+                               <span className="text-xs font-black">Rp {item.value.toLocaleString('id-ID')}</span>
+                            </div>
+                            
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <button className="ml-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <XCircle className="w-3 h-3" />
+                                </button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Hapus Nominal?</AlertDialogTitle>
+                                  <AlertDialogDescription>Hapus nominal Rp {item.value.toLocaleString('id-ID')} dari list event ini?</AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Batal</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => removeNominal(idx)}>Hapus</AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+
                             {item.blocked && <div className="absolute -top-1 -right-1 bg-red-600 w-2 h-2 rounded-full animate-pulse" />}
                           </div>
                         ))}
@@ -384,7 +400,23 @@ export default function AdminDashboard() {
                       {settings?.banks.map((b: string, i: number) => (
                         <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 group">
                           <span className="text-xs font-black">{b}</span>
-                          {b !== 'Lainnya' && <Button size="icon" variant="ghost" onClick={() => handleRemoveBank(i)} className="h-8 w-8 text-red-400 opacity-0 group-hover:opacity-100"><Trash2 className="w-3.5 h-3.5" /></Button>}
+                          {b !== 'Lainnya' && (
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button size="icon" variant="ghost" className="h-8 w-8 text-red-400 opacity-0 group-hover:opacity-100"><Trash2 className="w-3.5 h-3.5" /></Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Hapus Bank?</AlertDialogTitle>
+                                  <AlertDialogDescription>Hapus {b} dari daftar bank master?</AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Batal</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => handleRemoveBank(i)}>Hapus</AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -437,7 +469,21 @@ export default function AdminDashboard() {
                               <TableCell className="font-black text-emerald-600">Rp {w.amount.toLocaleString('id-ID')}</TableCell>
                               <TableCell className="text-[10px] font-mono text-muted-foreground">{w.ip_address || '-'}</TableCell>
                               <TableCell className="text-right pr-6">
-                                <Button size="icon" variant="ghost" onClick={() => handleDeleteWinner(w.id)} className="text-red-400"><Trash2 className="w-4 h-4" /></Button>
+                                <AlertDialog>
+                                  <AlertDialogTrigger asChild>
+                                    <Button size="icon" variant="ghost" className="text-red-400"><Trash2 className="w-4 h-4" /></Button>
+                                  </AlertDialogTrigger>
+                                  <AlertDialogContent>
+                                    <AlertDialogHeader>
+                                      <AlertDialogTitle>Hapus Pemenang?</AlertDialogTitle>
+                                      <AlertDialogDescription>Akses IP {w.ip_address} akan di-reset sehingga orang ini bisa main lagi.</AlertDialogDescription>
+                                    </AlertDialogHeader>
+                                    <AlertDialogFooter>
+                                      <AlertDialogCancel>Batal</AlertDialogCancel>
+                                      <AlertDialogAction onClick={() => handleDeleteWinner(w.id)}>Hapus</AlertDialogAction>
+                                    </AlertDialogFooter>
+                                  </AlertDialogContent>
+                                </AlertDialog>
                               </TableCell>
                             </TableRow>
                           ))

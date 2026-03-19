@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   images: {
-    /* Optimization: Disable image optimization to prevent memory bloat as requested */
+    /* Optimization: Disable image optimization to prevent memory bloat and storage filling as requested */
     unoptimized: true,
     remotePatterns: [
       {
