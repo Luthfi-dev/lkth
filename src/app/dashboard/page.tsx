@@ -117,51 +117,67 @@ export default function AdminDashboard() {
     setEditNominalList(norm);
   };
 
-  const handleAddNominals = () => {
+  // Fungsi Auto Save Pusat
+  const autoSaveEvent = async (dataToUpdate: any) => {
+    if (!selectedEventId) return;
+    setIsSaving(true);
+    try {
+      await updateEvent(selectedEventId, dataToUpdate);
+      // Update local state event list agar UI konsisten
+      setEvents(prev => prev.map(e => e.id === selectedEventId ? { ...e, ...dataToUpdate } : e));
+    } catch (err) {
+      toast({ variant: "destructive", title: "Gagal Simpan Otomatis", description: "Perubahan mungkin tidak tersimpan." });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleAddNominals = async () => {
     if (!editNominalInput.trim()) return;
     const values = editNominalInput.split(',')
       .map(n => parseInt(n.replace(/\./g, '').trim()))
       .filter(n => !isNaN(n));
     
     const newList = [...editNominalList];
+    let changed = false;
     values.forEach(val => {
       if (!newList.find(item => item.value === val)) {
         newList.push({ value: val, blocked: false });
+        changed = true;
       }
     });
     
-    setEditNominalList(newList);
-    setEditNominalInput('');
+    if (changed) {
+      setEditNominalList(newList);
+      setEditNominalInput('');
+      await autoSaveEvent({ nominals: newList });
+    }
   };
 
-  const toggleBlockNominal = (idx: number) => {
+  const toggleBlockNominal = async (idx: number) => {
     const newList = [...editNominalList];
     newList[idx].blocked = !newList[idx].blocked;
     setEditNominalList(newList);
+    await autoSaveEvent({ nominals: newList });
   };
 
-  const removeNominal = (idx: number) => {
+  const removeNominal = async (idx: number) => {
     const newList = editNominalList.filter((_, i) => i !== idx);
     setEditNominalList(newList);
-    toast({ title: "Terhapus", description: "Nominal dihapus dari list sementara. Klik simpan untuk permanen." });
+    await autoSaveEvent({ nominals: newList });
   };
 
-  const handleSaveEventDetails = async () => {
-    if (!selectedEventId) return;
-    setIsSaving(true);
-    
-    try {
-      await updateEvent(selectedEventId, {
-        title: editTitle,
-        message: editMessage,
-        nominals: editNominalList
-      });
-      toast({ title: "Berhasil", description: "Detail event dan daftar nominal telah disimpan permanen." });
-      await fetchData(currentUser, selectedEventId);
-    } catch (err) {
-      toast({ variant: "destructive", title: "Gagal", description: "Terjadi kesalahan saat menyimpan." });
-    } finally {
-      setIsSaving(false);
+  const handleBlurTitle = async () => {
+    const currentEvent = events.find(e => e.id === selectedEventId);
+    if (currentEvent && currentEvent.title !== editTitle) {
+      await autoSaveEvent({ title: editTitle });
+    }
+  };
+
+  const handleBlurMessage = async () => {
+    const currentEvent = events.find(e => e.id === selectedEventId);
+    if (currentEvent && currentEvent.message !== editMessage) {
+      await autoSaveEvent({ message: editMessage });
     }
   };
 
@@ -223,26 +239,31 @@ export default function AdminDashboard() {
     const updatedBanks = [...(settings?.banks || []), newBank.trim()];
     setSettings({...settings, banks: updatedBanks});
     setNewBank('');
-    toast({ title: "Bank Ditambahkan", description: "Klik tombol simpan di bawah untuk menerapkan perubahan." });
-  };
-
-  const handleSaveBanks = async () => {
+    // Simpan otomatis master bank
     setIsSaving(true);
     try {
-      await updateSystemSettings({ banks: settings.banks });
-      toast({ title: "Tersimpan", description: "Daftar bank sistem telah diperbarui." });
-      fetchData(currentUser, selectedEventId);
-    } catch (error) {
-      toast({ variant: "destructive", title: "Gagal", description: "Gagal menyimpan daftar bank." });
+      await updateSystemSettings({ banks: updatedBanks });
+      toast({ title: "Tersimpan", description: "Daftar bank master diperbarui." });
+    } catch (e) {
+      toast({ variant: "destructive", title: "Gagal", description: "Gagal simpan bank." });
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleRemoveBank = (idx: number) => {
+  const handleRemoveBank = async (idx: number) => {
     if (settings.banks[idx] === 'Lainnya') return;
     const updatedBanks = settings.banks.filter((_: any, i: number) => i !== idx);
     setSettings({...settings, banks: updatedBanks});
+    setIsSaving(true);
+    try {
+      await updateSystemSettings({ banks: updatedBanks });
+      toast({ title: "Tersimpan", description: "Bank berhasil dihapus." });
+    } catch (e) {
+      toast({ variant: "destructive", title: "Gagal", description: "Gagal hapus bank." });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const copyLink = (id: string) => {
@@ -269,6 +290,7 @@ export default function AdminDashboard() {
           <span className="font-black text-xl text-accent">Admin Dashboard</span>
         </div>
         <div className="flex items-center gap-4">
+          {isSaving && <div className="flex items-center gap-2 text-[10px] font-black text-accent animate-pulse"><RefreshCw className="w-3 h-3 animate-spin" /> MENYIMPAN...</div>}
           <Button variant="ghost" className="font-bold text-muted-foreground" onClick={handleLogout}>
             <LogOut className="w-4 h-4 mr-2" /> Keluar
           </Button>
@@ -318,11 +340,11 @@ export default function AdminDashboard() {
                   <CardContent className="space-y-4">
                     <div className="space-y-2">
                       <Label className="text-[10px] font-black uppercase text-slate-400">Judul Event</Label>
-                      <Input value={editTitle} onChange={e => setEditTitle(e.target.value)} className="rounded-xl h-11" />
+                      <Input value={editTitle} onChange={e => setEditTitle(e.target.value)} onBlur={handleBlurTitle} className="rounded-xl h-11" />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-[10px] font-black uppercase text-slate-400">Pesan Ucapan</Label>
-                      <Textarea value={editMessage} onChange={e => setEditMessage(e.target.value)} className="rounded-xl min-h-[80px]" />
+                      <Textarea value={editMessage} onChange={e => setEditMessage(e.target.value)} onBlur={handleBlurMessage} className="rounded-xl min-h-[80px]" />
                       <p className="text-[9px] font-bold text-accent italic">Gunakan "$nama" untuk menyebutkan nama pemenang secara otomatis.</p>
                     </div>
                     <div className="space-y-3">
@@ -379,14 +401,10 @@ export default function AdminDashboard() {
                     
                     <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
                       <span className="text-xs font-black uppercase">Main Berkali-kali</span>
-                      <Switch checked={currentEvent?.allow_multiple_plays} onCheckedChange={async (v) => { await updateEvent(selectedEventId, { allow_multiple_plays: v }); fetchData(currentUser, selectedEventId); }} />
+                      <Switch checked={currentEvent?.allow_multiple_plays} onCheckedChange={async (v) => { await autoSaveEvent({ allow_multiple_plays: v }); fetchData(currentUser, selectedEventId); }} />
                     </div>
                     
-                    <div className="grid grid-cols-1 gap-2">
-                      <Button onClick={handleSaveEventDetails} disabled={isSaving} className="w-full h-12 rounded-xl bg-accent font-black gap-2">
-                        {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                        SIMPAN PERUBAHAN
-                      </Button>
+                    <div className="grid grid-cols-1 gap-2 pt-2">
                       <Button onClick={() => copyLink(selectedEventId)} variant="outline" className="w-full h-12 rounded-xl border-accent text-accent font-black gap-2">
                         <LinkIcon className="w-4 h-4" /> BAGIKAN TAUTAN
                       </Button>
@@ -443,10 +461,6 @@ export default function AdminDashboard() {
                         </div>
                       ))}
                     </div>
-                    <Button onClick={handleSaveBanks} disabled={isSaving} className="w-full h-12 rounded-xl bg-accent font-black gap-2 text-white shadow-lg shadow-accent/20">
-                      {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                      SIMPAN DAFTAR BANK
-                    </Button>
                   </CardContent>
                 </Card>
               </div>

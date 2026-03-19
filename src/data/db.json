@@ -32,11 +32,11 @@
       "nominals": [
         {
           "value": 20000,
-          "blocked": false
+          "blocked": true
         },
         {
           "value": 25000,
-          "blocked": false
+          "blocked": true
         },
         {
           "value": 30000,
@@ -52,22 +52,22 @@
         },
         {
           "value": 45000,
-          "blocked": false
+          "blocked": true
         },
         {
           "value": 50000,
-          "blocked": false
+          "blocked": true
         },
         {
           "value": 75000,
-          "blocked": false
+          "blocked": true
         },
         {
           "value": 100000,
-          "blocked": false
+          "blocked": true
         }
       ],
-      "allow_multiple_plays": false,
+      "allow_multiple_plays": true,
       "interaction_type": "angpao",
       "admin_id": "bordknu8m",
       "is_active": true,
