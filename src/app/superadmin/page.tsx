@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect } from 'react';
@@ -5,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ShieldAlert, LogOut, Users, Database, Server, Settings, Heart, Save, Plus, Trash2, Key, RefreshCw, Globe, CreditCard, Layout, ImageIcon, Type, LinkIcon, LayoutGrid, Zap, Shield, Gift, Sparkles, Download, Copy, Check } from 'lucide-react';
+import { ShieldAlert, LogOut, Users, Database, Server, Settings, Heart, Save, Plus, Trash2, Key, RefreshCw, Globe, CreditCard, Layout, ImageIcon, Type, LinkIcon, LayoutGrid, Zap, Shield, Gift, Sparkles, Download, Copy, Check, Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { getEvents, getWinners, getAllUsers, getSystemSettings, updateSystemSettings, generateSqlExport } from '@/app/actions/db-actions';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -16,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import Link from 'next/link';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cn } from '@/lib/utils';
 import bcrypt from 'bcryptjs';
 
 export default function SuperAdminDashboard() {
@@ -28,6 +30,8 @@ export default function SuperAdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [isExporting, setIsExporting] = useState(false);
   const [sqlContent, setSqlContent] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   
   const [plain, setPlain] = useState('');
   const [hashed, setHashed] = useState('');
@@ -209,6 +213,20 @@ export default function SuperAdminDashboard() {
     toast({ title: "Berhasil Salin", description: "Kode SQL telah disalin ke clipboard." });
   };
 
+  const copyToClipboard = (text: string, id: string) => {
+    const parts = text.split('-');
+    const contentToCopy = parts.length > 1 ? parts[1].trim() : text.trim();
+    navigator.clipboard.writeText(contentToCopy);
+    setCopiedId(id);
+    toast({ title: "Berhasil Salin", description: `Nomor ${contentToCopy} telah disalin.` });
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const filteredWinners = winners.filter(w => 
+    w.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    w.wallet_info.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   if (isLoading) return <div className="min-h-screen flex items-center justify-center"><RefreshCw className="animate-spin text-accent w-10 h-10" /></div>;
 
   return (
@@ -281,6 +299,7 @@ export default function SuperAdminDashboard() {
         <Tabs defaultValue="users" className="w-full">
           <TabsList className="bg-white border rounded-2xl h-14 p-1 mb-8 overflow-x-auto no-scrollbar flex justify-start sm:justify-center items-center gap-1 w-full max-w-full">
             <TabsTrigger value="users" className="rounded-xl px-4 sm:px-8 font-bold h-full whitespace-nowrap">User System</TabsTrigger>
+            <TabsTrigger value="winners" className="rounded-xl px-4 sm:px-8 font-bold h-full whitespace-nowrap">Data Pemenang</TabsTrigger>
             <TabsTrigger value="landing" className="rounded-xl px-4 sm:px-8 font-bold h-full whitespace-nowrap">Home Editor</TabsTrigger>
             <TabsTrigger value="settings" className="rounded-xl px-4 sm:px-8 font-bold h-full whitespace-nowrap">Config Global</TabsTrigger>
           </TabsList>
@@ -292,6 +311,57 @@ export default function SuperAdminDashboard() {
                 <Table>
                   <TableHeader><TableRow><TableHead className="pl-6 font-black text-[10px] uppercase">Nama</TableHead><TableHead className="font-black text-[10px] uppercase">Email</TableHead><TableHead className="font-black text-[10px] uppercase">Role</TableHead></TableRow></TableHeader>
                   <TableBody>{users.map((u, i) => (<TableRow key={i}><TableCell className="font-bold pl-6 text-sm truncate max-w-[120px]">{u.name}</TableCell><TableCell className="text-slate-500 text-sm truncate max-w-[150px]">{u.email}</TableCell><TableCell><Badge className={u.role === 'superadmin' ? 'bg-red-50 text-red-600 border-none' : 'bg-blue-50 text-blue-600 border-none'}>{u.role}</Badge></TableCell></TableRow>))}</TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="winners">
+            <Card className="rounded-[2rem] sm:rounded-[2.5rem] border-none shadow-sm overflow-hidden bg-white">
+              <CardHeader className="bg-slate-50 border-b px-6 py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <CardTitle className="text-lg font-black flex items-center gap-2"><Server className="w-5 h-5" /> Monitoring Global</CardTitle>
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <Input 
+                    placeholder="Cari pemenang..." 
+                    value={searchTerm} 
+                    onChange={e => setSearchTerm(e.target.value)} 
+                    className="pl-9 h-10 rounded-xl bg-white border-slate-200"
+                  />
+                </div>
+              </CardHeader>
+              <CardContent className="p-0 overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="pl-6 font-black text-[10px] uppercase">Pemenang</TableHead>
+                      <TableHead className="font-black text-[10px] uppercase">Nominal</TableHead>
+                      <TableHead className="font-black text-[10px] uppercase">IP Address</TableHead>
+                      <TableHead className="font-black text-[10px] uppercase">Waktu</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredWinners.length === 0 ? (
+                      <TableRow><TableCell colSpan={4} className="text-center py-20 text-slate-400 font-bold">Data tidak ditemukan.</TableCell></TableRow>
+                    ) : (
+                      filteredWinners.map((w, i) => (
+                        <TableRow key={i}>
+                          <TableCell className="pl-6 py-4">
+                            <div className="font-black text-sm">{w.name}</div>
+                            <div className="flex items-center gap-2 group/copy mt-1">
+                              <div className="text-[10px] text-slate-500 truncate max-w-[180px]">{w.wallet_info}</div>
+                              <button onClick={() => copyToClipboard(w.wallet_info, w.id)} className="p-1 bg-slate-100 hover:bg-accent hover:text-white rounded-md transition-all">
+                                {copiedId === w.id ? <Check className="w-2.5 h-2.5" /> : <Copy className="w-2.5 h-2.5" />}
+                              </button>
+                            </div>
+                          </TableCell>
+                          <TableCell className="font-black text-emerald-600">Rp {w.amount.toLocaleString('id-ID')}</TableCell>
+                          <TableCell className="text-[10px] font-mono text-slate-400">{w.ip_address || '-'}</TableCell>
+                          <TableCell className="text-[10px] text-slate-400">{new Date(w.timestamp).toLocaleString('id-ID')}</TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
                 </Table>
               </CardContent>
             </Card>
